@@ -9,8 +9,18 @@ const serviceSchema = new Schema({
   },
   type: {
     type: String,
-    required: true,
-    unique: true
+    enum: [
+      'PEMELIHARAAN / MAINTENANCE',
+      'SISTEM PENDINGINAN / COOLING SYSTEM',
+      'KELISTRIKAN MESIN / ENGINE ELECTRICITY',
+      'SISTEM REM / BRAKE SYSTEM',
+      'PEMINDAH DAYA / POWER TRAIN',
+      'SISTEM PENGEMUDIAN / STEERING SYSTEM',
+      'SUSPENSI DEPAN / FRONT SUSPENSION',
+      'SUSPENSI BELAKANG / BACK SUSPENSION',
+      'SISTEM BAHAN BAKAR / FUEL SYSTEM'
+    ],
+    required: true
   },
   subType: {
     type: String,

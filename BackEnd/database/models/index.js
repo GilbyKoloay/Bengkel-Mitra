@@ -1,8 +1,8 @@
 // database - models
 
-import Service from './service.js';
-import Transaction from './transaction.js';
+import service from './service.js';
+import transaction from './transaction.js';
 
 
 
-export { Service, Transaction };
+export { service, transaction };
