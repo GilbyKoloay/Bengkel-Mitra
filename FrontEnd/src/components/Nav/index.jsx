@@ -5,7 +5,7 @@ import { Button, Select } from '../';
 export default function Nav() {
   return (
     <nav className='bg-blue-300 flex-1 border round border-blue-700 px-8 flex justify-between gap-8'>
-      <div className='text-xl flex flex-col justify-center items-center hover:cursor-pointer'>
+      <div className='hidden md:flex text-xl flex-col justify-center items-center hover:cursor-pointer'>
         <div>Bengkel</div>
         <div>Mitra</div>
       </div>

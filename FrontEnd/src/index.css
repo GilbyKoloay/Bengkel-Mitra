@@ -22,3 +22,9 @@ div#root {
   display: flex;
   flex-direction: column;
 }
+
+main {
+  flex: 9;
+  overflow-y: auto;
+  padding: 1rem;
+}
