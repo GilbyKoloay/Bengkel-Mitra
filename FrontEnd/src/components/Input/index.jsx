@@ -1,10 +1,9 @@
-export default function Select({
+export default function Input({
   className='',
   label=null,
   value=null,
   onChange=null,
-  options=null,
-  placeholder=null,
+  placeholder='',
   size='sm',
   color='neutral',
   disabled=false
@@ -20,8 +19,8 @@ export default function Select({
           {label}
         </label>
       )}
-      <select
-        className={`px-2 h-full w-full border rounded hover:cursor-pointer focus:outline focus:outline-3 focus:-outline-offset-2
+      <input
+        className={`px-2 h-full w-full border rounded focus:outline focus:outline-3 focus:-outline-offset-2
           ${(size === 'sm') ? 'py-1 text-sm'
           : (size === 'md') ? 'py-1 text-base'
           : (size === 'lg') ? 'py-2 text-lg' : ''}
@@ -38,30 +37,7 @@ export default function Select({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-      >
-        {placeholder && (
-          <option
-            className='hidden'
-            value=''
-            disabled
-          >
-            {placeholder}
-          </option>
-        )}
-        {options?.map((option, index) => (
-          <option
-            key={index}
-            className={`bg-${color}-300
-              ${(size === 'sm') ? 'text-sm'
-              : (size === 'md') ? 'text-base'
-              : (size === 'lg') ? 'text-lg' : ''}
-            `}
-            value={option[0]}
-          >
-            {option[1]}
-          </option>
-        ))}
-      </select>
+      />
     </div>
   );
 };
