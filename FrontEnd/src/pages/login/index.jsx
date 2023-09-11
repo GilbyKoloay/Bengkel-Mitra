@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Input, Button } from '../../components';
+import { Fetch } from '../../functions';
 
 
 
@@ -8,19 +9,28 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [formErrMsg, setFormErrMsg] = useState('');
 
 
 
-  function formOnSubmit(e) {
+  useEffect(() => {
+    setFormErrMsg('');
+  }, [username, password]);
+
+
+
+  async function formOnSubmit(e) {
     e.preventDefault();
     setIsFormSubmitting(true);
-
+    
     const payload = {username, password};
-    console.log('payload', payload);
+    // console.log('payload', payload);
 
-    setTimeout(() => {
+    const res = await Fetch('/login', 'POST', payload);
+    if (res) {
       setIsFormSubmitting(false);
-    }, 1000);
+      if (!res.ok) setFormErrMsg(res.message);
+    }
   }
 
 
@@ -44,8 +54,11 @@ export default function Login() {
           size='lg'
           disabled={isFormSubmitting}
         />
+
+        {formErrMsg && <div className='my-4 text-center text-red-500'>{formErrMsg}</div>}
+        
         <Button
-          className='mt-16 w-full'
+          className={`w-full ${!formErrMsg ? 'mt-8' : ''}`}
           label='Masuk'
           type='submit'
           size='lg'
