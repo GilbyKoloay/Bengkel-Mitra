@@ -1,26 +1,28 @@
 export default function Input({
   className='',
   label=null,
-  value=null,
+  value='',
   onChange=null,
+  type='text',
   placeholder='',
   size='sm',
   color='neutral',
-  disabled=false
+  disabled=false,
+  errMsg=null
 }) {
   return (
     <div className={className}>
       {label && (
         <label className={
-          (size === 'sm') ? 'py-1 text-base'
-          : (size === 'md') ? 'py-2 text-lg'
-          : (size === 'lg') ? 'py-4 text-xl' : ''}
+          (size === 'sm') ? 'text-base'
+          : (size === 'md') ? 'text-lg'
+          : (size === 'lg') ? 'text-xl' : ''}
         >
           {label}
         </label>
       )}
       <input
-        className={`px-2 h-full w-full border rounded focus:outline focus:outline-3 focus:-outline-offset-2
+        className={`px-2 h-full w-full border rounded focus:outline focus:outline-2 focus:-outline-offset-2
           ${(size === 'sm') ? 'py-1 text-sm'
           : (size === 'md') ? 'py-1 text-base'
           : (size === 'lg') ? 'py-2 text-lg' : ''}
@@ -34,10 +36,21 @@ export default function Input({
           : (color === 'purple') ? 'bg-purple-300 border-purple-700 focus:outline-purple-700' : ''}
         `}
         value={value}
-        onChange={onChange}
+        onChange={e => onChange(e.target.value)}
+        type={type}
         placeholder={placeholder}
         disabled={disabled}
       />
+      {errMsg && (
+        <label className={`text-red-500
+          ${(size === 'sm') ? 'text-sm'
+          : (size === 'md') ? 'text-base'
+          : (size === 'lg') ? 'text-lg' : ''}
+        `}
+        >
+          {errMsg}
+        </label>
+      )}
     </div>
   );
 };
