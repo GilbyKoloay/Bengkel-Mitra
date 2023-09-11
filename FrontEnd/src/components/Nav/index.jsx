@@ -1,12 +1,32 @@
 import { useDispatch } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import { Button, Select } from '../';
 import { clear_token } from '../../redux/_token';
 
 
 
+const PageButton = ({ label, URL }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+
+
+  return (
+    <Button
+      label={label}
+      onClick={() => navigate(URL)}
+      color='blue'
+      disabled={location.pathname === URL}
+    />
+  );
+};
+
+
+
 export default function Nav() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
 
 
@@ -21,23 +41,22 @@ export default function Nav() {
         <div className='md:hidden h-full w-full py-2'>
           <Select
             className='h-full w-full'
+            onChange={value => navigate(value)}
             options={[
-              ['1', 'Halaman 1'],
-              ['2', 'Halaman 2'],
-              ['3', 'Halaman 3'],
-              ['4', 'Halaman 4'],
-              ['5', 'Halaman 5']
+              ['/service', 'Layanan'],
+              ['/service-form/create', 'Tambah Layanan'],
+              ['/transaction', 'Transaksi'],
+              ['/transaction-form/create', 'Tambah Transaksi']
             ]}
             size='lg'
             color='blue'
           />
         </div>
         <div className='hidden md:flex h-full w-full py-2 gap-4'>
-          <Button label='Halaman 1' color='neutral' />
-          <Button label='Halaman 2' color='blue' />
-          <Button label='Halaman 3' color='blue' />
-          <Button label='Halaman 4' color='blue' />
-          <Button label='Halaman 5' color='blue' />
+          <PageButton label='Layanan' URL='/service' />
+          <PageButton label='Tambah Layanan' URL='/service-form/create' />
+          <PageButton label='Transaksi' URL='/transaction' />
+          <PageButton label='Tambah Transaksi' URL='/transaction-form/create' />
         </div>
       </div>
 
