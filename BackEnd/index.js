@@ -4,6 +4,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import { Res } from './functions/index.js';
+import router from './router.js';
 
 
 
@@ -19,10 +20,12 @@ const port = parseInt(process.env.PORT);
 
 // middlewares
 app.use(cors());
+app.use(express.json());
 
 
 
 // endpoints
+app.use('/api', router);
 app.use((req, res) => {
   Res(res, 404, null, 'Endpoint not found.');
 });
