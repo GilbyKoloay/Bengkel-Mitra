@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { Input, Button } from '../../components';
 import { Fetch } from '../../functions';
+import { set_token } from '../../redux/_token';
 
 
 
 export default function Login() {
+  const dispatch = useDispatch();
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
@@ -29,7 +33,8 @@ export default function Login() {
     const res = await Fetch('/login', 'POST', payload);
     if (res) {
       setIsFormSubmitting(false);
-      if (!res.ok) setFormErrMsg(res.message);
+      if (res.ok) dispatch(set_token(res.payload))
+      else setFormErrMsg(res.message);
     }
   }
 

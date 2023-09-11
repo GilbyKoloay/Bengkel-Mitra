@@ -1,8 +1,15 @@
+import { useDispatch } from 'react-redux';
+
 import { Button, Select } from '../';
+import { clear_token } from '../../redux/_token';
 
 
 
 export default function Nav() {
+  const dispatch = useDispatch();
+
+
+
   return (
     <nav className='bg-blue-300 flex-1 border round border-blue-700 px-8 flex justify-between gap-8'>
       <div className='hidden md:flex text-xl flex-col justify-center items-center hover:cursor-pointer'>
@@ -37,6 +44,7 @@ export default function Nav() {
       <div className='flex items-center'>
         <Button
           label='Keluar'
+          onClick={() => dispatch(clear_token())}
           size='md'
           color='red'
         />
