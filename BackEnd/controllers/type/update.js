@@ -1,5 +1,5 @@
 import { Type as TypeCollection } from '../../database/models/index.js';
-import { Res, stringValidator, numberValidator, documentValidator } from '../../functions/index.js';
+import { Res, stringValidator, documentValidator } from '../../functions/index.js';
 
 
 

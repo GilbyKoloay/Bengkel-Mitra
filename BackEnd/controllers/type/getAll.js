@@ -5,7 +5,9 @@ import { Res, documentValidator, stringValidator } from '../../functions/index.j
 
 export default async function getAll(req, res) {
   try {
-    const query = {};
+    const query = {
+      isDeleted: false
+    };
     const projection = {};
 
     Object.keys(req.query).forEach(key => {
