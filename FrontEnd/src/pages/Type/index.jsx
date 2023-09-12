@@ -47,8 +47,7 @@ export default function Type() {
       <div className='mt-4'>
         {!types ? <div className='text-center text-lg'>Sedang memuat data, mohon tunggu ...</div>
         : (types.length === 0) ? <div className='text-center text-lg'>Data kosong</div>
-        : (filteredTypes?.length === 0) ? <div className='text-center text-lg'>Data tidak ditemukan</div>
-        : (filteredTypes?.length > 0) && (
+        : (
           <table className='w-full border border-blue-500'>
             <thead className='bg-blue-300'>
               <tr className='text-lg border-b border-blue-500'>
@@ -73,11 +72,11 @@ export default function Type() {
                 </th>
               </tr>
               <tr className='border-b border-blue-500'>
-                <th colSpan={2} className='text-start py-2 px-2'>Total: {types.length}</th>
+                <th colSpan={2} className='text-start py-2 px-2'>Total: {filteredTypes?.length} dari {types.length}</th>
               </tr>
             </thead>
             <tbody>
-              {filteredTypes.map((type, index) => (
+              {filteredTypes?.map((type, index) => (
                 <tr key={index} className='odd:bg-neutral-200 even:bg-neutral-300 hover:bg-blue-300'>
                   <td className='px-2'>{type.name}</td>
                   <td className='py-2'>
