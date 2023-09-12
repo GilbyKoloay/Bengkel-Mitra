@@ -21,6 +21,7 @@ export default async function create(req, res) {
       if (err.message.split('{ ')[1].split(':')[0]) return Res(res, 400, null, 'Nama sudah ada.');
     }
 
+    console.log('controllers/type/create.', err);
     return Res(res, 500, null, 'Terjadi kesalahan di server.');
   }
 };
