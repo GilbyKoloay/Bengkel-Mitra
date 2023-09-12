@@ -2,18 +2,15 @@ import { Types } from 'mongoose';
 
 
 
-export default async function documentValidator(key, value, collection) {
+export default function documentValidator(value, collection) {
   if (
-    !value ||
-    !value.replaceAll(' ', '')
-  ) return (() => {throw {
-    statusCode: 400,
-    description: `Id ${key} tidak ada.`
-  }})();
-  else if (Types.ObjectId.isValid(value.replaceAll(' ', ''))) return (() => {throw {
-    statusCode: 400,
-    description: `Id ${key} tidak valid.`
-  }})();
+    (
+      !value ||
+      !value.replaceAll(' ', '')
+    ) || (
+      !Types.ObjectId.isValid(value.replaceAll(' ', ''))
+    )
+  ) return null;
 
   return new Types.ObjectId(value.replaceAll(' ', ''));
 };
