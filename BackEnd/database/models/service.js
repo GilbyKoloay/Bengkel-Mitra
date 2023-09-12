@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 
 
 
@@ -8,18 +8,8 @@ const serviceSchema = new Schema({
     required :true
   },
   type: {
-    type: String,
-    enum: [
-      'PEMELIHARAAN / MAINTENANCE',
-      'SISTEM PENDINGINAN / COOLING SYSTEM',
-      'KELISTRIKAN MESIN / ENGINE ELECTRICITY',
-      'SISTEM REM / BRAKE SYSTEM',
-      'PEMINDAH DAYA / POWER TRAIN',
-      'SISTEM PENGEMUDIAN / STEERING SYSTEM',
-      'SUSPENSI DEPAN / FRONT SUSPENSION',
-      'SUSPENSI BELAKANG / BACK SUSPENSION',
-      'SISTEM BAHAN BAKAR / FUEL SYSTEM'
-    ],
+    type: Types.ObjectId,
+    ref: 'Types',
     required: true
   },
   subType: {
@@ -47,6 +37,10 @@ const serviceSchema = new Schema({
       type: Number,
       required: true
     }
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
   }
 }, {collection: 'Service'});
 

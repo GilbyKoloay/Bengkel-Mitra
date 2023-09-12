@@ -4,12 +4,24 @@ import login from './login.js';
 
 import serviceCreate from './service/create.js';
 
+import typeCreate from './type/create.js';
+import typeGetAll from './type/getAll.js';
+import typeUpdate from './type/update.js';
+import typeDelete from './type/delete.js';
+
 
 
 const service = {
   create: serviceCreate
 };
 
+const Type = {
+  create: typeCreate,
+  getAll: typeGetAll,
+  update: typeUpdate,
+  delete: typeDelete
+};
 
 
-export { login, service };
+
+export { login, service, Type };

@@ -1,9 +1,9 @@
-export default function stringValidator(key, value, allowEmpty=false) {
-  if (!allowEmpty && !value?.trim()) return (() => {throw {
-    statusCode: 400,
-    description: `${key} tidak ada.`
-  }})();
-  else if (allowEmpty && !value?.trim()) return null;
+export default function stringValidator(value, deleteAllSpace=false) {
+  if (
+    (!deleteAllSpace && !value?.replace(/ +/g, ' ').trim()) ||
+    (deleteAllSpace && !value?.replaceAll(' ', ''))
+  ) return null;
   
-  return value.trim().toUpperCase();
+  if (!deleteAllSpace) return value.replace(/ +/g, ' ').trim().toUpperCase();
+  return value.replaceAll(' ', '').toUpperCase();
 };
