@@ -2,7 +2,12 @@ import { useDispatch } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import { Button, Select } from '../';
-import { clear_token } from '../../redux/_token';
+import {
+  clear_token,
+  clearServices,
+  clearTypes,
+  clearTransactions
+} from '../../redux/app';
 
 
 
@@ -16,6 +21,7 @@ const PageButton = ({ label, URL }) => {
     <Button
       label={label}
       onClick={() => navigate(URL)}
+      size='md'
       color='blue'
       disabled={location.pathname === URL}
     />
@@ -27,6 +33,16 @@ const PageButton = ({ label, URL }) => {
 export default function Nav() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+
+
+  function logoutOnClick() {
+    dispatch(clear_token());
+    dispatch(clearServices());
+    dispatch(clearTypes());
+    dispatch(clearTransactions());
+  }
 
 
 
@@ -38,32 +54,32 @@ export default function Nav() {
       </div>
 
       <div className='flex-1 flex items-center'>
-        <div className='md:hidden h-full w-full py-2'>
+        <div className='sm:hidden h-full w-full py-2'>
           <Select
             className='h-full w-full'
+            value={location.pathname}
             onChange={value => navigate(value)}
             options={[
               ['/service', 'Layanan'],
-              ['/service-form/create', 'Tambah Layanan'],
+              ['/type', 'Tipe'],
               ['/transaction', 'Transaksi'],
-              ['/transaction-form/create', 'Tambah Transaksi']
             ]}
             size='lg'
             color='blue'
           />
         </div>
-        <div className='hidden md:flex h-full w-full py-2 gap-4'>
+        <div className='hidden sm:flex h-full w-full py-2 gap-4'>
           <PageButton label='Layanan' URL='/service' />
-          <PageButton label='Tambah Layanan' URL='/service-form/create' />
+          <PageButton label='Tipe' URL='/type' />
           <PageButton label='Transaksi' URL='/transaction' />
-          <PageButton label='Tambah Transaksi' URL='/transaction-form/create' />
         </div>
       </div>
 
-      <div className='flex items-center'>
+      <div className='py-2'>
         <Button
+          className='h-full'
           label='Keluar'
-          onClick={() => dispatch(clear_token())}
+          onClick={logoutOnClick}
           size='md'
           color='red'
         />

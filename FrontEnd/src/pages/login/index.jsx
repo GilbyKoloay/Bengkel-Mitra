@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 
 import { Input, Button } from '../../components';
 import { Fetch } from '../../functions';
-import { set_token } from '../../redux/_token';
+import { set_token } from '../../redux/app';
 
 
 
