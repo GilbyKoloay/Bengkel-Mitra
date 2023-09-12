@@ -60,7 +60,7 @@ export default function TypeForm() {
 
     const res = await Fetch(
       `/type/${formType}`,
-      (formType === 'create') ? 'POST' : (formType === 'update') ? 'PUT' : 'DELETE',
+      (formType === 'create') ? 'POST' : 'PUT',
       payload
     );
     if (res) {
@@ -101,6 +101,7 @@ export default function TypeForm() {
               value={name}
               onChange={value => setName(value)}
               size='lg'
+              disabled={!isFormValid || isFormSubmitting || (formType === 'delete')}
             />
           </div>
         </div>
@@ -118,6 +119,7 @@ export default function TypeForm() {
               onClick={formClear}
               size='lg'
               color='red'
+              disabled={isFormSubmitting}
             />
           ) : (formType === 'update') && (
             <Button
@@ -126,6 +128,7 @@ export default function TypeForm() {
               onClick={formReset}
               size='lg'
               color='red'
+              disabled={!isFormValid || isFormSubmitting}
             />
           )}
           <Button
