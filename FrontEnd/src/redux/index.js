@@ -1,11 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import _tokenReducer from './_token';
+import appReducer from './app';
 
 
 
 export default configureStore({
   reducer: {
-    _token: _tokenReducer
+    app: appReducer
   }
 });

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import { Input, Button } from '../../components';
-import { Fetch } from '../../functions';
+import { Input, Button } from '../../../components';
+import { Fetch } from '../../../functions';
 
 
 
@@ -59,10 +59,17 @@ export default function TypeForm() {
   return (
     <main>
       <form className='h-full flex flex-col' onSubmit={formOnSubmit}>
-        {isFormSubmitting && <div className='mb-4 text-xl'>Sedang menambahkan data, mohon tunggu ...</div>}
-        {formErrMsg && <div className='mb-4 text-xl text-red-500'>{formErrMsg}</div>}
+        <div className='text-xl'>{
+          (formType === 'create') ? 'Tambah '
+          : (formType === 'update') ? 'Perbarui '
+          : (formType === 'delete') ? 'Hapus ' : ''}
+          Tipe
+        </div>
 
-        <div className='pb-8 grid grid-cols-1 overflow-y-auto'>
+        {isFormSubmitting && <div className='text-lg'>Sedang menambahkan data, mohon tunggu ...</div>}
+        {formErrMsg && <div className='text-lg text-red-500'>{formErrMsg}</div>}
+
+        <div className='pt-4 pb-8 grid grid-cols-1 overflow-y-auto'>
           <div>
             <Input
               label='Nama'
@@ -72,7 +79,13 @@ export default function TypeForm() {
             />
           </div>
         </div>
-        <div className='flex gap-4 sm:gap-8 md:gap-16'>
+        <div className='flex gap-2 sm:gap-4 md:gap-8'>
+          <Button
+            className='flex-1'
+            label='Kembali'
+            onClick={() => navigate('/type')}
+            size='lg'
+          />
           <Button
             className='flex-1'
             label='Bersihkan'
