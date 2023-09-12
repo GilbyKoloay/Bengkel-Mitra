@@ -27,8 +27,8 @@ export default async function create(req, res) {
     if (!payload.price.class5) return Res(res, 400, null, 'Harga kelas 5 tidak valid.');
 
     const result = await serviceCollection.create(payload);
-    console.log('result', result);
 
+    if (!result) throw new Error('Terjadi kesalahan di server.');
     return Res(res, 200);
   }
   catch (err) {

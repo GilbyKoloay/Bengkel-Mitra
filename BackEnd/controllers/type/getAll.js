@@ -10,7 +10,7 @@ export default async function getAll(req, res) {
 
     Object.keys(req.query).forEach(key => {
       if (req.query[key] !== '') {
-        if (key === '_id') query[key] = documentValidator(req.query[key], TypeCollection);
+        if (key === '_id') query[key] = documentValidator(req.query[key]);
         else if (['name'].includes(key)) query[key] = stringValidator(req.query[key]);
       }
 
@@ -24,7 +24,7 @@ export default async function getAll(req, res) {
 
     const result = await TypeCollection.find(query, projection);
 
-    if (!result) throw({message: 'Terjadi kesalahan di server.'});
+    if (!result) throw new Error('Terjadi kesalahan di server.');
     return Res(res, 200, result);
   }
   catch (err) {

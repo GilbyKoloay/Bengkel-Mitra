@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 
 
-export default function documentValidator(value, collection) {
+export default function documentValidator(value) {
   if (
     (
       !value ||
