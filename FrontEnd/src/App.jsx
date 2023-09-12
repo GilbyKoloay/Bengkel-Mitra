@@ -7,6 +7,8 @@ import {
   Home,
   Service,
   ServiceForm,
+  Type,
+  TypeForm,
   Transaction,
   TransactionForm
 } from './pages';
@@ -31,6 +33,8 @@ export default function App() {
           <Route path='/home' element={<Home />} />
           <Route path='/service' element={<Service />} />
           <Route path='/service-form/:formType' element={<ServiceForm />} />
+          <Route path='/type' element={<Type />} />
+          <Route path='/type-form/:formType' element={<TypeForm />} />
           <Route path='/transaction' element={<Transaction />} />
           <Route path='/transaction-form/:formType' element={<TransactionForm />} />
           <Route path='*' element={<Navigate to='/home' />} />

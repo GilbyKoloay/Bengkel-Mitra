@@ -16,6 +16,7 @@ const PageButton = ({ label, URL }) => {
     <Button
       label={label}
       onClick={() => navigate(URL)}
+      size='md'
       color='blue'
       disabled={location.pathname === URL}
     />
@@ -27,6 +28,7 @@ const PageButton = ({ label, URL }) => {
 export default function Nav() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
 
 
@@ -41,10 +43,13 @@ export default function Nav() {
         <div className='md:hidden h-full w-full py-2'>
           <Select
             className='h-full w-full'
+            value={location.pathname}
             onChange={value => navigate(value)}
             options={[
               ['/service', 'Layanan'],
               ['/service-form/create', 'Tambah Layanan'],
+              ['/type', 'Tipe'],
+              ['/type-form/create', 'Tambah Tipe'],
               ['/transaction', 'Transaksi'],
               ['/transaction-form/create', 'Tambah Transaksi']
             ]}
@@ -55,13 +60,16 @@ export default function Nav() {
         <div className='hidden md:flex h-full w-full py-2 gap-4'>
           <PageButton label='Layanan' URL='/service' />
           <PageButton label='Tambah Layanan' URL='/service-form/create' />
+          <PageButton label='Tipe' URL='/type' />
+          <PageButton label='Tambah Tipe' URL='/type-form/create' />
           <PageButton label='Transaksi' URL='/transaction' />
           <PageButton label='Tambah Transaksi' URL='/transaction-form/create' />
         </div>
       </div>
 
-      <div className='flex items-center'>
+      <div className='py-2'>
         <Button
+          className='h-full'
           label='Keluar'
           onClick={() => dispatch(clear_token())}
           size='md'
