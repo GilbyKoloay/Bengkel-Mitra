@@ -5,7 +5,7 @@ import { Res } from '../../functions/index.js';
 
 export default async function create(req, res) {
   try {
-    const result = await TypeCollection.find({}, {__v: 0});
+    const result = await TypeCollection.find({isDeleted: false}, {__v: 0, isDeleted: 0});
 
     if (!result) throw({message: 'Terjadi kesalahan di server.'});
     return Res(res, 200, result);
