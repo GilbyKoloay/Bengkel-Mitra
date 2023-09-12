@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { Input, Button } from '../../../components';
 import { Fetch } from '../../../functions';
@@ -11,7 +11,11 @@ export default function TypeForm() {
 
   const { formType } = useParams();
 
+  const [parameters, setParameters] = useSearchParams();
+  const _id = parameters.get('_id');
+
   const [name, setName] = useState('');
+  const [isFormValid, setIsFormValid] = useState((formType === 'create') ? true : false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [formErrMsg, setFormErrMsg] = useState('');
 
@@ -19,6 +23,10 @@ export default function TypeForm() {
 
   useEffect(() => {
     validateFormType();
+    if (
+      formType === 'update' ||
+      formType === 'delete'
+    ) getType();
   }, []);
 
   useEffect(() => {
@@ -35,14 +43,26 @@ export default function TypeForm() {
     ) navigate('/home');
   }
 
+  async function getType() {
+    const res = await Fetch(`/type/get-all?_id=${_id}&name`);
+    if (res?.ok) {
+      setName(res.payload[0].name);
+      setIsFormValid(true);
+    }
+  }
+
   async function formOnSubmit(e) {
     e.preventDefault();
     setIsFormSubmitting(true);
 
-    const payload = {name};
+    const payload = {_id, name};
     // console.log('payload');
 
-    const res = await Fetch('/type/create', 'POST', payload);
+    const res = await Fetch(
+      `/type/${formType}`,
+      (formType === 'create') ? 'POST' : (formType === 'update') ? 'PUT' : 'DELETE',
+      payload
+    );
     if (res) {
       setIsFormSubmitting(false);
       if (res.ok) navigate('/type');
@@ -50,8 +70,13 @@ export default function TypeForm() {
     }
   }
 
-  function clearForm() {
+  function formClear() {
     setName('');
+  }
+
+  function formReset() {
+    setIsFormValid(false);
+    getType();
   }
 
 
@@ -61,7 +86,7 @@ export default function TypeForm() {
       <form className='h-full flex flex-col' onSubmit={formOnSubmit}>
         <div className='text-xl'>{
           (formType === 'create') ? 'Tambah '
-          : (formType === 'update') ? 'Perbarui '
+          : (formType === 'update') ? 'Ubah '
           : (formType === 'delete') ? 'Hapus ' : ''}
           Tipe
         </div>
@@ -86,20 +111,30 @@ export default function TypeForm() {
             onClick={() => navigate('/type')}
             size='lg'
           />
+          {(formType === 'create') ? (
+            <Button
+              className='flex-1'
+              label='Bersihkan'
+              onClick={formClear}
+              size='lg'
+              color='red'
+            />
+          ) : (formType === 'update') && (
+            <Button
+              className='flex-1'
+              label='Atur Ulang'
+              onClick={formReset}
+              size='lg'
+              color='red'
+            />
+          )}
           <Button
             className='flex-1'
-            label='Bersihkan'
-            onClick={clearForm}
-            size='lg'
-            color='red'
-          />
-          <Button
-            className='flex-1'
-            label='Tambah'
+            label={(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'}
             type='submit'
             size='lg'
-            color='blue'
-            disabled={isFormSubmitting}
+            color={(formType === 'delete') ? 'red' : 'blue'}
+            disabled={!isFormValid || isFormSubmitting}
           />
         </div>
       </form>

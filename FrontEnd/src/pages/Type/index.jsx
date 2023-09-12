@@ -84,10 +84,12 @@ export default function Type() {
                     <div className='flex justify-center gap-4'>
                       <Button
                         label='Ubah'
+                        onClick={() => navigate(`/type/form/update?_id=${type._id}`)}
                         color='yellow'
                       />
                       <Button
                         label='Hapus'
+                        onClick={() => navigate(`/type/form/delete?_id=${type._id}`)}
                         color='red'
                       />
                     </div>
