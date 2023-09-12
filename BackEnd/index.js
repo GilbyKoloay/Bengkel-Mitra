@@ -1,7 +1,9 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import { createServer } from 'http';
 import mongoose from 'mongoose';
+import { Server } from 'socket.io';
 
 import { Res } from './functions/index.js';
 import router from './router.js';
@@ -13,6 +15,11 @@ dotenv.config();
 
 
 const app = express();
+const server = createServer(app);
+const io = new Server(
+  server,
+  {cors: {origin: '*'}}
+);
 const databaseConnectionURI = process.env.DATABASE_CONNECTION_URI;
 const port = parseInt(process.env.PORT);
 
@@ -32,11 +39,18 @@ app.use((req, res) => {
 
 
 
+// socket.io
+io.on('connection', socket => {
+
+});
+
+
+
 // connect to database & run server
 mongoose.connect(databaseConnectionURI)
   .then(() => {
     console.log('Database connection successful.');
-    app.listen(port, err => {
+    server.listen(port, err => {
       if (err) console.log('Failed to run server.', err);
       console.log(`Server is running on port ${port}.`);
     });
