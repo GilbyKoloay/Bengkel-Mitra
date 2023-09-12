@@ -15,6 +15,7 @@ router.post('/login', loginController);
 router.post('/service/create', serviceController.create);
 
 router.post('/type/create', typeController.create);
+router.get('/type/get-all', typeController.getAll);
 
 
 

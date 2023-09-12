@@ -5,6 +5,7 @@ import login from './login.js';
 import serviceCreate from './service/create.js';
 
 import typeCreate from './type/create.js';
+import typeGetAll from './type/getAll.js';
 
 
 
@@ -13,7 +14,8 @@ const service = {
 };
 
 const Type = {
-  create: typeCreate
+  create: typeCreate,
+  getAll: typeGetAll
 };
 
 
