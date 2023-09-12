@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import { Nav } from './components';
-import { Fetch } from './functions';
+import { Fetch, createSocket } from './functions';
 import {
   Login,
   Home,
@@ -24,6 +24,14 @@ export default function App() {
   const { _token } = useSelector(state => state.app);
 
 
+
+  useEffect(() => {
+    const socket = createSocket();
+
+    return () => {
+      socket.disconnect();
+    }
+  }, []);
 
   useEffect(() => {
     if (_token) getAllAppData();
