@@ -58,12 +58,13 @@ export default function ServiceForm() {
         class5: priceClass5
       }
     };
-    console.log('payload');
+    // console.log('payload');
 
     const res = await Fetch('/service/create', 'POST', payload);
     if (res) {
       setIsFormSubmitting(false);
-      if (!res.ok) setFormErrMsg(res.message);
+      if (res.ok) navigate('/service');
+      else setFormErrMsg(res.message);
     }
   }
 
@@ -86,7 +87,7 @@ export default function ServiceForm() {
         {isFormSubmitting && <div className='mb-4 text-xl'>Sedang menambahkan data, mohon tunggu ...</div>}
         {formErrMsg && <div className='mb-4 text-xl text-red-500'>{formErrMsg}</div>}
 
-        <div className='flex-1 pb-8 grid grid-cols-1 sm:grid-cols-2 sm:gap-8 md:gap-16 overflow-y-auto'>
+        <div className='pb-8 grid grid-cols-1 sm:grid-cols-2 sm:gap-8 md:gap-16 overflow-y-auto'>
           <div>
             <Input
               label='Nama'
