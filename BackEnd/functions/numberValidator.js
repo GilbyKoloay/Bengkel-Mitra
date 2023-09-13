@@ -1,9 +1,9 @@
 export default function numberValidator(value) {
   if (
-    !value?.replaceAll(' ', '') ||
-    !/^\d+$/.test(value.replaceAll(' ', ''))
+    !value ||
+    typeof(value) === 'string' ||
+    Number.isNaN(value)
   ) return null;
 
-  
-  return parseInt(value.replaceAll(' ', ''));
+  return parseInt(value);
 };
