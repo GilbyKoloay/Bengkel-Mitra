@@ -6,7 +6,6 @@ import { Nav } from './components';
 import { Fetch, createSocket } from './functions';
 import {
   Login,
-  Home,
   Service,
   ServiceForm,
   Type,
@@ -68,14 +67,13 @@ export default function App() {
         </Routes>
       ) : (
         <Routes>
-          <Route path='/home' element={<Home />} />
           <Route path='/service' element={<Service />} />
           <Route path='/service/form/:formType' element={<ServiceForm />} />
           <Route path='/type' element={<Type />} />
           <Route path='/type/form/:formType' element={<TypeForm />} />
           <Route path='/transaction' element={<Transaction />} />
           <Route path='/transaction/form/:formType' element={<TransactionForm />} />
-          <Route path='*' element={<Navigate to='/home' />} />
+          <Route path='*' element={<Navigate to='/service' />} />
         </Routes>
       )}
     </>

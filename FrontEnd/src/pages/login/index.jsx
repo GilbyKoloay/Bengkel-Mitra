@@ -14,8 +14,8 @@ export default function Login() {
   const [incrementBgColorShade, setIncrementBgColorShade] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loginButtonLabel, setLoginButonLabel] = useState('Masuk');
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [formErrMsg, setFormErrMsg] = useState('');
 
 
 
@@ -35,7 +35,7 @@ export default function Login() {
   }, [bgColorShade, incrementBgColorShade]);
 
   useEffect(() => {
-    setFormErrMsg('');
+    setLoginButonLabel('Masuk');
   }, [username, password]);
 
 
@@ -50,7 +50,7 @@ export default function Login() {
     if (res) {
       setIsFormSubmitting(false);
       if (res.ok) dispatch(set_token(res.payload))
-      else setFormErrMsg(res.message);
+      else setLoginButonLabel(res.message);
     }
   }
 
@@ -75,15 +75,13 @@ export default function Login() {
           size='lg'
           disabled={isFormSubmitting}
         />
-
-        {formErrMsg && <div className='my-4 text-center text-red-500'>{formErrMsg}</div>}
         
         <Button
-          className={`w-full ${!formErrMsg ? 'mt-8' : ''}`}
-          label='Masuk'
+          className='w-full mt-8'
+          label={loginButtonLabel}
           type='submit'
           size='lg'
-          color='blue'
+          color={(loginButtonLabel === 'Masuk') ? 'blue' : 'red'}
           disabled={isFormSubmitting}
         />
       </form>
