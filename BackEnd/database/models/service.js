@@ -19,23 +19,23 @@ const serviceSchema = new Schema({
   price: {
     class1: {
       type: Number,
-      required: true
+      default: null
     },
     class2: {
       type: Number,
-      required: true
+      default: null
     },
     class3: {
       type: Number,
-      required: true
+      default: null
     },
     class4: {
       type: Number,
-      required: true
+      default: null
     },
     class5: {
       type: Number,
-      required: true
+      default: null
     }
   }
 }, {collection: 'Services'});
