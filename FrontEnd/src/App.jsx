@@ -33,7 +33,10 @@ export default function App() {
       getType();
 
       socket.on('service-new', getService);
-      socket.on('type-new', getType);
+      socket.on('type-new', () => {
+        getService();
+        getType();
+      });
     }
 
     return () => {
