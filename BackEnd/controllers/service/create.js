@@ -24,11 +24,6 @@ export default async function create(req, res) {
     };
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid');
     if (!payload.type) return Res(res, 400, null, 'Tipe tidak valid.');
-    if (!payload.price.class1) return Res(res, 400, null, 'Harga kelas 1 tidak valid.');
-    if (!payload.price.class2) return Res(res, 400, null, 'Harga kelas 2 tidak valid.');
-    if (!payload.price.class3) return Res(res, 400, null, 'Harga kelas 3 tidak valid.');
-    if (!payload.price.class4) return Res(res, 400, null, 'Harga kelas 4 tidak valid.');
-    if (!payload.price.class5) return Res(res, 400, null, 'Harga kelas 5 tidak valid.');
 
     const result = await serviceCollection.create(payload);
     if (!result) throw new Error('Terjadi kesalahan di server.');
