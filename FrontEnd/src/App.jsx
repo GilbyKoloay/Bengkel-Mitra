@@ -29,9 +29,11 @@ export default function App() {
     const socket = createSocket();
 
     if (_token) {
-      getAppTypeData();
+      getService();
+      getType();
 
-      socket.on('type-new', getAppTypeData);
+      socket.on('service-new', getService);
+      socket.on('type-new', getType);
     }
 
     return () => {
@@ -41,9 +43,14 @@ export default function App() {
 
 
 
-  async function getAppTypeData() {
-    const typesRes = await Fetch('/type/get-all');
-    if (typesRes?.ok) dispatch(setTypes(typesRes.payload));
+  async function getService() {
+    const res = await Fetch('/service/get-all');
+    if (res?.ok) dispatch(setServices(res.payload));
+  }
+
+  async function getType() {
+    const res = await Fetch('/type/get-all');
+    if (res?.ok) dispatch(setTypes(res.payload));
   }
 
 
