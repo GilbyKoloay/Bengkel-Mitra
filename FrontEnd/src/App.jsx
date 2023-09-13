@@ -28,20 +28,29 @@ export default function App() {
   useEffect(() => {
     const socket = createSocket();
 
+    if (_token) {
+      getService();
+      getType();
+
+      socket.on('service-new', getService);
+      socket.on('type-new', getType);
+    }
+
     return () => {
       socket.disconnect();
     }
-  }, []);
-
-  useEffect(() => {
-    if (_token) getAllAppData();
   }, [_token]);
 
 
 
-  async function getAllAppData() {
-    const typesRes = await Fetch('/type/get-all');
-    if (typesRes?.ok) dispatch(setTypes(typesRes.payload));
+  async function getService() {
+    const res = await Fetch('/service/get-all');
+    if (res?.ok) dispatch(setServices(res.payload));
+  }
+
+  async function getType() {
+    const res = await Fetch('/type/get-all');
+    if (res?.ok) dispatch(setTypes(res.payload));
   }
 
 
