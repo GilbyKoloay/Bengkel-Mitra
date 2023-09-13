@@ -24,10 +24,6 @@ const transactionSchema = new Schema({
   paidStatus: {
     type: Boolean,
     required: true
-  },
-  isDeleted: {
-    type: Boolean,
-    default: false
   }
 }, {collection: 'Transactions'});
 

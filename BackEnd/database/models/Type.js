@@ -7,10 +7,6 @@ const typeSchema = new Schema({
     type: String,
     required: true,
     unique: true
-  },
-  isDeleted: {
-    type: Boolean,
-    default: false
   }
 }, {collection: 'Types'});
 

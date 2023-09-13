@@ -1,4 +1,4 @@
-import { Type as typeCollection } from '../../database/models/index.js';
+import { service as serviceCollection } from '../../database/models/index.js';
 import { Res, documentValidator } from '../../functions/index.js';
 
 
@@ -11,7 +11,7 @@ export default async function deleteDocument(req, res) {
 
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.')
 
-    const result = await typeCollection.deleteOne({
+    const result = await serviceCollection.deleteOne({
       _id: payload._id
     });
 
@@ -20,7 +20,7 @@ export default async function deleteDocument(req, res) {
     return Res(res, 200);
   }
   catch (err) {
-    console.log('controllers/type/delete.', err);
+    console.log('controllers/service/delete.', err);
     return Res(res, 500, null, 'Terjadi kesalahan di server.');
   }
 };

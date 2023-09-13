@@ -37,12 +37,8 @@ const serviceSchema = new Schema({
       type: Number,
       required: true
     }
-  },
-  isDeleted: {
-    type: Boolean,
-    default: false
   }
-}, {collection: 'Service'});
+}, {collection: 'Services'});
 
 
 
