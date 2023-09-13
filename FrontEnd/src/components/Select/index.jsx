@@ -7,8 +7,7 @@ export default function Select({
   placeholder=null,
   size='sm',
   color='neutral',
-  disabled=false,
-  errMsg=null
+  disabled=false
 }) {
   return (
     <div className={className}>
@@ -63,16 +62,6 @@ export default function Select({
           </option>
         ))}
       </select>
-      {errMsg && (
-        <label className={`text-red-500
-          ${(size === 'sm') ? 'text-sm'
-          : (size === 'md') ? 'text-base'
-          : (size === 'lg') ? 'text-lg' : ''}
-        `}
-        >
-          {errMsg}
-        </label>
-      )}
     </div>
   );
 };

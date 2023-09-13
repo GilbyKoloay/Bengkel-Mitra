@@ -26,7 +26,7 @@ export default function TypeForm() {
       formType !== 'create' &&
       formType !== 'update' &&
       formType !== 'delete'
-    ) navigate('/home');
+    ) navigate('/type');
 
     if (
       formType === 'update' ||
@@ -55,7 +55,10 @@ export default function TypeForm() {
     e.preventDefault();
     setIsFormSubmitting(true);
 
-    const payload = {_id, name};
+    const payload = {
+      _id,
+      name: name.trimEnd()
+    };
 
     const res = await Fetch(
       `/type/${formType}`,
@@ -104,7 +107,7 @@ export default function TypeForm() {
                 <Input
                   label='Nama'
                   value={name}
-                  onChange={value => setName(value)}
+                  onChange={value => setName(value.trimStart().toUpperCase())}
                   size='lg'
                   disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                 />
