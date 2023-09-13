@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, Input, Select } from '../../components';
+import { splitString } from '../../functions';
 
 
 
@@ -31,11 +32,11 @@ export default function Type() {
         (!filter.name || (service.name.includes(filter.name))) &&
         ((filter.type === 'SEMUA') || (service.type.name.includes(filter.type))) &&
         (!filter.subType || ((filter.subType === '-') && !service.subType) || (service.subType?.includes(filter.subType))) &&
-        (!filter.priceClass1 || (service.price.class1.toString().includes(filter.priceClass1))) &&
-        (!filter.priceClass2 || (service.price.class2.toString().includes(filter.priceClass2))) &&
-        (!filter.priceClass3 || (service.price.class3.toString().includes(filter.priceClass3))) &&
-        (!filter.priceClass4 || (service.price.class4.toString().includes(filter.priceClass4))) &&
-        (!filter.priceClass5 || (service.price.class5.toString().includes(filter.priceClass5)))
+        (!filter.priceClass1 || ((filter.priceClass1 === '-') && !service.price.class1) || (service.price.class1?.toString().includes(filter.priceClass1))) &&
+        (!filter.priceClass2 || ((filter.priceClass2 === '-') && !service.price.class2) || (service.price.class2?.toString().includes(filter.priceClass2))) &&
+        (!filter.priceClass3 || ((filter.priceClass3 === '-') && !service.price.class3) || (service.price.class3?.toString().includes(filter.priceClass3))) &&
+        (!filter.priceClass4 || ((filter.priceClass4 === '-') && !service.price.class4) || (service.price.class4?.toString().includes(filter.priceClass4))) &&
+        (!filter.priceClass5 || ((filter.priceClass5 === '-') && !service.price.class5) || (service.price.class5?.toString().includes(filter.priceClass5)))
       );
       setFilteredServices(newFilteredServices);
     }
@@ -197,11 +198,11 @@ export default function Type() {
                 <td className='p-2'>{service.name}</td>
                 <td className='p-2'>{service.type.name}</td>
                 <td className='p-2'>{service.subType ? service.subType : '-'}</td>
-                <td className='p-2'>{service.price.class1}</td>
-                <td className='p-2'>{service.price.class2}</td>
-                <td className='p-2'>{service.price.class3}</td>
-                <td className='p-2'>{service.price.class4}</td>
-                <td className='p-2'>{service.price.class5}</td>
+                <td className='p-2'>{service.price.class1 ? splitString(service.price.class1, 3, '.') : '-'}</td>
+                <td className='p-2'>{service.price.class2 ? splitString(service.price.class2, 3, '.') : '-'}</td>
+                <td className='p-2'>{service.price.class3 ? splitString(service.price.class3, 3, '.') : '-'}</td>
+                <td className='p-2'>{service.price.class4 ? splitString(service.price.class4, 3, '.') : '-'}</td>
+                <td className='p-2'>{service.price.class5 ? splitString(service.price.class5, 3, '.') : '-'}</td>
                 <td className='p-2'>
                   <div className='flex justify-center gap-4'>
                     <Button
