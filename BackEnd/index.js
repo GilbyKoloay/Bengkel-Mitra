@@ -41,6 +41,17 @@ app.use((req, res) => {
 
 // socket.io
 io.on('connection', socket => {
+  // service
+  socket.on('service-new', () => io.emit('service-new'));
+  socket.on('service-update', payload => {
+    io.emit('service-new');
+    io.emit('service-update', {_id: payload._id});
+  });
+  socket.on('service-delete', payload => {
+    io.emit('service-new');
+    io.emit('service-delete', {_id: payload._id});
+  });
+
   // type
   socket.on('type-new', () => io.emit('type-new'));
   socket.on('type-update', payload => {
