@@ -16,6 +16,7 @@ export default async function Fetch(
       body: JSON.stringify(body)
     };
 
+    await new Promise(res => setTimeout(res, 1000));
     const req = await fetch(`${backendURL}/api${url}`, init);
     const res = await req.json();
     
