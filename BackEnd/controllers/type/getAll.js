@@ -1,4 +1,4 @@
-import { Type as TypeCollection } from '../../database/models/index.js';
+import { Type as typeCollection } from '../../database/models/index.js';
 import { Res, documentValidator, stringValidator } from '../../functions/index.js';
 
 
@@ -11,7 +11,7 @@ export default async function getAll(req, res) {
     Object.keys(req.query).forEach(key => {
       if (req.query[key] !== '') {
         if (key === '_id') query[key] = documentValidator(req.query[key]);
-        else if (['name'].includes(key)) query[key] = stringValidator(req.query[key]);
+        else if (['name', 'subType'].includes(key)) query[key] = stringValidator(req.query[key]);
       }
 
       projection[key] = 1;
@@ -21,7 +21,7 @@ export default async function getAll(req, res) {
       projection.__v = 0;
     }
 
-    const result = await TypeCollection.find(query, projection);
+    const result = await typeCollection.find(query, projection);
 
     if (!result) throw new Error('Terjadi kesalahan di server.');
     return Res(res, 200, result);

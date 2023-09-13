@@ -1,5 +1,5 @@
-import { Type as TypeCollection } from '../../database/models/index.js';
-import { Res, stringValidator, documentValidator } from '../../functions/index.js';
+import { Type as typeCollection } from '../../database/models/index.js';
+import { Res, documentValidator } from '../../functions/index.js';
 
 
 
@@ -11,7 +11,7 @@ export default async function deleteDocument(req, res) {
 
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.')
 
-    const result = await TypeCollection.deleteOne({
+    const result = await typeCollection.deleteOne({
       _id: payload._id
     });
 

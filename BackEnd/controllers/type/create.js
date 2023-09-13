@@ -1,4 +1,4 @@
-import { Type as TypeCollection } from '../../database/models/index.js';
+import { Type as typeCollection } from '../../database/models/index.js';
 import { Res, stringValidator } from '../../functions/index.js';
 
 
@@ -10,7 +10,7 @@ export default async function create(req, res) {
     };
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
 
-    const result = await TypeCollection.create(payload);
+    const result = await typeCollection.create(payload);
     if (!result) throw new Error('Terjadi kesalahan di server.');
     return Res(res, 200);
   }

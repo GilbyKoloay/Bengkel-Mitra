@@ -1,7 +1,7 @@
 // database - models
 
 import service from './service.js';
-import Type from './Type.js';
+import Type from './type.js';
 import transaction from './transaction.js';
 
 

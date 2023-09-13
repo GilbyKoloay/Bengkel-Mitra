@@ -1,4 +1,4 @@
-import { Type as TypeCollection } from '../../database/models/index.js';
+import { Type as typeCollection } from '../../database/models/index.js';
 import { Res, stringValidator, documentValidator } from '../../functions/index.js';
 
 
@@ -12,7 +12,7 @@ export default async function update(req, res) {
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.')
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
 
-    const result = await TypeCollection.updateOne({
+    const result = await typeCollection.updateOne({
       _id: payload._id
     }, {
       $set: {
