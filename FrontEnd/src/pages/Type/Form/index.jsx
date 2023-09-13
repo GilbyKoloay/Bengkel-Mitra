@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { Input, Button } from '../../../components';
-import { Fetch } from '../../../functions';
+import { Fetch, createSocket } from '../../../functions';
 
 
 
@@ -43,8 +43,11 @@ export default function TypeForm() {
   async function loadFormInitialData() {
     const res = await Fetch(`/type/get-all?_id=${_id}&name`);
     if (res?.ok) {
-      setName(res.payload[0].name);
-      setIsFormLoadingInitialData(false);
+      if (res.payload.length === 0) navigate('/type');
+      else {
+        setName(res.payload[0].name);
+        setIsFormLoadingInitialData(false);
+      }
     }
   }
 
@@ -61,7 +64,15 @@ export default function TypeForm() {
     );
     if (res) {
       setIsFormSubmitting(false);
-      if (res.ok) navigate('/type');
+      if (res.ok) {
+        const socket = createSocket();
+        socket.emit(
+          `type-${(formType === 'create') ? 'new' : formType}`,
+          _id ? {_id} : undefined
+        );
+
+        navigate('/type');
+      }
       else setFormErrMsg(res.message);
     }
   }

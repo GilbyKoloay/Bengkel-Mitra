@@ -28,18 +28,20 @@ export default function App() {
   useEffect(() => {
     const socket = createSocket();
 
+    if (_token) {
+      getAppTypeData();
+
+      socket.on('type-new', getAppTypeData);
+    }
+
     return () => {
       socket.disconnect();
     }
-  }, []);
-
-  useEffect(() => {
-    if (_token) getAllAppData();
   }, [_token]);
 
 
 
-  async function getAllAppData() {
+  async function getAppTypeData() {
     const typesRes = await Fetch('/type/get-all');
     if (typesRes?.ok) dispatch(setTypes(typesRes.payload));
   }
