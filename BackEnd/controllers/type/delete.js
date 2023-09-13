@@ -3,7 +3,7 @@ import { Res, stringValidator, documentValidator } from '../../functions/index.j
 
 
 
-export default async function update(req, res) {
+export default async function deleteDocument(req, res) {
   try {
     const payload = {
       _id: documentValidator(req.body?._id)
@@ -11,16 +11,12 @@ export default async function update(req, res) {
 
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.')
 
-    const result = await TypeCollection.updateOne({
+    const result = await TypeCollection.deleteOne({
       _id: payload._id
-    }, {
-      $set: {
-        isDeleted: true
-      }
     });
 
     if (!result || !result?.acknowledged) throw new Error('Terjadi kesalahan di server.');
-    if (!result.matchedCount) return Res(res, 404, null, '_id tidak valid.');
+    if (!result.deletedCount) return Res(res, 404, null, '_id tidak valid.');
     return Res(res, 200);
   }
   catch (err) {
