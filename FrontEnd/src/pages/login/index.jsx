@@ -10,29 +10,12 @@ import { set_token } from '../../redux/app';
 export default function Login() {
   const dispatch = useDispatch();
   
-  const [bgColorShade, setBgColorShade] = useState(100);
-  const [incrementBgColorShade, setIncrementBgColorShade] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginButtonLabel, setLoginButonLabel] = useState('Masuk');
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
 
 
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (incrementBgColorShade) {
-        if (bgColorShade < 900) setBgColorShade(prev => prev + 100);
-        else setIncrementBgColorShade(false);
-      }
-      else {
-        if (bgColorShade > 100) setBgColorShade(prev => prev - 100);
-        else setIncrementBgColorShade(true);
-      }
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [bgColorShade, incrementBgColorShade]);
 
   useEffect(() => {
     setLoginButonLabel('Masuk');
@@ -57,7 +40,7 @@ export default function Login() {
 
 
   return (
-    <main className={`flex justify-center items-center gap-8 bg-blue-${bgColorShade} transition-colors duration-[2500ms]`}>
+    <main className='flex justify-center items-center gap-8 bg-gradient-to-b from-cyan-500 via-blue-500 to-violet-500 transition-colors duration-[2500ms]'>
       <form onSubmit={formOnSubmit}>
         <Input
           label='Nama Pengguna'
