@@ -13,7 +13,8 @@ export default function Type() {
 
   const [filteredTypes, setFilteredTypes] = useState(null);
   const [filter, setFilter] = useState({
-    name: ''
+    name: '',
+    note: ''
   });
 
 
@@ -21,17 +22,19 @@ export default function Type() {
   useEffect(() => {
     if (types) {
       const newFilteredTypes = types.filter(type =>
-        (!filter.name || (type.name.includes(filter.name)))
+        (!filter.name || (type.name.includes(filter.name))) &&
+        (!filter.note || ((filter.note === '-') && !type.note) || (type.note?.includes(filter.note)))
       );
       setFilteredTypes(newFilteredTypes);
     }
-  }, [types, filter.name]);
+  }, [types, filter.name, filter.note]);
 
 
 
   function clearFilter() {
     setFilter({
-      name: ''
+      name: '',
+      note: ''
     });
   }
 
@@ -52,7 +55,7 @@ export default function Type() {
         <table className='w-full border border-blue-500'>
           <thead className='bg-blue-300'>
             <tr className='text-lg border-y border-blue-500'>
-              {['Nama', 'Aksi'].map((title, index) => <th key={index} className='p-2 border-x border-blue-500'>{title}</th>)}
+              {['Nama', 'Keterangan', 'Aksi'].map((title, index) => <th key={index} className='p-2 border-x border-blue-500'>{title}</th>)}
             </tr>
             {types?.length > 0 && (
               <>
@@ -66,6 +69,15 @@ export default function Type() {
                       size='md'
                     />
                   </th>
+                  <th className='p-2 border-x border-blue-500'>
+                    <Input
+                      className='font-normal'
+                      value={filter.note}
+                      onChange={value => setFilter({...filter, note: value.trimStart().toUpperCase()})}
+                      placeholder='filter keterangan'
+                      size='md'
+                    />
+                  </th>
                   <th className='p-2 border-x border-blue-500 w-0 whitespace-nowrap'>
                     <Button
                       className='w-full font-normal'
@@ -76,7 +88,7 @@ export default function Type() {
                   </th>
                 </tr>
                 <tr className='border-y border-blue-500'>
-                  <th colSpan={2} className='p-2 text-start'>Total: {filteredTypes?.length} dari {types.length}</th>
+                  <th colSpan={3} className='p-2 text-start'>Total: {filteredTypes?.length} dari {types.length}</th>
                 </tr>
               </>
             )}
@@ -84,20 +96,21 @@ export default function Type() {
           <tbody>
             {!types ? (
               <tr>
-                <td colSpan={2} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
+                <td colSpan={3} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
               </tr>
             ) : (types.length === 0) ? (
               <tr>
-                <td colSpan={2} className='p-2 text-center'>Data kosong.</td>
+                <td colSpan={3} className='p-2 text-center'>Data kosong.</td>
               </tr>
             ) : (filteredTypes?.length === 0) && (
               <tr>
-                <td colSpan={2} className='p-2 text-center'>Data tidak ditemukan.</td>
+                <td colSpan={3} className='p-2 text-center'>Data tidak ditemukan.</td>
               </tr>
             )}
             {filteredTypes?.map((type, index) => (
               <tr key={index} className='odd:bg-neutral-200 even:bg-neutral-300 hover:bg-blue-300'>
                 <td className='p-2'>{type.name}</td>
+                <td className='p-2'>{type.note ? type.note : '-'}</td>
                 <td className='p-2'>
                   <div className='flex justify-center gap-4'>
                     <Button
