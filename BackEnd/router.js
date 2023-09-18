@@ -1,7 +1,6 @@
 import express from 'express';
 
 import {
-  login as loginController,
   service as serviceController,
   Type as typeController,
   transaction as transactionController
@@ -10,8 +9,6 @@ import {
 
 
 const router = express.Router();
-
-router.post('/login', loginController);
 
 router.post('/service/create', serviceController.create);
 router.get('/service/get-all', serviceController.getAll);
