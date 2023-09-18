@@ -115,7 +115,7 @@ export default function TypeForm() {
     if (res?.ok) {
       if (res.payload.length === 0) navigate('/transaction');
       else {
-        setDateTime(res.payload[0].dateTime);
+        setDateTime({isAuto: false, value: res.payload[0].dateTime});
         setServices(res.payload[0].services);
         setTotalPrice(res.payload[0].totalPrice);
         setPaidStatus(res.payload[0].paidStatus);
@@ -248,6 +248,7 @@ export default function TypeForm() {
 
   function printInvoice() {
     setOpenPrintInvoiceDialog(false);
+    console.log('printInvoice');
     navigate('/transaction');
   }
 
