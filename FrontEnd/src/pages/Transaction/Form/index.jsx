@@ -7,7 +7,8 @@ import {
   DateTime,
   Input,
   InputOption,
-  Button
+  Button,
+  ConfirmationDialog
 } from '../../../components';
 import {
   Fetch,
@@ -28,7 +29,7 @@ export default function TypeForm() {
 
   const { services:SERVICES } = useSelector(state => state.app);
 
-  const [dateTime, setDateTime] = useState({isAuto: true, value: null});
+  const [dateTime, setDateTime] = useState({isAuto: true, value: ''});
   const [services, setServices] = useState([{
     _id: null,
     type: '',
@@ -42,8 +43,10 @@ export default function TypeForm() {
   const [paidStatus, setPaidStatus] = useState(false);
   const [note, setNote] = useState('');
   const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
+  const [openFormDeleteDialog, setOpenFormDeleteDialog] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [formErrMsg, setFormErrMsg] = useState('');
+  const [openPrintInvoiceDialog, setOpenPrintInvoiceDialog] = useState(false);
 
 
 
@@ -116,7 +119,7 @@ export default function TypeForm() {
         setServices(res.payload[0].services);
         setTotalPrice(res.payload[0].totalPrice);
         setPaidStatus(res.payload[0].paidStatus);
-        setNote(res.payload[0].note);
+        setNote(res.payload[0].note ? res.payload[0].note : '');
         setIsFormLoadingInitialData(false);
       }
     }
@@ -124,6 +127,7 @@ export default function TypeForm() {
 
   async function formOnSubmit(e) {
     e.preventDefault();
+    if (openFormDeleteDialog) setOpenFormDeleteDialog(false);
     setIsFormSubmitting(true);
 
     const payload = {
@@ -134,7 +138,6 @@ export default function TypeForm() {
       paidStatus,
       note: note?.trimEnd()
     };
-    console.log('payload', payload);
 
     const res = await Fetch(
       `/transaction/${formType}`,
@@ -144,13 +147,13 @@ export default function TypeForm() {
     if (res) {
       setIsFormSubmitting(false);
       if (res.ok) {
+        setOpenPrintInvoiceDialog(true);
+
         const socket = createSocket();
         socket.emit(
           `transaction-${(formType === 'create') ? 'new' : formType}`,
           _id ? {_id} : undefined
         );
-
-        navigate('/transaction');
       }
       else setFormErrMsg(res.message);
     }
@@ -243,6 +246,11 @@ export default function TypeForm() {
     setServices(newServices);
   }
 
+  function printInvoice() {
+    setOpenPrintInvoiceDialog(false);
+    navigate('/transaction');
+  }
+
 
 
   return (
@@ -288,6 +296,7 @@ export default function TypeForm() {
                             onChange={value => serviceNameOnChange(value, index)}
                             options={SERVICES.map(thisService => [thisService._id, `(${thisService.type.name}${thisService.subType ? ` - ${thisService.subType}` : ''}) ${thisService.name}`])}
                             size='lg'
+                            disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                           />
                         </div>
                         <div className=''>
@@ -298,7 +307,7 @@ export default function TypeForm() {
                             options={['1', '2', '3', '4', '5'].map(number => SERVICES.filter(SERVICE => service?._id === SERVICE._id)[0]?.price[`class${number}`] && [number, `Kelas ${number} - ${splitString(SERVICES.filter(SERVICE => service?._id === SERVICE._id)[0]?.price[`class${number}`], 3, '.')}`])?.filter(option => option)}
                             placeholder='(Kelas - Harga)'
                             size='lg'
-                            disabled={!service._id}
+                            disabled={!service._id || isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                           />
                         </div>
                       </div>
@@ -311,7 +320,7 @@ export default function TypeForm() {
                             onClick={() => serviceQuantityOnChange(true, index)}
                             color='blue'
                             size='md'
-                            disabled={!service.class}
+                            disabled={!service.class || isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                           />
                           <Input
                             className='flex-1'
@@ -324,8 +333,8 @@ export default function TypeForm() {
                             label='-'
                             onClick={() => serviceQuantityOnChange(false, index)}
                             color='red'
-                            disabled={service.quantity === 0}
                             size='md'
+                            disabled={service.quantity === 0 || isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                           />
                         </div>
                       </div>
@@ -380,6 +389,7 @@ export default function TypeForm() {
                   options={[[true, 'LUNAS'], [false, 'TIDAK LUNAS']]}
                   size='lg'
                   color={paidStatus ? 'green' : 'red'}
+                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                 />
                 <Input
                   className='mt-4'
@@ -387,6 +397,7 @@ export default function TypeForm() {
                   value={note}
                   onChange={value => setNote(value.trimStart().toUpperCase())}
                   size='lg'
+                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                 />
               </div>
             </div>
@@ -420,7 +431,8 @@ export default function TypeForm() {
               <Button
                 className='flex-1'
                 label={(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'}
-                type='submit'
+                onClick={(formType === 'delete') ? () => setOpenFormDeleteDialog(true) : null}
+                type={(formType === 'delete') ? 'button' : 'submit'}
                 size='lg'
                 color={(formType === 'delete') ? 'red' : 'blue'}
                 disabled={isFormLoadingInitialData || isFormSubmitting}
@@ -429,6 +441,27 @@ export default function TypeForm() {
           </>
         )}
       </form>
+
+      {/* Print Invoice Dialog */}
+      {openPrintInvoiceDialog && (
+        <ConfirmationDialog
+          title='Print Faktur'
+          description='Apakah anda ingin mencetak faktur?'
+          onCancel={() => {setOpenPrintInvoiceDialog(false); navigate('/transaction');}}
+          onConfirm={printInvoice}
+        />
+      )}
+
+      {/* Form Delete Dialog */}
+      {openFormDeleteDialog && (
+        <ConfirmationDialog
+          title='Hapus data'
+          description='Apakah anda yakin ingin menghapus data ini?'
+          onCancel={() => setOpenFormDeleteDialog(false)}
+          onConfirm={formOnSubmit}
+          color='red'
+        />
+      )}
     </main>
   );
 };
