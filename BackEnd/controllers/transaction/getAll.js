@@ -1,5 +1,5 @@
 import { transaction as transactionCollection } from '../../database/models/index.js';
-import { Res } from '../../functions/index.js';
+import { Res, documentValidator } from '../../functions/index.js';
 
 
 
@@ -8,7 +8,19 @@ export default async function getAll(req, res) {
     const query = {};
     const projection = {};
 
-    const result = await transactionCollection.find();
+    Object.keys(req.query).forEach(key => {
+      if (req.query[key] !== '') {
+        if (key === '_id') query[key] = documentValidator(req.query[key]);
+      }
+
+      projection[key] = 1;
+    });
+    
+    if (Object.keys(projection).length === 0) {
+      projection.__v = 0;
+    }
+
+    const result = await transactionCollection.find(query, projection).populate(['services']);
 
     return Res(res, 200, result);
   }
