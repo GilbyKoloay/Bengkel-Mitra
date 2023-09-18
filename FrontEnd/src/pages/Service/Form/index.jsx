@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { Input, Button, Select } from '../../../components';
+import {
+  Input,
+  Button,
+  Select,
+  ConfirmationDialog
+} from '../../../components';
 import { Fetch, createSocket } from '../../../functions';
 
 
@@ -27,6 +32,7 @@ export default function TypeForm() {
   const [price_class5, setPrice_class5] = useState('');
   const [note, setNote] = useState('');
   const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
+  const [openFormDeleteDialog, setOpenFormDeleteDialog] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [formErrMsg, setFormErrMsg] = useState('');
 
@@ -57,14 +63,14 @@ export default function TypeForm() {
       if (res.payload.length === 0) navigate('/service');
       else {
         setType(res.payload[0].type?._id);
-        setSubType(res.payload[0].subType);
+        setSubType(res.payload[0].subType ? res.payload[0].subType : '');
         setName(res.payload[0].name);
         setPrice_class1(res.payload[0].price.class1);
         setPrice_class2(res.payload[0].price.class2);
         setPrice_class3(res.payload[0].price.class3);
         setPrice_class4(res.payload[0].price.class4);
         setPrice_class5(res.payload[0].price.class5);
-        setNote(res.payload[0].note);
+        setNote(res.payload[0].note ? res.payload[0].note : '');
         setIsFormLoadingInitialData(false);
       }
     }
@@ -72,6 +78,7 @@ export default function TypeForm() {
 
   async function formOnSubmit(e) {
     e.preventDefault();
+    if (openFormDeleteDialog) setOpenFormDeleteDialog(false);
     setIsFormSubmitting(true);
 
     const payload = {
@@ -248,7 +255,8 @@ export default function TypeForm() {
               <Button
                 className='flex-1'
                 label={(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'}
-                type='submit'
+                onClick={(formType === 'delete') ? () => setOpenFormDeleteDialog(true) : null}
+                type={(formType === 'delete') ? 'button' : 'submit'}
                 size='lg'
                 color={(formType === 'delete') ? 'red' : 'blue'}
                 disabled={isFormLoadingInitialData || isFormSubmitting}
@@ -257,6 +265,17 @@ export default function TypeForm() {
           </>
         )}
       </form>
+
+      {/* Form Delete Dialog */}
+      {openFormDeleteDialog && (
+        <ConfirmationDialog
+          title='Hapus data'
+          description='Apakah anda yakin ingin menghapus data ini?'
+          onCancel={() => setOpenFormDeleteDialog(false)}
+          onConfirm={formOnSubmit}
+          color='red'
+        />
+      )}
     </main>
   );
 };
