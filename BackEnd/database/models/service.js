@@ -3,10 +3,6 @@ import { Schema, Types, model } from 'mongoose';
 
 
 const serviceSchema = new Schema({
-  name: {
-    type: String,
-    required :true
-  },
   type: {
     type: Types.ObjectId,
     ref: 'Types',
@@ -15,6 +11,10 @@ const serviceSchema = new Schema({
   subType: {
     type: String,
     default: null
+  },
+  name: {
+    type: String,
+    required :true
   },
   price: {
     class1: {
@@ -37,6 +37,10 @@ const serviceSchema = new Schema({
       type: Number,
       default: null
     }
+  },
+  note: {
+    type: String,
+    default: null
   }
 }, {collection: 'Services'});
 
