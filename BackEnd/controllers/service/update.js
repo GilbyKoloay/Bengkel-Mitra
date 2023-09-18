@@ -24,7 +24,7 @@ export default async function update(req, res) {
       },
       note: stringValidator(req.body?.note)
     };
-    if (!payload._id) return Res(res, 400, null, '_id tidak valid.')
+    if (!payload._id) return Res(res, 400, null, '_id tidak valid.');
     if (!payload.type) return Res(res, 400, null, 'Tipe tidak valid.');
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
 
