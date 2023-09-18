@@ -62,6 +62,17 @@ io.on('connection', socket => {
     io.emit('type-new');
     io.emit('type-delete', {_id: payload._id});
   });
+
+  // transaction
+  socket.on('transaction-new', () => io.emit('transaction-new'));
+  socket.on('transaction-update', payload => {
+    io.emit('transaction-new');
+    io.emit('transaction-update', {_id: payload._id});
+  });
+  socket.on('transaction-delete', payload => {
+    io.emit('transaction-new');
+    io.emit('transaction-delete', {_id: payload._id});
+  });
 });
 
 
