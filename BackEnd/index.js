@@ -5,7 +5,9 @@ import { createServer } from 'http';
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 
+import { login as loginController } from './controllers/index.js';
 import { Res } from './functions/index.js';
+import { authentication } from './middlewares/index.js';
 import router from './router.js';
 
 
@@ -28,11 +30,17 @@ const port = parseInt(process.env.PORT);
 // middlewares
 app.use(cors());
 app.use(express.json());
+app.post('/api/login', loginController);
+app.use(authentication);
 
 
 
-// endpoints
+// protected endpoints
 app.use('/api', router);
+
+
+
+// 404 endpoint handler
 app.use((req, res) => {
   Res(res, 404, null, 'Endpoint not found.');
 });
