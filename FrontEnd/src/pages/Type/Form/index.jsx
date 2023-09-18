@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { Input, Button } from '../../../components';
+import { Input, Button, ConfirmationDialog } from '../../../components';
 import { Fetch, createSocket } from '../../../functions';
 
 
@@ -17,6 +17,7 @@ export default function TypeForm() {
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
   const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
+  const [openFormDeleteDialog, setOpenFormDeleteDialog] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [formErrMsg, setFormErrMsg] = useState('');
 
@@ -42,12 +43,12 @@ export default function TypeForm() {
 
 
   async function loadFormInitialData() {
-    const res = await Fetch(`/type/get-all?_id=${_id}&name`);
+    const res = await Fetch(`/type/get-all?_id=${_id}&name&note`);
     if (res?.ok) {
       if (res.payload.length === 0) navigate('/type');
       else {
         setName(res.payload[0].name);
-        setNote(res.payload[0].note);
+        setNote(res.payload[0].note ? res.payload[0].note : '');
         setIsFormLoadingInitialData(false);
       }
     }
@@ -55,6 +56,7 @@ export default function TypeForm() {
 
   async function formOnSubmit(e) {
     e.preventDefault();
+    if (openFormDeleteDialog) setOpenFormDeleteDialog(false);
     setIsFormSubmitting(true);
 
     const payload = {
@@ -156,7 +158,8 @@ export default function TypeForm() {
               <Button
                 className='flex-1'
                 label={(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'}
-                type='submit'
+                onClick={(formType === 'delete') ? () => setOpenFormDeleteDialog(true) : null}
+                type={(formType === 'delete') ? 'button' : 'submit'}
                 size='lg'
                 color={(formType === 'delete') ? 'red' : 'blue'}
                 disabled={isFormLoadingInitialData || isFormSubmitting}
@@ -165,6 +168,17 @@ export default function TypeForm() {
           </>
         )}
       </form>
+
+      {/* Form Delete Dialog */}
+      {openFormDeleteDialog && (
+        <ConfirmationDialog
+          title='Hapus data'
+          description='Apakah anda yakin ingin menghapus data ini?'
+          onCancel={() => setOpenFormDeleteDialog(false)}
+          onConfirm={formOnSubmit}
+          color='red'
+        />
+      )}
     </main>
   );
 };
