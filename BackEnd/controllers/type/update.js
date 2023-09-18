@@ -7,7 +7,8 @@ export default async function update(req, res) {
   try {
     const payload = {
       _id: documentValidator(req.body?._id),
-      name: stringValidator(req.body?.name)
+      name: stringValidator(req.body?.name),
+      note: stringValidator(req.body?.note)
     };
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.')
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
@@ -16,7 +17,8 @@ export default async function update(req, res) {
       _id: payload._id
     }, {
       $set: {
-        name: payload.name
+        name: payload.name,
+        note: payload.note
       }
     });
     if (!result || !result?.acknowledged) throw new Error('Terjadi kesalahan di server.');
