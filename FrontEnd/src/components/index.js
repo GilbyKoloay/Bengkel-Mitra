@@ -6,6 +6,7 @@ import Button from './Button';
 import Select from './Select';
 import DateTime from './DateTime';
 import InputOption from './InputOption';
+import ConfirmationDialog from './ConfirmationDialog';
 
 
 
@@ -15,5 +16,6 @@ export {
   Button,
   Select,
   DateTime,
-  InputOption
+  InputOption,
+  ConfirmationDialog
 };
