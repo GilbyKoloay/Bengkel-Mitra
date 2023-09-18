@@ -14,14 +14,15 @@ export default function Type() {
 
   const [filteredServices, setFilteredServices] = useState(null);
   const [filter, setFilter] = useState({
-    name: '',
     type: 'SEMUA',
     subType: '',
+    name: '',
     priceClass1: '',
     priceClass2: '',
     priceClass3: '',
     priceClass4: '',
-    priceClass5: ''
+    priceClass5: '',
+    note: ''
   });
 
 
@@ -29,31 +30,33 @@ export default function Type() {
   useEffect(() => {
     if (services) {
       const newFilteredServices = services.filter(service =>
-        (!filter.name || (service.name.includes(filter.name))) &&
-        ((filter.type === 'SEMUA') || (service.type.name.includes(filter.type))) &&
+        ((filter.type === 'SEMUA') || (service?.type?.name.includes(filter.type))) &&
         (!filter.subType || ((filter.subType === '-') && !service.subType) || (service.subType?.includes(filter.subType))) &&
+        (!filter.name || (service.name.includes(filter.name))) &&
         (!filter.priceClass1 || ((filter.priceClass1 === '-') && !service.price.class1) || (service.price.class1?.toString().includes(filter.priceClass1))) &&
         (!filter.priceClass2 || ((filter.priceClass2 === '-') && !service.price.class2) || (service.price.class2?.toString().includes(filter.priceClass2))) &&
         (!filter.priceClass3 || ((filter.priceClass3 === '-') && !service.price.class3) || (service.price.class3?.toString().includes(filter.priceClass3))) &&
         (!filter.priceClass4 || ((filter.priceClass4 === '-') && !service.price.class4) || (service.price.class4?.toString().includes(filter.priceClass4))) &&
-        (!filter.priceClass5 || ((filter.priceClass5 === '-') && !service.price.class5) || (service.price.class5?.toString().includes(filter.priceClass5)))
+        (!filter.priceClass5 || ((filter.priceClass5 === '-') && !service.price.class5) || (service.price.class5?.toString().includes(filter.priceClass5))) &&
+        (!filter.note || ((filter.note === '-') && !service.note) || (service.note?.includes(filter.note)))
       );
       setFilteredServices(newFilteredServices);
     }
-  }, [services, filter.name, filter.type, filter.subType, filter.priceClass1, filter.priceClass2, filter.priceClass3, filter.priceClass4, filter.priceClass5]);
+  }, [services, types, filter.name, filter.type, filter.subType, filter.priceClass1, filter.priceClass2, filter.priceClass3, filter.priceClass4, filter.priceClass5, filter.note]);
 
 
 
   function clearFilter() {
     setFilter({
-      name: '',
       type: 'SEMUA',
       subType: '',
+      name: '',
       priceClass1: '',
       priceClass2: '',
       priceClass3: '',
       priceClass4: '',
-      priceClass5: ''
+      priceClass5: '',
+      note: ''
     });
   }
 
@@ -74,7 +77,7 @@ export default function Type() {
         <table className='w-full border border-blue-500'>
           <thead className='bg-blue-300'>
             <tr className='text-lg border-y border-blue-500'>
-              {['Nama', 'Tipe', 'Subtipe'].map((title, index) => (
+              {['Tipe', 'Subtipe', 'Nama'].map((title, index) => (
                 <th
                   key={index}
                   rowSpan={2}
@@ -84,7 +87,15 @@ export default function Type() {
                 </th>
               ))}
               <th colSpan={5} className='p-2 border-x border-blue-500'>Harga</th>
-              <th rowSpan={2} className='p-2 border-x border-blue-500'>Aksi</th>
+              {['Keterangan', 'Aksi'].map((title, index) => (
+                <th
+                  key={index}
+                  rowSpan={2}
+                  className='p-2 border-x border-blue-500'
+                >
+                  {title}
+                </th>
+              ))}
             </tr>
             <tr className='text-lg border-y border-blue-500'>
               {['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5'].map((title, index) => <th key={index} className='p-2 border-x border-blue-500'>{title}</th>)}
@@ -93,19 +104,10 @@ export default function Type() {
               <>
                 <tr className='border-y border-blue-500'>
                   <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.name}
-                      onChange={value => setFilter({...filter, name: value.trimStart().toUpperCase()})}
-                      placeholder='filter nama'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
                     <Select
                       className='font-normal'
                       value={filter.type}
-                      options={[{name: 'SEMUA'}, ...types].map(type => [type.name, type.name])}
+                      options={[{name: 'SEMUA'}, ...types].map(option => [option.name, option.name])}
                       onChange={value => setFilter({...filter, type: value})}
                       size='md'
                     />
@@ -116,6 +118,15 @@ export default function Type() {
                       value={filter.subType}
                       onChange={value => setFilter({...filter, subType: value.trimStart().toUpperCase()})}
                       placeholder='filter subtipe'
+                      size='md'
+                    />
+                  </th>
+                  <th className='p-2 border-x border-blue-500'>
+                    <Input
+                      className='font-normal'
+                      value={filter.name}
+                      onChange={value => setFilter({...filter, name: value.trimStart().toUpperCase()})}
+                      placeholder='filter nama'
                       size='md'
                     />
                   </th>
@@ -164,6 +175,15 @@ export default function Type() {
                       size='md'
                     />
                   </th>
+                  <th className='p-2 border-x border-blue-500'>
+                    <Input
+                      className='font-normal'
+                      value={filter.note}
+                      onChange={value => setFilter({...filter, note: value.trimStart().toUpperCase()})}
+                      placeholder='filter keterangan'
+                      size='md'
+                    />
+                  </th>
                   <th className='p-2 border-x border-blue-500 w-0 whitespace-nowrap'>
                     <Button
                       className='w-full font-normal'
@@ -174,7 +194,7 @@ export default function Type() {
                   </th>
                 </tr>
                 <tr className='border-y border-blue-500'>
-                  <th colSpan={9} className='p-2 text-start'>Total: {filteredServices?.length} dari {services.length}</th>
+                  <th colSpan={10} className='p-2 text-start'>Total: {filteredServices?.length} dari {services.length}</th>
                 </tr>
               </>
             )}
@@ -182,27 +202,28 @@ export default function Type() {
           <tbody>
             {!services ? (
               <tr>
-                <td colSpan={9} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
+                <td colSpan={10} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
               </tr>
             ) : (services.length === 0) ? (
               <tr>
-                <td colSpan={9} className='p-2 text-center'>Data kosong.</td>
+                <td colSpan={10} className='p-2 text-center'>Data kosong.</td>
               </tr>
             ) : (filteredServices?.length === 0) && (
               <tr>
-                <td colSpan={9} className='p-2 text-center'>Data tidak ditemukan.</td>
+                <td colSpan={10} className='p-2 text-center'>Data tidak ditemukan.</td>
               </tr>
             )}
             {filteredServices?.map((service, index) => (
               <tr key={index} className='odd:bg-neutral-200 even:bg-neutral-300 hover:bg-blue-300'>
-                <td className='p-2'>{service.name}</td>
-                <td className='p-2'>{service.type.name}</td>
+                <td className='p-2'>{service?.type?.name ? service.type.name : '-'}</td>
                 <td className='p-2'>{service.subType ? service.subType : '-'}</td>
-                <td className='p-2'>{service.price.class1 ? splitString(service.price.class1, 3, '.') : '-'}</td>
-                <td className='p-2'>{service.price.class2 ? splitString(service.price.class2, 3, '.') : '-'}</td>
-                <td className='p-2'>{service.price.class3 ? splitString(service.price.class3, 3, '.') : '-'}</td>
-                <td className='p-2'>{service.price.class4 ? splitString(service.price.class4, 3, '.') : '-'}</td>
-                <td className='p-2'>{service.price.class5 ? splitString(service.price.class5, 3, '.') : '-'}</td>
+                <td className='p-2'>{service.name}</td>
+                <td className='p-2 text-end'>{service.price.class1 ? splitString(service.price.class1, 3, '.') : '-'}</td>
+                <td className='p-2 text-end'>{service.price.class2 ? splitString(service.price.class2, 3, '.') : '-'}</td>
+                <td className='p-2 text-end'>{service.price.class3 ? splitString(service.price.class3, 3, '.') : '-'}</td>
+                <td className='p-2 text-end'>{service.price.class4 ? splitString(service.price.class4, 3, '.') : '-'}</td>
+                <td className='p-2 text-end'>{service.price.class5 ? splitString(service.price.class5, 3, '.') : '-'}</td>
+                <td className='p-2'>{service.note ? service.note : '-'}</td>
                 <td className='p-2'>
                   <div className='flex justify-center gap-4'>
                     <Button

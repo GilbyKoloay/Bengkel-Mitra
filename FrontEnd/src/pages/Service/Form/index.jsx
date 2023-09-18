@@ -17,14 +17,15 @@ export default function TypeForm() {
 
   const { types } = useSelector(state => state.app);
 
-  const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [subType, setSubType] = useState('');
+  const [name, setName] = useState('');
   const [price_class1, setPrice_class1] = useState('');
   const [price_class2, setPrice_class2] = useState('');
   const [price_class3, setPrice_class3] = useState('');
   const [price_class4, setPrice_class4] = useState('');
   const [price_class5, setPrice_class5] = useState('');
+  const [note, setNote] = useState('');
   const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [formErrMsg, setFormErrMsg] = useState('');
@@ -46,7 +47,7 @@ export default function TypeForm() {
 
   useEffect(() => {
     setFormErrMsg('');
-  }, [name, type, subType, price_class1, price_class2, price_class3, price_class4, price_class5]);
+  }, [name, type, subType, price_class1, price_class2, price_class3, price_class4, price_class5, note]);
 
 
 
@@ -55,14 +56,15 @@ export default function TypeForm() {
     if (res?.ok) {
       if (res.payload.length === 0) navigate('/service');
       else {
-        setName(res.payload[0].name);
-        setType(res.payload[0].type._id);
+        setType(res.payload[0].type?._id);
         setSubType(res.payload[0].subType);
+        setName(res.payload[0].name);
         setPrice_class1(res.payload[0].price.class1);
         setPrice_class2(res.payload[0].price.class2);
         setPrice_class3(res.payload[0].price.class3);
         setPrice_class4(res.payload[0].price.class4);
         setPrice_class5(res.payload[0].price.class5);
+        setNote(res.payload[0].note);
         setIsFormLoadingInitialData(false);
       }
     }
@@ -74,16 +76,17 @@ export default function TypeForm() {
 
     const payload = {
       _id,
-      name: name.trimEnd(),
       type: type,
       subType: subType?.trimEnd(),
+      name: name.trimEnd(),
       price: {
         class1: parseInt(price_class1),
         class2: parseInt(price_class2),
         class3: parseInt(price_class3),
         class4: parseInt(price_class4),
         class5: parseInt(price_class5)
-      }
+      },
+      note: note?.trimEnd()
     };
 
     const res = await Fetch(
@@ -107,14 +110,15 @@ export default function TypeForm() {
   }
 
   function formClear() {
-    setName('');
     setType('');
     setSubType('');
+    setName('');
     setPrice_class1('');
     setPrice_class2('');
     setPrice_class3('');
     setPrice_class4('');
     setPrice_class5('');
+    setNote('');
   }
 
   function formReset() {
@@ -138,19 +142,11 @@ export default function TypeForm() {
           <>
             <div className='pt-4 pb-8 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 md:gap-8 overflow-y-auto'>
               <div>
-                <Input
-                  label='Nama'
-                  value={name}
-                  onChange={value => setName(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
                 <Select
-                  className='mt-4'
                   label='Tipe'
                   value={type}
                   onChange={value => setType(value)}
-                  options={types.map(type => ([type._id, type.name]))}
+                  options={types.map(option => ([option._id, option.name]))}
                   placeholder='(TIPE)'
                   size='lg'
                   disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
@@ -160,6 +156,22 @@ export default function TypeForm() {
                   label='Subtipe'
                   value={subType}
                   onChange={value => setSubType(value.trimStart().toUpperCase())}
+                  size='lg'
+                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
+                />
+                <Input
+                  className='mt-4'
+                  label='Nama'
+                  value={name}
+                  onChange={value => setName(value.trimStart().toUpperCase())}
+                  size='lg'
+                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
+                />
+                <Input
+                  className='mt-4'
+                  label='Keterangan'
+                  value={note}
+                  onChange={value => setNote(value.trimStart().toUpperCase())}
                   size='lg'
                   disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                 />
@@ -207,7 +219,7 @@ export default function TypeForm() {
                 />
               </div>
             </div>
-            <div className='flex gap-2 sm:gap-4 md:gap-8'>
+            <div className='flex flex-col sm:flex-row gap-2 sm:gap-4 md:gap-8'>
               <Button
                 className='flex-1'
                 label='Kembali'

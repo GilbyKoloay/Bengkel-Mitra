@@ -15,6 +15,7 @@ export default function TypeForm() {
   const _id = parameters.get('_id');
 
   const [name, setName] = useState('');
+  const [note, setNote] = useState('');
   const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [formErrMsg, setFormErrMsg] = useState('');
@@ -36,7 +37,7 @@ export default function TypeForm() {
 
   useEffect(() => {
     setFormErrMsg('');
-  }, [name]);
+  }, [name, note]);
 
 
 
@@ -46,6 +47,7 @@ export default function TypeForm() {
       if (res.payload.length === 0) navigate('/type');
       else {
         setName(res.payload[0].name);
+        setNote(res.payload[0].note);
         setIsFormLoadingInitialData(false);
       }
     }
@@ -57,7 +59,8 @@ export default function TypeForm() {
 
     const payload = {
       _id,
-      name: name.trimEnd()
+      name: name.trimEnd(),
+      note: note?.trimEnd()
     };
 
     const res = await Fetch(
@@ -82,6 +85,7 @@ export default function TypeForm() {
 
   function formClear() {
     setName('');
+    setNote('');
   }
 
   function formReset() {
@@ -102,7 +106,7 @@ export default function TypeForm() {
 
         {!isFormLoadingInitialData && (
           <>
-            <div className='pt-4 pb-8 grid grid-cols-1 overflow-y-auto'>
+            <div className='pt-4 pb-8 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 md:gap-8 overflow-y-auto'>
               <div>
                 <Input
                   label='Nama'
@@ -112,8 +116,18 @@ export default function TypeForm() {
                   disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
                 />
               </div>
+              <div>
+                <Input
+                  className='mt-4 sm:mt-0'
+                  label='Keterangan'
+                  value={note}
+                  onChange={value => setNote(value.trimStart().toUpperCase())}
+                  size='lg'
+                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
+                />
+              </div>
             </div>
-            <div className='flex gap-2 sm:gap-4 md:gap-8'>
+            <div className='flex flex-col sm:flex-row gap-2 sm:gap-4 md:gap-8'>
               <Button
                 className='flex-1'
                 label='Kembali'

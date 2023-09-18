@@ -6,7 +6,6 @@ import { Nav } from './components';
 import { Fetch, createSocket } from './functions';
 import {
   Login,
-  Home,
   Service,
   ServiceForm,
   Type,
@@ -31,12 +30,16 @@ export default function App() {
     if (_token) {
       getService();
       getType();
+      getTransaction();
 
       socket.on('service-new', getService);
+
       socket.on('type-new', () => {
         getService();
         getType();
       });
+
+      socket.on('transaction-new', getTransaction);
     }
 
     return () => {
@@ -56,6 +59,11 @@ export default function App() {
     if (res?.ok) dispatch(setTypes(res.payload));
   }
 
+  async function getTransaction() {
+    const res = await Fetch('/transaction/get-all');
+    if (res?.ok) dispatch(setTransactions(res.payload));
+  }
+
 
 
   return (
@@ -68,14 +76,13 @@ export default function App() {
         </Routes>
       ) : (
         <Routes>
-          <Route path='/home' element={<Home />} />
           <Route path='/service' element={<Service />} />
           <Route path='/service/form/:formType' element={<ServiceForm />} />
           <Route path='/type' element={<Type />} />
           <Route path='/type/form/:formType' element={<TypeForm />} />
           <Route path='/transaction' element={<Transaction />} />
           <Route path='/transaction/form/:formType' element={<TransactionForm />} />
-          <Route path='*' element={<Navigate to='/home' />} />
+          <Route path='*' element={<Navigate to='/service' />} />
         </Routes>
       )}
     </>
