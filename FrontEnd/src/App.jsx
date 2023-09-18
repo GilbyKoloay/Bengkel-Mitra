@@ -30,12 +30,16 @@ export default function App() {
     if (_token) {
       getService();
       getType();
+      getTransaction();
 
       socket.on('service-new', getService);
+
       socket.on('type-new', () => {
         getService();
         getType();
       });
+
+      socket.on('transaction-new', getTransaction);
     }
 
     return () => {
@@ -53,6 +57,11 @@ export default function App() {
   async function getType() {
     const res = await Fetch('/type/get-all');
     if (res?.ok) dispatch(setTypes(res.payload));
+  }
+
+  async function getTransaction() {
+    const res = await Fetch('/transaction/get-all');
+    if (res?.ok) dispatch(setTransactions(res.payload));
   }
 
 
