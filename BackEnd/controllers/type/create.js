@@ -6,7 +6,8 @@ import { Res, stringValidator } from '../../functions/index.js';
 export default async function create(req, res) {
   try {
     const payload = {
-      name: stringValidator(req.body?.name)
+      name: stringValidator(req.body?.name),
+      note: stringValidator(req.body?.note)
     };
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
 

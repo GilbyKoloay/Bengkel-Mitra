@@ -11,16 +11,17 @@ import {
 export default async function create(req, res) {
   try {
     const payload = {
-      name: stringValidator(req.body?.name),
       type: documentValidator(req.body?.type),
       subType: stringValidator(req.body?.subType),
+      name: stringValidator(req.body?.name),
       price: {
         class1: numberValidator(req.body?.price?.class1),
         class2: numberValidator(req.body?.price?.class2),
         class3: numberValidator(req.body?.price?.class3),
         class4: numberValidator(req.body?.price?.class4),
         class5: numberValidator(req.body?.price?.class5)
-      }
+      },
+      note: stringValidator(req.body?.note)
     };
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid');
     if (!payload.type) return Res(res, 400, null, 'Tipe tidak valid.');

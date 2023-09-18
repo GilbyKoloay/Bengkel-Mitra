@@ -7,6 +7,10 @@ const typeSchema = new Schema({
     type: String,
     required: true,
     unique: true
+  },
+  note: {
+    type: String,
+    default: null
   }
 }, {collection: 'Types'});
 

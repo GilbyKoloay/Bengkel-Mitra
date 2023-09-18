@@ -12,35 +12,37 @@ export default async function update(req, res) {
   try {
     const payload = {
       _id: documentValidator(req.body?._id),
-      name: stringValidator(req.body?.name),
       type: documentValidator(req.body?.type),
       subType: stringValidator(req.body?.subType),
+      name: stringValidator(req.body?.name),
       price: {
         class1: numberValidator(req.body?.price?.class1),
         class2: numberValidator(req.body?.price?.class2),
         class3: numberValidator(req.body?.price?.class3),
         class4: numberValidator(req.body?.price?.class4),
         class5: numberValidator(req.body?.price?.class5)
-      }
+      },
+      note: stringValidator(req.body?.note)
     };
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.')
-    if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
     if (!payload.type) return Res(res, 400, null, 'Tipe tidak valid.');
+    if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
 
     const result = await serviceCollection.updateOne({
       _id: payload._id
     }, {
       $set: {
-        name: payload.name,
         type: payload.type,
         subType: payload.subType,
+        name: payload.name,
         price: {
           class1: payload.price.class1,
           class2: payload.price.class2,
           class3: payload.price.class3,
           class4: payload.price.class4,
           class5: payload.price.class5
-        }
+        },
+        note: payload.note
       }
     });
     if (!result || !result?.acknowledged) throw new Error('Terjadi kesalahan di server.');

@@ -11,7 +11,7 @@ export default async function getAll(req, res) {
     Object.keys(req.query).forEach(key => {
       if (req.query[key] !== '') {
         if (key === '_id') query[key] = documentValidator(req.query[key]);
-        else if (['name', 'subType'].includes(key)) query[key] = stringValidator(req.query[key]);
+        else if (['name', 'subType', 'note'].includes(key)) query[key] = stringValidator(req.query[key]);
       }
 
       projection[key] = 1;
