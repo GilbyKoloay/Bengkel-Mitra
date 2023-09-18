@@ -8,9 +8,12 @@ export default async function Fetch(
   body=undefined
 ) {
   try {
+    const _token = JSON.parse(sessionStorage.getItem('_token'));
+
     const init = {
       method,
       headers: {
+        'authorization' : `Bearer ${_token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(body)
