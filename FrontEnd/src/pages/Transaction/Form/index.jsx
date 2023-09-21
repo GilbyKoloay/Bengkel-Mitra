@@ -111,7 +111,7 @@ export default function TypeForm() {
 
 
   async function loadFormInitialData() {
-    const res = await Fetch(`/transaction/get-all?_id=${_id}&name&type&subType&price`);
+    const res = await Fetch(`/transaction/get-all?_id=${_id}&dateTime&services&totalPrice&paidStatus&note`);
     if (res?.ok) {
       if (res.payload.length === 0) navigate('/transaction');
       else {
@@ -147,8 +147,6 @@ export default function TypeForm() {
     if (res) {
       setIsFormSubmitting(false);
       if (res.ok) {
-        setOpenPrintInvoiceDialog(true);
-
         const socket = createSocket();
         socket.emit(
           `transaction-${(formType === 'create') ? 'new' : formType}`,
@@ -156,6 +154,9 @@ export default function TypeForm() {
         );
       }
       else setFormErrMsg(res.message);
+
+      if (formType === 'delete') navigate('/transaction');
+      else setOpenPrintInvoiceDialog(true);
     }
   }
 
