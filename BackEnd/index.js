@@ -3,10 +3,12 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'http';
 import mongoose from 'mongoose';
+import path from 'path';
 import { Server } from 'socket.io';
+import { fileURLToPath } from 'url';
 
 import { login as loginController } from './controllers/index.js';
-import { Res } from './functions/index.js';
+// import { Res } from './functions/index.js';
 import { authentication } from './middlewares/index.js';
 import router from './router.js';
 
@@ -22,8 +24,17 @@ const io = new Server(
   server,
   {cors: {origin: '*'}}
 );
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const databaseConnectionURI = process.env.DATABASE_CONNECTION_URI;
 const port = parseInt(process.env.PORT);
+
+
+
+// serve front-end
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
 
 
 
@@ -42,7 +53,8 @@ app.use('/api', router);
 
 // 404 endpoint handler
 app.use((req, res) => {
-  Res(res, 404, null, 'Endpoint not found.');
+  // Res(res, 404, null, 'Endpoint not found.');
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
 
