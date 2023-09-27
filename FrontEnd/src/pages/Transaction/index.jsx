@@ -21,6 +21,7 @@ export default function Type() {
   const [filteredTransactions, setFilteredServices] = useState(null);
   const [filter, setFilter] = useState({
     dateTime: '',
+    customerName: '',
     service_name: '',
     service_type: 'SEMUA',
     service_subType: '',
@@ -52,6 +53,7 @@ export default function Type() {
         (!filter.dateTime?.split('T')[0]?.split('-')[0] || transaction.dateTime.split('T')[0].split('-')[0].includes(filter.dateTime?.split('T')[0]?.split('-')[0])) &&
         (!filter.dateTime?.split('T')[1]?.split(':')[0] || transaction.dateTime.split('T')[1].split(':')[0].includes(filter.dateTime?.split('T')[1]?.split(':')[0])) &&
         (!filter.dateTime?.split('T')[1]?.split(':')[1] || transaction.dateTime.split('T')[1].split(':')[1].includes(filter.dateTime?.split('T')[1]?.split(':')[1])) &&
+        (!filter.customerName || transaction.customerName.includes(filter.customerName)) &&
         ((filter.service_type === 'SEMUA') || transaction.services.some(service => service.type.includes(filter.service_type))) &&
         (!filter.service_subType || ((filter.service_subType === '-') && transaction.services.some(service => !service.subType)) || transaction.services.some(service => service.subType?.includes(filter.service_subType))) &&
         (!filter.service_name || transaction.services.some(service => service.name.includes(filter.service_name))) &&
@@ -64,13 +66,14 @@ export default function Type() {
       );
       setFilteredServices(newFilteredTransactions);
     }
-  }, [transactions, services, filter.dateTime, filter.service_type, filter.service_subType, filter.service_name, filter.service_class, filter.service_price, filter.service_quantity, filter.totalPrice, filter.paidStatus, filter.note]);
+  }, [transactions, services, filter.customerName, filter.dateTime, filter.service_type, filter.service_subType, filter.service_name, filter.service_class, filter.service_price, filter.service_quantity, filter.totalPrice, filter.paidStatus, filter.note]);
 
 
 
   function clearFilter() {
     setFilter({
       dateTime: '',
+      customerName: '',
       service_name: '',
       service_type: 'SEMUA',
       service_subType: '',
@@ -101,6 +104,7 @@ export default function Type() {
           <thead className='bg-blue-300'>
             <tr className='text-lg border-y border-blue-500'>
               <th rowSpan={2} className='p-2 border-x border-blue-500'>Tanggal</th>
+              <th rowSpan={2} className='p-2 border-x border-blue-500'>Nama Pelanggan</th>
               <th colSpan={6} className='p-2 border-x border-blue-500'>Layanan</th>
               {['Total Harga', 'Status Bayar', 'Keterangan', 'Aksi'].map((title, index) => (
                 <th
@@ -124,6 +128,15 @@ export default function Type() {
                       value={filter.dateTime}
                       onChange={value => setFilter({...filter, dateTime: value})}
                       placeholder='filter tanggal'
+                      size='md'
+                    />
+                  </th>
+                  <th className='p-2 border-x border-blue-500'>
+                    <Input
+                      className='font-normal'
+                      value={filter.customerName}
+                      onChange={value => setFilter({...filter, customerName: value.trimStart().toUpperCase()})}
+                      placeholder='filter nama pelanggan'
                       size='md'
                     />
                   </th>
@@ -218,7 +231,7 @@ export default function Type() {
                   </th>
                 </tr>
                 <tr className='border-y border-blue-500'>
-                  <th colSpan={11} className='p-2 text-start'>Total: {filteredTransactions?.length} dari {transactions.length}</th>
+                  <th colSpan={12} className='p-2 text-start'>Total: {filteredTransactions?.length} dari {transactions.length}</th>
                 </tr>
               </>
             )}
@@ -226,21 +239,22 @@ export default function Type() {
           <tbody>
             {!transactions ? (
               <tr>
-                <td colSpan={11} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
+                <td colSpan={12} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
               </tr>
             ) : (transactions.length === 0) ? (
               <tr>
-                <td colSpan={11} className='p-2 text-center'>Data kosong.</td>
+                <td colSpan={12} className='p-2 text-center'>Data kosong.</td>
               </tr>
             ) : (filteredTransactions?.length === 0) && (
               <tr>
-                <td colSpan={11} className='p-2 text-center'>Data tidak ditemukan.</td>
+                <td colSpan={12} className='p-2 text-center'>Data tidak ditemukan.</td>
               </tr>
             )}
             {filteredTransactions?.map((transaction, index) => (
               [0, 1].map(thisIndex => !thisIndex ? (
                 <tr key={thisIndex} className='border-t border-blue-500'>
                   <td className='p-2' rowSpan={transaction.services.length}>{transaction.dateTime.slice(8, 10)}-{transaction.dateTime.slice(5, 7)}-{transaction.dateTime.slice(0, 4)} {transaction.dateTime.slice(11, 13)}:{transaction.dateTime.slice(14, 16)}</td>
+                  <td className='p-2' rowSpan={transaction.services.length}>{transaction.customerName}</td>
                   <td className='p-2'>{transaction.services[0].type}</td>
                   <td className='p-2'>{transaction.services[0].subType ? transaction.services[0].subType : '-'}</td>
                   <td className='p-2'>{transaction.services[0].name}</td>

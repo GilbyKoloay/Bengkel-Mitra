@@ -30,6 +30,7 @@ export default function TypeForm() {
   const { services:SERVICES } = useSelector(state => state.app);
 
   const [dateTime, setDateTime] = useState({isAuto: true, value: ''});
+  const [customerName, setCustomerName] = useState('');
   const [services, setServices] = useState([{
     _id: null,
     type: '',
@@ -116,6 +117,7 @@ export default function TypeForm() {
       if (res.payload.length === 0) navigate('/transaction');
       else {
         setDateTime({isAuto: false, value: res.payload[0].dateTime});
+        setCustomerName(res.payload[0].customerName);
         setServices(res.payload[0].services);
         setTotalPrice(res.payload[0].totalPrice);
         setPaidStatus(res.payload[0].paidStatus);
@@ -133,6 +135,7 @@ export default function TypeForm() {
     const payload = {
       _id,
       dateTime: dateTime.isAuto ? getCurrentTime() : dateTime.value,
+      customerName: customerName.trimEnd(),
       services: services.filter(service => service.quantity > 0),
       totalPrice: parseInt(totalPrice),
       paidStatus,
@@ -269,7 +272,15 @@ export default function TypeForm() {
           <>
             <div className='pt-4 pb-8 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 md:gap-8 overflow-y-auto'>
               <div>
+                <Input
+                  label='Nama Pelanggan'
+                  value={customerName}
+                  onChange={value => setCustomerName(value.trimStart().toUpperCase())}
+                  size='lg'
+                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
+                />
                 <Select
+                  className='mt-4'
                   label='Tanggal & Waktu'
                   value={dateTime.isAuto}
                   onChange={value => setDateTime({...dateTime, isAuto: JSON.parse(value)})}
