@@ -349,13 +349,12 @@ export default function TypeForm() {
                   <thead className='bg-neutral-300'>
                     <tr>
                       <th rowSpan={2} className='p-2 border border-neutral-500'>No.</th>
-                      <th className='p-2 border border-neutral-500 text-start'>Tipe - Subtipe</th>
-                      <th rowSpan={2} className='p-2 border border-neutral-500'>Kelas</th>
+                      <th rowSpan={2} className='p-2 border border-neutral-500 text-start'>Tipe (Subtipe) - Nama</th>
+                      <th rowSpan={2} className='p-2 border border-neutral-500'>Kelas Kendaraan</th>
                       <th className='p-2 border border-neutral-500'>Harga</th>
                       <th rowSpan={2} className='p-2 border border-neutral-500'>Total Harga</th>
                     </tr>
                     <tr>
-                      <th className='p-2 border border-neutral-500 text-start'>Nama</th>
                       <th className='p-2 border border-neutral-500'>Kuantitas</th>
                     </tr>
                   </thead>
@@ -364,14 +363,13 @@ export default function TypeForm() {
                       [0, 1].map(thisIndex => !thisIndex ? (
                         <tr key={thisIndex}>
                           <td rowSpan={2} className='p-2 border border-neutral-500 text-center'>{index+1}</td>
-                          <td className='p-2 border border-neutral-500'>{service.type}{service.subType ? ` - ${service.subType}` : ''}</td>
+                          <td rowSpan={2} className='p-2 border border-neutral-500'>{service.type}{service.subType ? ` (${service.subType})` : ''} - {service.name}</td>
                           <td rowSpan={2} className='p-2 border border-neutral-500 text-center'>{service.class}</td>
                           <td className='p-2 border border-neutral-500 text-center'>{splitString(service.price, 3, '.')}</td>
                           <td rowSpan={2} className='p-2 border border-neutral-500 text-center'>{splitString(service.quantity * service.price, 3, '.')}</td>
                         </tr>
                       ) : (
                         <tr key={thisIndex}>
-                          <td className='p-2 border border-neutral-500'>{service.name}</td> 
                           <td className='p-2 border border-neutral-500 text-center'>{service.quantity}</td>
                         </tr>
                       ))
