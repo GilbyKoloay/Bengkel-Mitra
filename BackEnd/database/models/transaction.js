@@ -7,6 +7,10 @@ const transactionSchema = new Schema({
     type: Date,
     required: true
   },
+  customerName: {
+    type: String,
+    required: true
+  },
   services: [{
     name: {
       type: String,

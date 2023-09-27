@@ -15,6 +15,7 @@ export default async function update(req, res) {
     const payload = {
       _id: documentValidator(req.body?._id),
       dateTime: dateTimeValidator(req.body?.dateTime),
+      customerName: stringValidator(req.body?.customerName),
       services: req.body?.services?.map(service => ({
         _id: documentValidator(service?._id),
         type: stringValidator(service?.type),
@@ -29,6 +30,7 @@ export default async function update(req, res) {
       note: stringValidator(req.body?.note)
     };
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.');
+    if (!payload.customerName) return Res(res, 400, null, 'Nama pelanggan tidak valid.');
     if (!payload.dateTime) return Res(res, 400, null, 'Tanggal/Waktu tidak valid.');
     if (payload.services.length > 0) payload.services.forEach((service, index) => {
       if (!service._id) return Res(res, 400, null, `_id layanan ${index+1} tidak valid.`);
@@ -46,6 +48,7 @@ export default async function update(req, res) {
     }, {
       $set: {
         dateTime: payload.dateTime,
+        customerName: payload.customerName,
         services: payload.services,
         totalPrice: payload.price,
         paidStatus: payload.paidStatus,

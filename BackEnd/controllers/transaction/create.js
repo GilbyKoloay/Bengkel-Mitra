@@ -2,8 +2,8 @@ import { transaction as transactionCollection } from '../../database/models/inde
 import {
   Res,
   dateTimeValidator,
-  documentValidator,
   stringValidator,
+  documentValidator,
   numberValidator,
   booleanValidator
 } from '../../functions/index.js';
@@ -14,6 +14,7 @@ export default async function create(req, res) {
   try {
     const payload = {
       dateTime: dateTimeValidator(req.body?.dateTime),
+      customerName: stringValidator(req.body?.customerName),
       services: req.body?.services?.map(service => ({
         _id: documentValidator(service?._id),
         type: stringValidator(service?.type),
@@ -28,6 +29,7 @@ export default async function create(req, res) {
       note: stringValidator(req.body?.note)
     };
     if (!payload.dateTime) return Res(res, 400, null, 'Tanggal/Waktu tidak valid.');
+    if (!payload.customerName) return Res(res, 400, null, 'Nama pelanggan tidak valid.');
     if (payload.services.length > 0) payload.services.forEach((service, index) => {
       if (!service._id) return Res(res, 400, null, `_id layanan ${index+1} tidak valid.`);
       if (!service.type) return Res(res, 400, null `Tipe layanan ${index+1} tidak valid.`);
