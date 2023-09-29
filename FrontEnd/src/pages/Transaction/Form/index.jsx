@@ -14,7 +14,8 @@ import {
   Fetch,
   createSocket,
   getCurrentTime,
-  splitString
+  splitString,
+  createTransactionPDF
 } from '../../../functions';
 
 
@@ -47,7 +48,7 @@ export default function TypeForm() {
   const [openFormDeleteDialog, setOpenFormDeleteDialog] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [formErrMsg, setFormErrMsg] = useState('');
-  const [openPrintInvoiceDialog, setOpenPrintInvoiceDialog] = useState(false);
+  const [printInvoiceDialog, setPrintInvoiceDialog] = useState(false);
 
 
 
@@ -66,7 +67,7 @@ export default function TypeForm() {
 
   useEffect(() => {
     setFormErrMsg('');
-  }, [dateTime, services, totalPrice, paidStatus, note]);
+  }, [dateTime, customerName, services, totalPrice, paidStatus, note]);
 
   useEffect(() => {
     let newTotalPrice = 0;
@@ -112,7 +113,7 @@ export default function TypeForm() {
 
 
   async function loadFormInitialData() {
-    const res = await Fetch(`/transaction/get-all?_id=${_id}&dateTime&services&totalPrice&paidStatus&note`);
+    const res = await Fetch(`/transaction/get-all?_id=${_id}&dateTime&customerName&services&totalPrice&paidStatus&note`);
     if (res?.ok) {
       if (res.payload.length === 0) navigate('/transaction');
       else {
@@ -159,7 +160,7 @@ export default function TypeForm() {
       else setFormErrMsg(res.message);
 
       if (formType === 'delete') navigate('/transaction');
-      else setOpenPrintInvoiceDialog(true);
+      else setPrintInvoiceDialog(payload);
     }
   }
 
@@ -248,12 +249,6 @@ export default function TypeForm() {
     });
 
     setServices(newServices);
-  }
-
-  function printInvoice() {
-    setOpenPrintInvoiceDialog(false);
-    console.log('printInvoice');
-    navigate('/transaction');
   }
 
 
@@ -454,12 +449,12 @@ export default function TypeForm() {
       </form>
 
       {/* Print Invoice Dialog */}
-      {openPrintInvoiceDialog && (
+      {printInvoiceDialog && (
         <ConfirmationDialog
           title='Print Faktur'
           description='Apakah anda ingin mencetak faktur?'
-          onCancel={() => {setOpenPrintInvoiceDialog(false); navigate('/transaction');}}
-          onConfirm={printInvoice}
+          onCancel={() => {setPrintInvoiceDialog(false); navigate('/transaction');}}
+          onConfirm={() => {setPrintInvoiceDialog(false); createTransactionPDF(printInvoiceDialog); navigate('/transaction')}}
         />
       )}
 
