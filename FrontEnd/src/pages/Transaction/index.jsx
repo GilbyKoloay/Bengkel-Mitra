@@ -6,9 +6,10 @@ import {
   Button,
   DateTime,
   Input,
-  Select
+  Select,
+  ConfirmationDialog
 } from '../../components';
-import { splitString } from '../../functions';
+import { splitString, createTransactionPDF } from '../../functions';
 
 
 
@@ -32,6 +33,7 @@ export default function Type() {
     paidStatus: 'SEMUA',
     note: ''
   });
+  const [printInvoiceDialog, setPrintInvoiceDialog] = useState(false);
 
 
 
@@ -267,6 +269,11 @@ export default function Type() {
                   <td className='p-2' rowSpan={transaction.services.length}>
                     <div className='flex justify-center gap-4'>
                       <Button
+                        label='Cetak Faktur'
+                        onClick={() => setPrintInvoiceDialog(transaction)}
+                        color='neutral'
+                      />
+                      <Button
                         label='Ubah'
                         onClick={() => navigate(`/transaction/form/update?_id=${transaction._id}`)}
                         color='yellow'
@@ -293,6 +300,16 @@ export default function Type() {
           </tbody>
         </table>
       </div>
+
+      {/* Print Invoice Dialog */}
+      {printInvoiceDialog && (
+        <ConfirmationDialog
+          title='Print Faktur'
+          description='Apakah anda ingin mencetak faktur?'
+          onCancel={() => {setPrintInvoiceDialog(false); navigate('/transaction');}}
+          onConfirm={() => {setPrintInvoiceDialog(false); createTransactionPDF(printInvoiceDialog); navigate('/transaction')}}
+        />
+      )}
     </main>
   );
 };
