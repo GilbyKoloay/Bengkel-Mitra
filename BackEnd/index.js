@@ -8,7 +8,7 @@ import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
 import { login as loginController } from './controllers/index.js';
-// import { Res } from './functions/index.js';
+import { Res } from './functions/index.js';
 import { authentication } from './middlewares/index.js';
 import router from './router.js';
 
@@ -30,11 +30,11 @@ const port = parseInt(process.env.PORT);
 
 
 
-// serve front-end
-app.use(express.static(path.join(__dirname, 'client/build')));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-});
+// // serve front-end
+// app.use(express.static(path.join(__dirname, 'client/build')));
+// app.get('/', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+// });
 
 
 
@@ -53,8 +53,8 @@ app.use('/api', router);
 
 // 404 endpoint handler
 app.use((req, res) => {
-  // Res(res, 404, null, 'Endpoint not found.');
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  Res(res, 404, null, 'Endpoint not found.');
+  // res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
 
@@ -62,36 +62,36 @@ app.use((req, res) => {
 // socket.io
 io.on('connection', socket => {
   // service
-  socket.on('service-new', () => io.emit('service-new'));
+  socket.on('service-create', () => io.emit('service-create'));
   socket.on('service-update', payload => {
-    io.emit('service-new');
+    io.emit('service-create');
     io.emit('service-update', {_id: payload._id});
   });
   socket.on('service-delete', payload => {
-    io.emit('service-new');
+    io.emit('service-create');
     io.emit('service-delete', {_id: payload._id});
   });
 
   // type
-  socket.on('type-new', () => io.emit('type-new'));
-  socket.on('type-update', payload => {
-    io.emit('type-new');
-    io.emit('type-update', {_id: payload._id});
+  socket.on('type-create', () => io.emit('type-create'));
+  socket.on('type-update', _id => {
+    io.emit('type-create');
+    io.emit('type-update', _id);
   });
-  socket.on('type-delete', payload => {
-    io.emit('type-new');
-    io.emit('type-delete', {_id: payload._id});
+  socket.on('type-delete', _id => {
+    io.emit('type-create');
+    io.emit('type-delete', _id);
   });
 
   // transaction
-  socket.on('transaction-new', () => io.emit('transaction-new'));
-  socket.on('transaction-update', payload => {
-    io.emit('transaction-new');
-    io.emit('transaction-update', {_id: payload._id});
+  socket.on('transaction-create', () => io.emit('transaction-create'));
+  socket.on('transaction-update', _id => {
+    io.emit('transaction-create');
+    io.emit('transaction-update', _id);
   });
-  socket.on('transaction-delete', payload => {
-    io.emit('transaction-new');
-    io.emit('transaction-delete', {_id: payload._id});
+  socket.on('transaction-delete', _id => {
+    io.emit('transaction-create');
+    io.emit('transaction-delete', _id);
   });
 });
 

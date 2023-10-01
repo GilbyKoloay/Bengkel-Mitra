@@ -10,20 +10,20 @@ import {
 
 const router = express.Router();
 
-router.post('/service/create', serviceController.create);
-router.get('/service/get-all', serviceController.getAll);
-router.put('/service/update', serviceController.update);
-router.delete('/service/delete', serviceController.delete);
+router.post('/service', serviceController.post);
+router.get('/service', serviceController.get);
+router.put('/service', serviceController.put);
+router.delete('/service', serviceController.delete);
 
-router.post('/type/create', typeController.create);
-router.get('/type/get-all', typeController.getAll);
-router.put('/type/update', typeController.update);
-router.delete('/type/delete', typeController.delete);
+router.post('/type', typeController.post);
+router.get('/type', typeController.get);
+router.put('/type', typeController.put);
+router.delete('/type', typeController.delete);
 
-router.post('/transaction/create', transactionController.create);
-router.get('/transaction/get-all', transactionController.getAll);
-router.put('/transaction/update', transactionController.update);
-router.delete('/transaction/delete', transactionController.delete);
+router.post('/transaction', transactionController.post);
+router.get('/transaction', transactionController.get);
+router.put('/transaction', transactionController.put);
+router.delete('/transaction', transactionController.delete);
 
 
 

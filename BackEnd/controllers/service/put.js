@@ -1,4 +1,7 @@
-import { service as serviceCollection } from '../../database/models/index.js';
+import {
+  service as serviceCollection,
+  Type as typeCollection
+} from '../../database/models/index.js';
 import {
   Res,
   stringValidator,
@@ -8,7 +11,7 @@ import {
 
 
 
-export default async function update(req, res) {
+export default async function put(req, res) {
   try {
     const payload = {
       _id: documentValidator(req.body?._id),
@@ -24,7 +27,10 @@ export default async function update(req, res) {
       },
       note: stringValidator(req.body?.note)
     };
-    if (!payload._id) return Res(res, 400, null, '_id tidak valid.');
+    if (
+      !payload.type ||
+      !await typeCollection.findOne({_id: payload.type})
+    ) return Res(res, 400, null, 'Tipe tidak valid.');
     if (!payload.type) return Res(res, 400, null, 'Tipe tidak valid.');
     if (!payload.name) return Res(res, 400, null, 'Nama tidak valid.');
 
@@ -51,7 +57,7 @@ export default async function update(req, res) {
     return Res(res, 200);
   }
   catch (err) {
-    console.log('controllers/service/update.', err);
+    console.log('controllers/service/put.', err);
     return Res(res, 500, null, 'Terjadi kesalahan di server.');
   }
 };
