@@ -10,7 +10,7 @@ import {
 
 
 
-export default async function update(req, res) {
+export default async function put(req, res) {
   try {
     const payload = {
       _id: documentValidator(req.body?._id),
@@ -26,13 +26,15 @@ export default async function update(req, res) {
         quantity: numberValidator(service?.quantity)
       })),
       totalPrice: numberValidator(req.body?.totalPrice),
-      paidStatus: booleanValidator(req.body?.paidStatus),
+      isPaid: booleanValidator(req.body?.isPaid),
+      vehicleType: stringValidator(req.body?.vehicleType),
+      vehiclePlate: stringValidator(req.body?.vehiclePlate),
       note: stringValidator(req.body?.note)
     };
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.');
-    if (!payload.customerName) return Res(res, 400, null, 'Nama pelanggan tidak valid.');
     if (!payload.dateTime) return Res(res, 400, null, 'Tanggal/Waktu tidak valid.');
-    if (payload.services.length > 0) payload.services.forEach((service, index) => {
+    if (!payload.customerName) return Res(res, 400, null, 'Nama pelanggan tidak valid.');
+    if (payload.services?.length > 0) payload.services.forEach((service, index) => {
       if (!service._id) return Res(res, 400, null, `_id layanan ${index+1} tidak valid.`);
       if (!service.type) return Res(res, 400, null `Tipe layanan ${index+1} tidak valid.`);
       if (!service.class) return Res(res, 400, null `Kelas layanan ${index+1} tidak valid.`);
@@ -41,8 +43,8 @@ export default async function update(req, res) {
     });
     else return Res(res, 400, null, 'Layanan tidak valid.');
     if (!payload.totalPrice) return Res(res, 400, null, 'Harga total tidak valid.');
-    if (payload.paidStatus === null) return Res(res, 400, null, 'Status bayar tidak valid.');
-
+    if (payload.isPaid === null) return Res(res, 400, null, 'Status bayar tidak valid.');
+    
     const result = await transactionCollection.updateOne({
       _id: payload._id
     }, {
@@ -50,8 +52,8 @@ export default async function update(req, res) {
         dateTime: payload.dateTime,
         customerName: payload.customerName,
         services: payload.services,
-        totalPrice: payload.price,
-        paidStatus: payload.paidStatus,
+        totalPrice: payload.totalPrice,
+        isPaid: payload.isPaid,
         note: payload.note
       }
     });
@@ -59,7 +61,7 @@ export default async function update(req, res) {
     return Res(res, 200);
   }
   catch (err) {
-    console.log('controllers/transaction/update.', err);
+    console.log('controllers/transaction/put.', err);
     return Res(res, 500);
   }
 };

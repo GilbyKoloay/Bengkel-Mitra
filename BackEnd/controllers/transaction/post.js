@@ -10,7 +10,7 @@ import {
 
 
 
-export default async function create(req, res) {
+export default async function post(req, res) {
   try {
     const payload = {
       dateTime: dateTimeValidator(req.body?.dateTime),
@@ -25,12 +25,14 @@ export default async function create(req, res) {
         quantity: numberValidator(service?.quantity)
       })),
       totalPrice: numberValidator(req.body?.totalPrice),
-      paidStatus: booleanValidator(req.body?.paidStatus),
+      isPaid: booleanValidator(req.body?.isPaid),
+      vehicleType: stringValidator(req.body?.vehicleType),
+      vehiclePlate: stringValidator(req.body?.vehiclePlate),
       note: stringValidator(req.body?.note)
     };
     if (!payload.dateTime) return Res(res, 400, null, 'Tanggal/Waktu tidak valid.');
     if (!payload.customerName) return Res(res, 400, null, 'Nama pelanggan tidak valid.');
-    if (payload.services.length > 0) payload.services.forEach((service, index) => {
+    if (payload.services?.length > 0) payload.services.forEach((service, index) => {
       if (!service._id) return Res(res, 400, null, `_id layanan ${index+1} tidak valid.`);
       if (!service.type) return Res(res, 400, null `Tipe layanan ${index+1} tidak valid.`);
       if (!service.class) return Res(res, 400, null `Kelas layanan ${index+1} tidak valid.`);
@@ -39,14 +41,14 @@ export default async function create(req, res) {
     });
     else return Res(res, 400, null, 'Layanan tidak valid.');
     if (!payload.totalPrice) return Res(res, 400, null, 'Harga total tidak valid.');
-    if (payload.paidStatus === null) return Res(res, 400, null, 'Status bayar tidak valid.');
+    if (payload.isPaid === null) return Res(res, 400, null, 'Status bayar tidak valid.');
 
     const result = await transactionCollection.create(payload);
     if (!result) throw new Error('Terjadi kesalahan di server.');
     return Res(res, 200);
   }
   catch (err) {
-    console.log('controllers/transaction/create.', err);
+    console.log('controllers/transaction/post.', err);
     return Res(res, 500);
   }
 };
