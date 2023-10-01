@@ -1,11 +1,7 @@
-import { configureStore } from '@reduxjs/toolkit';
+// redux
 
-import appReducer from './app';
+import * as _app from './app';
 
 
 
-export default configureStore({
-  reducer: {
-    app: appReducer
-  }
-});
+export { _app };

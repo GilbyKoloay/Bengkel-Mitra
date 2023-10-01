@@ -1,135 +1,106 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, Input } from '../../components';
+import { Button, Input, Select } from '../../components';
+import { toProperString } from '../../functions';
 
 
 
-export default function Type() {
+export default function Form() {
   const navigate = useNavigate();
+  
+  const { _types } = useSelector(state => state._app);
 
-  const { types } = useSelector(state => state.app);
-
-  const [filteredTypes, setFilteredTypes] = useState(null);
-  const [filter, setFilter] = useState({
-    name: '',
-    note: ''
-  });
-
-
-
-  useEffect(() => {
-    if (types) {
-      const newFilteredTypes = types.filter(type =>
-        (!filter.name || (type.name.includes(filter.name))) &&
-        (!filter.note || ((filter.note === '-') && !type.note) || (type.note?.includes(filter.note)))
-      );
-      setFilteredTypes(newFilteredTypes);
-    }
-  }, [types, filter.name, filter.note]);
+  const [name, setName] = useState('');
+  const [note, setNote] = useState('');
 
 
 
   function clearFilter() {
-    setFilter({
-      name: '',
-      note: ''
-    });
+    setName('');
+    setNote('');
+  }
+
+  function filtered_types() {
+    return _types?.filter(type => 
+      (!name || type.name.includes(toProperString(name))) &&
+      (!note || ((note === '-') && !type.note) || type.note?.includes(toProperString(note)))
+    );
   }
 
 
 
   return (
     <main>
-      <div>
-        <Button
-          label='Tambah Tipe'
-          onClick={() => navigate('/type/form/create')}
-          size='lg'
-          color='blue'
-        />
-      </div>
+      <Button
+        className='whitespace-nowrap'
+        label='Tambah Tipe'
+        onClick={() => navigate('/type/form/create')}
+        size='md'
+        theme='blue'
+      />
 
-      <div className='mt-4 overflow-auto'>
-        <table className='w-full border border-blue-500'>
-          <thead className='bg-blue-300'>
-            <tr className='text-lg border-y border-blue-500'>
-              {['Nama', 'Keterangan', 'Aksi'].map((title, index) => <th key={index} className='p-2 border-x border-blue-500'>{title}</th>)}
-            </tr>
-            {types?.length > 0 && (
-              <>
-                <tr className='border-y border-blue-500'>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.name}
-                      onChange={value => setFilter({...filter, name: value.trimStart().toUpperCase()})}
-                      placeholder='filter nama'
-                      size='md'
+      {!_types ? (
+        <div className='mt-4 text-center text-xl'>Sedang memuat data, mohon tunggu ...</div>
+      ) : (_types.length === 0) ? (
+        <div className='mt-4 text-center text-xl'>Data kosong</div>
+      ) : (
+        <div className='mt-8 overflow-auto'>
+          <div className='text-2xl'>Data Tipe</div>
+          <table className='mt-4 w-full'>
+            <thead className='bg-blue-500 border-2 border-blue-700'>
+              <tr>
+                {['Nama', 'Keterangan', 'Aksi'].map((title, index) => <th key={index} className='border border-blue-700 p-2'>{title}</th>)}
+              </tr>
+              <tr>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={name}
+                    onChange={value => setName(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={note}
+                    onChange={value => setNote(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2 whitespace-nowrap'>
+                  <Button
+                    className='w-full'
+                    label='Bersihkan filter'
+                    onClick={clearFilter}
+                  />
+                </th>
+              </tr>
+              <tr>
+                <th colSpan={3} className='text-left p-2 font-normal'>Total {filtered_types().length} dari {_types.length}</th>
+              </tr>
+            </thead>
+            <tbody className='border-2 border-blue-700'>
+              {filtered_types()?.map((type, index) => (
+                <tr key={index} className='odd:bg-neutral-200 even:bg-neutral-300 hover:bg-blue-300'>
+                  <td className='p-2'>{type.name}</td>
+                  <td className='p-2'>{type.note ? type.note : '-'}</td>
+                  <td className='p-2'>
+                    <Select
+                      options={[
+                        ['PERBARUI', `/type/form/update/${type._id}`],
+                        ['HAPUS', `/type/form/delete/${type._id}`]
+                      ].map(option => [option[1], option[0]])}
+                      onChange={value => navigate(value)}
+                      placeholder='(Aksi)'
                     />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.note}
-                      onChange={value => setFilter({...filter, note: value.trimStart().toUpperCase()})}
-                      placeholder='filter keterangan'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500 w-0 whitespace-nowrap'>
-                    <Button
-                      className='w-full font-normal'
-                      label='Bersihkan Filter'
-                      onClick={clearFilter}
-                      size='md'
-                    />
-                  </th>
+                  </td>
                 </tr>
-                <tr className='border-y border-blue-500'>
-                  <th colSpan={3} className='p-2 text-start'>Total: {filteredTypes?.length} dari {types.length}</th>
-                </tr>
-              </>
-            )}
-          </thead>
-          <tbody>
-            {!types ? (
-              <tr>
-                <td colSpan={3} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
-              </tr>
-            ) : (types.length === 0) ? (
-              <tr>
-                <td colSpan={3} className='p-2 text-center'>Data kosong.</td>
-              </tr>
-            ) : (filteredTypes?.length === 0) && (
-              <tr>
-                <td colSpan={3} className='p-2 text-center'>Data tidak ditemukan.</td>
-              </tr>
-            )}
-            {filteredTypes?.map((type, index) => (
-              <tr key={index} className='odd:bg-neutral-200 even:bg-neutral-300 hover:bg-blue-300'>
-                <td className='p-2'>{type.name}</td>
-                <td className='p-2'>{type.note ? type.note : '-'}</td>
-                <td className='p-2'>
-                  <div className='flex justify-center gap-4'>
-                    <Button
-                      label='Ubah'
-                      onClick={() => navigate(`/type/form/update?_id=${type._id}`)}
-                      color='yellow'
-                    />
-                    <Button
-                      label='Hapus'
-                      onClick={() => navigate(`/type/form/delete?_id=${type._id}`)}
-                      color='red'
-                    />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
   );
 };

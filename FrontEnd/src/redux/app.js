@@ -3,45 +3,45 @@ import { createSlice } from '@reduxjs/toolkit';
 
 
 export const _tokenSlice = createSlice({
-  name: 'app',
+  name: '_app',
   initialState: {
     _token: JSON.parse(sessionStorage.getItem('_token')),
-    services: null,
-    types: null,
-    transactions: null
+    _services: null,
+    _types: null,
+    _transactions: null
   },
   reducers: {
-    set_token: (state, action) => {
+    setToken: (state, action) => {
       sessionStorage.setItem('_token', JSON.stringify(action.payload));
       state._token = action.payload;
     },
-    clear_token: state => {
+    clearToken: state => {
       sessionStorage.removeItem('_token');
       state._token = null;
     },
     setServices: (state, action) => {
-      state.services = action.payload;
+      state._services = action.payload;
     },
     clearServices: state => {
-      state.services = null;
+      state._services = null;
     },
     setTypes: (state, action) => {
-      state.types = action.payload;
+      state._types = action.payload;
     },
     clearTypes: state => {
-      state.types = null;
+      state._types = null;
     },
     setTransactions: (state, action) => {
-      state.transactions = action.payload;
+      state._transactions = action.payload;
     },
     clearTransactions: state => {
-      state.transactions = null;
+      state._transactions = null;
     }
   }
 });
 export const {
-  set_token,
-  clear_token,
+  setToken,
+  clearToken,
   setServices,
   clearServices,
   setTypes,

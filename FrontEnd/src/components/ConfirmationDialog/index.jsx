@@ -4,45 +4,37 @@ import { Button } from '../';
 
 export default function ConfirmationDialog({
   title='',
-  description=null,
+  description='',
   onCancel=null,
   onConfirm=null,
-  color='green'
+  theme='neutral'
 }) {
   return (
-    <div className='backdrop-blur-sm backdrop-brightness-50 fixed top-0 left-0 h-screen w-screen flex justify-center items-center'>
-      <div className='w-5/6 sm:w-4/6 md:w-3/6 border-2 rounded p-4 bg-neutral-100'>
-        <div className='h-full'>
-          <div className='flex justify-between'>
-            <div className='text-xl font-bold'>{title}</div>
-            <Button
-              label='X'
-              onClick={onCancel}
-              size='md'
-              color='red'
-            />
-          </div>
-          {description && (
-            <div className='overflow-y-auto'>
-              <hr className='my-4 border-1 border-neutral-300' />
+    <div className='fixed top-0 left-0 h-screen w-screen flex justify-center items-center backdrop-blur-sm backdrop-brightness-50'>
+      <div className='max-h-[80vh] w-5/6 sm:w-4/6 md:w-3/6 bg-neutral-100 rounded p-4'>
+        <div className='font-bold text-xl'>{title}</div>
+        <div className='border border-neutral-300 my-4' />
+        {description && (
+          <>
+            <div className='max-h-80 overflow-y-auto'>
               <div>{description}</div>
             </div>
-          )}
-        </div>
-        <hr className='my-4 border-1 border-neutral-300' />
-        <div className='flex gap-2 sm:gap-4 md:gap-8 lg:gap-16'>
+            <div className='border border-neutral-300 my-4' />
+          </>
+        )}
+        <div className='flex gap-4 sm:justify-end'>
           <Button
-            className='flex-1'
+            className='flex-1 sm:flex-[0]'
             label='Batal'
             onClick={onCancel}
-            size='lg'
+            size='md'
           />
           <Button
-            className='flex-1'
+            className='flex-1 sm:flex-[0]'
             label='Konfirmasi'
             onClick={onConfirm}
-            color={color}
-            size='lg'
+            size='md'
+            theme={theme}
           />
         </div>
       </div>
