@@ -1,10 +1,10 @@
 import { transaction as transactionCollection } from '../../database/models/index.js';
 import {
   Res,
+  numberValidator,
   dateTimeValidator,
   stringValidator,
   documentValidator,
-  numberValidator,
   booleanValidator
 } from '../../functions/index.js';
 
@@ -13,6 +13,7 @@ import {
 export default async function post(req, res) {
   try {
     const payload = {
+      invoiceNumber: numberValidator(req.body?.invoiceNumber),
       dateTime: dateTimeValidator(req.body?.dateTime),
       customerName: stringValidator(req.body?.customerName),
       services: req.body?.services?.map(service => ({
@@ -30,6 +31,7 @@ export default async function post(req, res) {
       vehiclePlate: stringValidator(req.body?.vehiclePlate),
       note: stringValidator(req.body?.note)
     };
+    if (!payload.invoiceNumber) return Res(res, 400, null, 'No. Faktur tidak valid.');
     if (!payload.dateTime) return Res(res, 400, null, 'Tanggal/Waktu tidak valid.');
     if (!payload.customerName) return Res(res, 400, null, 'Nama pelanggan tidak valid.');
     if (payload.services?.length > 0) payload.services.forEach((service, index) => {
@@ -48,6 +50,10 @@ export default async function post(req, res) {
     return Res(res, 200);
   }
   catch (err) {
+    if (err?.message.includes('E11000 duplicate key error collection: BengkelMitra.Transactions')) {
+      if (err.message.split('{ ')[1].split(':')[0] === 'invoiceNumber') return Res(res, 400, null, 'No. Faktur sudah ada.');
+    }
+
     console.log('controllers/transaction/post.', err);
     return Res(res, 500);
   }
