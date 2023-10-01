@@ -7,11 +7,11 @@ const transactionSchema = new Schema({
     type: Date,
     required: true
   },
+  customerName: {
+    type: String,
+    required: true
+  },
   services: [{
-    name: {
-      type: String,
-      required: true
-    },
     type: {
       type: String,
       required: true
@@ -19,6 +19,10 @@ const transactionSchema = new Schema({
     subType: {
       type: String,
       default: null
+    },
+    name: {
+      type: String,
+      required: true
     },
     class: {
       type: String,
@@ -37,9 +41,17 @@ const transactionSchema = new Schema({
     type: Number,
     required: true
   },
-  paidStatus: {
+  isPaid: {
     type: Boolean,
     required: true
+  },
+  vehicleType: {
+    type: String,
+    default: null
+  },
+  vehiclePlate: {
+    type: String,
+    default: null
   },
   note: {
     type: String,

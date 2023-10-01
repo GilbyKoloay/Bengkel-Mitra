@@ -3,7 +3,7 @@ import { Res, stringValidator, documentValidator } from '../../functions/index.j
 
 
 
-export default async function update(req, res) {
+export default async function put(req, res) {
   try {
     const payload = {
       _id: documentValidator(req.body?._id),
@@ -31,7 +31,7 @@ export default async function update(req, res) {
       if (err.message.split('{ ')[1].split(':')[0] === 'name') return Res(res, 400, null, 'Nama sudah ada.');
     }
     
-    console.log('controllers/type/update.', err);
+    console.log('controllers/type/put.', err);
     return Res(res, 500, null, 'Terjadi kesalahan di server.');
   }
 };

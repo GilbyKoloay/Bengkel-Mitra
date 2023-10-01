@@ -1,3 +1,6 @@
 @echo off
-cd BackEnd
-npm start
+
+start /min server.bat
+
+timeout /t 5
+start client.bat
