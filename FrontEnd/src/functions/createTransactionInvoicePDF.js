@@ -82,6 +82,10 @@ export default function createTransactionInvoicePDF(transaction) {
 
       /* section - info top */
       section#info-top {
+        display: flex;
+        justify-content: space-between;
+      }
+      section#info-top .wrapper {
         margin-top: 32px;
         display: flex;
         gap: 16px;
@@ -140,23 +144,36 @@ export default function createTransactionInvoicePDF(transaction) {
       </header>
 
       <section id='info-top'>
-        <div class='key'>
-          <p>Tanggal & Waktu</p>
-          <p>Nama Pelanggan</p>
-          <p>Jenis Kendaraan</p>
-          <p>Plat Kendaraan</p>
+        <div class='wrapper'>
+          <div class='key'>
+            <p>Tanggal & Waktu</p>
+            <p>Nama Pelanggan</p>
+            <p>Jenis Kendaraan</p>
+            <p>Plat Kendaraan</p>
+          </div>
+          <div class='colon'>
+            <p>:</p>
+            <p>:</p>
+            <p>:</p>
+            <p>:</p>
+          </div>
+          <div class='value'>
+            <p>${toProperDate(transaction.dateTime)}</p>
+            <p>${transaction.customerName}</p>
+            <p>${transaction.vehicleType ? transaction.vehicleType : '-'}</p>
+            <p>${transaction.vehiclePlate ? transaction.vehiclePlate : '-'}</p>
+          </div>
         </div>
-        <div class='colon'>
-          <p>:</p>
-          <p>:</p>
-          <p>:</p>
-          <p>:</p>
-        </div>
-        <div class='value'>
-          <p>${toProperDate(transaction.dateTime)}</p>
-          <p>${transaction.customerName}</p>
-          <p>${transaction.vehicleType ? transaction.vehicleType : '-'}</p>
-          <p>${transaction.vehiclePlate ? transaction.vehiclePlate : '-'}</p>
+        <div class='wrapper'>
+          <div class='key'>
+            <h1>No. Faktur</h1>
+          </div>
+          <div class='colon'>
+            <h1>:</h1>
+          </div>
+          <div class='value'>
+            <h1>${transaction.invoiceNumber}</h1>
+          </div>
         </div>
       </section>
 
@@ -173,15 +190,15 @@ export default function createTransactionInvoicePDF(transaction) {
           </tr>
           ${body}
           <tr>
-            <th colspan='4'>Total Harga</th>
-            <th colspan='2'>Rp. ${splitString(transaction.totalPrice, 3, '.')}</th>
+            <th colspan='4'><h2>Total Harga</h2></th>
+            <th colspan='2'><h2>Rp. ${splitString(transaction.totalPrice, 3, '.')}</h2></th>
           </tr>
         </table>
       </section>
 
       <section id='info-bottom'>
         <div class='note'>
-          <h3>Keterangan:</h3>
+          <h2>Keterangan:</h2>
           <p>${transaction.note ? transaction.note : '-'}</p>
         </div>
         <div class='paid-status'>
@@ -202,5 +219,5 @@ export default function createTransactionInvoicePDF(transaction) {
   html2pdf()
     .set(opt)
     .from(element)
-    .save('Faktur.pdf');
+    .save(`Faktur ${transaction.invoiceNumber}.pdf`);
 };

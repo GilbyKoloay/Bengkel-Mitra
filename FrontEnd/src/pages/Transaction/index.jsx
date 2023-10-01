@@ -17,6 +17,7 @@ export default function Transaction() {
   
   const { _transactions } = useSelector(state => state._app);
 
+  const [invoiceNumber, setInvoiceNumber] = useState('');
   const [dateTime, setDateTime] = useState('--T::00.000Z');
   const [customerName, setCustomerName] = useState('');
   const [vehicleType, setVehicleType] = useState('');
@@ -34,6 +35,7 @@ export default function Transaction() {
 
 
   function clearFilter() {
+    setInvoiceNumber('');
     setDateTime('--T::00.000Z');
     setCustomerName('');
     setVehicleType('');
@@ -51,6 +53,7 @@ export default function Transaction() {
 
   function filtered_transactions() {
     return _transactions?.filter(transaction =>
+      (!invoiceNumber || transaction.invoiceNumber.toString().includes(invoiceNumber)) &&
       (!dateTime.split('T')[0].split('-')[2] || transaction.dateTime.split('T')[0].split('-')[2].includes(dateTime.split('T')[0].split('-')[2])) &&
       (!dateTime.split('T')[0].split('-')[1] || transaction.dateTime.split('T')[0].split('-')[1].includes(dateTime.split('T')[0].split('-')[1])) &&
       (!dateTime.split('T')[0].split('-')[0] || transaction.dateTime.split('T')[0].split('-')[0].includes(dateTime.split('T')[0].split('-')[0])) &&
@@ -93,7 +96,7 @@ export default function Transaction() {
           <table className='mt-4 w-full'>
             <thead className='bg-blue-500 border-2 border-blue-700'>
               <tr>
-                {['Tanggal & Waktu', 'Nama Pelanggan'].map((title, index) => <th key={index} rowSpan={2} className='border border-blue-700 p-2'>{title}</th>)}
+                {['No. Faktur', 'Tanggal & Waktu', 'Nama Pelanggan'].map((title, index) => <th key={index} rowSpan={2} className='border border-blue-700 p-2'>{title}</th>)}
                 {['Kendaraan'].map((title, index) => <th key={index} colSpan={2} className='border border-blue-700 p-2'>{title}</th>)}
                 {['Layanan'].map((title, index) => <th key={index} colSpan={6} className='border border-blue-700 p-2'>{title}</th>)}
                 {['Total Harga', 'Status Bayar', 'Keterangan', 'Aksi'].map((title, index) => <th key={index} rowSpan={2} className='border border-blue-700 p-2'>{title}</th>)}
@@ -102,6 +105,13 @@ export default function Transaction() {
                 {['Jenis', 'Plat', 'Tipe', 'Subtipe', 'Nama', 'Kelas', 'Harga', 'Kuantitas'].map((title, index) => <th key={index} className='border border-blue-700 p-2'>{title}</th>)}
               </tr>
               <tr>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={invoiceNumber}
+                    onChange={value => setInvoiceNumber(value)}
+                    placeholder='filter'
+                  />
+                </th>
                 <th className='border border-blue-700 font-normal p-2'>
                   <InputDateTime
                     value={dateTime}
@@ -206,12 +216,13 @@ export default function Transaction() {
                 </th>
               </tr>
               <tr>
-                <th colSpan={14} className='text-left p-2 font-normal'>Total {filtered_transactions().length} dari {_transactions.length}</th>
+                <th colSpan={15} className='text-left p-2 font-normal'>Total {filtered_transactions().length} dari {_transactions.length}</th>
               </tr>
             </thead>
             <tbody className='border-2 border-blue-700'>
               {filtered_transactions().map(transaction => [0, 1].map(index => !index ? (
                 <tr key={index} className='border-t border-neutral-500'>
+                  <td rowSpan={transaction.services.length} className='p-2 align-text-top text-end'>{transaction.invoiceNumber}</td>
                   <td rowSpan={transaction.services.length} className='p-2 align-text-top'>{transaction.dateTime.slice(0, 10).split('-').reverse().join('-')} {transaction.dateTime.slice(11, 16)}</td>
                   <td rowSpan={transaction.services.length} className='p-2 align-text-top'>{transaction.customerName}</td>
                   <td rowSpan={transaction.services.length} className='p-2 align-text-top'>{transaction.vehicleType ? transaction.vehicleType : '-'}</td>
@@ -222,7 +233,7 @@ export default function Transaction() {
                   <td className='p-2 text-center'>{transaction.services[0].class}</td>
                   <td className='p-2 text-end'>{splitString(transaction.services[0].price, 3, '.')}</td>
                   <td className='p-2 text-end'>{transaction.services[0].quantity}</td>
-                  <td rowSpan={transaction.services.length} className='p-2 align-text-top text-right'>{splitString(transaction.totalPrice, 3, '.')}</td>
+                  <td rowSpan={transaction.services.length} className='p-2 align-text-top text-end'>{splitString(transaction.totalPrice, 3, '.')}</td>
                   <td rowSpan={transaction.services.length} className='p-2 align-text-top'>{transaction.isPaid ? 'LUNAS' : 'TIDAK LUNAS'}</td>
                   <td rowSpan={transaction.services.length} className='p-2 align-text-top'>{transaction.note ? transaction.note : '-'}</td>
                   <td rowSpan={transaction.services.length} className='p-2 align-text-top'>
