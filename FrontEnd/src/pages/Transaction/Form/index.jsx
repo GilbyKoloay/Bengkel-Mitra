@@ -41,6 +41,8 @@ export default function TransactionForm() {
   const { _transactions, _services } = useSelector(state => state._app);
 
   const [isFormLoading, setIsFormLoading] = useState(isFormCreate ? false : true);
+  const [isInvoiceNumberAuto, setIsInvoiceNumberAuto] = useState(isFormCreate ? true : false);
+  const [invoiceNumber, setInvoiceNumber] = useState('');
   const [isDateTimeAuto, setIsDateTimeAuto] = useState(isFormCreate ? true : false);
   const [dateTime, setDateTime] = useState('--T::00.000Z');
   const [customerName, setCustomerName] = useState('');
@@ -97,7 +99,20 @@ export default function TransactionForm() {
 
 
   
+  function generateUniqueInvoiceNumber() {
+    let uniqueInvoiceNumber = 1;
+
+    for (const transaction of _transactions) {
+      if (transaction.invoiceNumber === uniqueInvoiceNumber) uniqueInvoiceNumber++;
+      else break;
+    }
+
+    return uniqueInvoiceNumber;
+  }
+  
   function clearForm() {
+    setIsInvoiceNumberAuto(true);
+    setInvoiceNumber('');
     setIsDateTimeAuto(true);
     setDateTime('--T::00.000Z');
     setCustomerName('');
@@ -124,6 +139,9 @@ export default function TransactionForm() {
 
     if (!transaction) navigate('/transaction');
     else {
+      setIsInvoiceNumberAuto(false);
+      setInvoiceNumber(transaction.invoiceNumber);
+      setIsDateTimeAuto(false);
       setDateTime(transaction.dateTime);
       setCustomerName(transaction.customerName);
       setServices([...transaction.services.map(service => ({
@@ -151,12 +169,13 @@ export default function TransactionForm() {
 
   async function formSubmit(e) {
     e?.preventDefault();
-    setIsFormSubmitting(true);
+    // setIsFormSubmitting(true);
 
     let payload = {};
 
     if (isFormCreate) {
       payload = {
+        invoiceNumber: isInvoiceNumberAuto ? generateUniqueInvoiceNumber() : parseInt(invoiceNumber),
         dateTime: isDateTimeAuto ? getCurrentTime() : toProperDateTime(dateTime),
         customerName: toProperString(customerName),
         services: services.filter(service => service.quantity > 0).map(service => ({
@@ -177,6 +196,7 @@ export default function TransactionForm() {
     } else if (isFormUpdate) {
       payload = {
         _id,
+        invoiceNumber: isInvoiceNumberAuto ? generateUniqueInvoiceNumber() : parseInt(invoiceNumber),
         dateTime: isDateTimeAuto ? getCurrentTime() : toProperDateTime(dateTime),
         customerName: toProperString(customerName),
         services: services.filter(service => service.quantity > 0).map(service => ({
@@ -209,12 +229,13 @@ export default function TransactionForm() {
     if (res) {
       setIsFormSubmitting(false);
       if (res.ok) {
-        setIsPrintInvoiceDialogOpen(true);
-
         const socket = createSocket();
         if (isFormCreate) socket.emit('transaction-create');
         else if (isFormUpdate) socket.emit('transaction-update', _id);
         else if (isFormDelete) socket.emit('transaction-delete', _id);
+
+        if (isFormDelete) navigate('/transaction');
+        else setIsPrintInvoiceDialogOpen(payload);
       }
     }
   }
@@ -365,6 +386,22 @@ export default function TransactionForm() {
             </div>
             <div className='flex flex-col gap-4'>
               <Select
+                label='No. Faktur'
+                value={isInvoiceNumberAuto}
+                options={[[true, 'AUTOMATIS'], [false, 'MANUAL']].map(option => [option[0], option[1]])}
+                onChange={value => setIsInvoiceNumberAuto(JSON.parse(value))}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              {!isInvoiceNumberAuto && (
+                <Input
+                  value={invoiceNumber}
+                  onChange={value => setInvoiceNumber(value)}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+              )}
+              <Select
                 label='Tanggal & Waktu'
                 value={isDateTimeAuto}
                 options={[[true, 'AUTOMATIS'], [false, 'MANUAL']].map(option => [option[0], option[1]])}
@@ -510,7 +547,7 @@ export default function TransactionForm() {
           title='Konfirmasi pencetakan faktur'
           description='Apakah anda ingin mencetak faktur?'
           onCancel={() => {setIsPrintInvoiceDialogOpen(false); navigate('/transaction');}}
-          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createTransactionInvoicePDF(); navigate('/transaction');}}
+          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createTransactionInvoicePDF(isPrintInvoiceDialogOpen); navigate('/transaction');}}
           theme='blue'
         />
       )}
