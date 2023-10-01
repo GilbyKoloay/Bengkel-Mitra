@@ -2,8 +2,10 @@ import { io } from 'socket.io-client';
 
 
 
-export default function createSocket() {
-  const socket = io(process.env.REACT_APP_BACKEND_URL);
+const backendURL = process.env.REACT_APP_BACKEND_URL;
 
-  return socket;
+
+
+export default function createSocket() {
+  return io(backendURL);
 };

@@ -1,476 +1,517 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  useNavigate,
+  useLocation,
+  useParams,
+  Navigate
+} from 'react-router-dom';
 
 import {
-  Select,
-  DateTime,
-  Input,
-  InputOption,
   Button,
-  ConfirmationDialog
+  Select,
+  InputDateTime,
+  Input,
+  ConfirmationDialog,
+  InputOption
 } from '../../../components';
 import {
   Fetch,
   createSocket,
+  notificationToast,
   getCurrentTime,
+  toProperString,
+  toProperDateTime,
+  createTransactionInvoicePDF,
   splitString
 } from '../../../functions';
 
 
 
-export default function TypeForm() {
+export default function TransactionForm() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { formType } = useParams();
+  const isFormCreate = (location.pathname.split('/')[3] === 'create') ? true : false;
+  const isFormUpdate = (location.pathname.split('/')[3] === 'update') ? true : false;
+  const isFormDelete = (location.pathname.split('/')[3] === 'delete') ? true : false;
 
-  const [parameters] = useSearchParams();
-  const _id = parameters.get('_id');
+  const { _id } = useParams();
 
-  const { services:SERVICES } = useSelector(state => state.app);
+  const { _transactions, _services } = useSelector(state => state._app);
 
-  const [dateTime, setDateTime] = useState({isAuto: true, value: ''});
+  const [isFormLoading, setIsFormLoading] = useState(isFormCreate ? false : true);
+  const [isDateTimeAuto, setIsDateTimeAuto] = useState(isFormCreate ? true : false);
+  const [dateTime, setDateTime] = useState('--T::00.000Z');
   const [customerName, setCustomerName] = useState('');
   const [services, setServices] = useState([{
     _id: null,
-    type: '',
-    subType: '',
-    name: '',
+    query: '',
+    type: null,
+    subType: null,
+    name: null,
+    priceList: null,
     class: '',
     price: 0,
     quantity: 0
   }]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [paidStatus, setPaidStatus] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [vehicleType, setVehicleType] = useState('');
+  const [vehiclePlate, setVehiclePlate] = useState('');
   const [note, setNote] = useState('');
-  const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
-  const [openFormDeleteDialog, setOpenFormDeleteDialog] = useState(false);
+  const [isDeleteConfirmationDialogOpen, setIsDeleteConfirmationDialogOpen] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [formErrMsg, setFormErrMsg] = useState('');
-  const [openPrintInvoiceDialog, setOpenPrintInvoiceDialog] = useState(false);
+  const [isPrintInvoiceDialogOpen, setIsPrintInvoiceDialogOpen] = useState(false);
 
 
 
   useEffect(() => {
-    if (
-      formType !== 'create' &&
-      formType !== 'update' &&
-      formType !== 'delete'
-    ) navigate('/transaction');
+    if (isFormUpdate || isFormDelete) {
+      const socket = createSocket();
 
-    if (
-      formType === 'update' ||
-      formType === 'delete'
-    ) loadFormInitialData();
+      socket.on('transaction-update', updated_id => {
+        if (_id === updated_id && !isPrintInvoiceDialogOpen) notificationToast('Data ini sudah diperbarui pengguna lain.', 'Tekan tombol \'Muat Ulang\' untuk melihat data yang terbaru.', 'warning');
+      });
+
+      socket.on('transaction-delete', deleted_id => {
+        if (_id === deleted_id) {
+          notificationToast('Data ini sudah dihapus pengguna lain.', null, 'warning');
+          
+          setTimeout(() => {
+            navigate('/transaction');
+          }, 2500);
+        }
+      });
+
+      return () => socket.disconnect();
+    }
   }, []);
 
   useEffect(() => {
-    setFormErrMsg('');
-  }, [dateTime, services, totalPrice, paidStatus, note]);
-
-  useEffect(() => {
-    let newTotalPrice = 0;
-
-    for (let index=0; index<services.length; index++) {
-      if (services[index].quantity) newTotalPrice += services[index].quantity * services[index].price;
-
-      if (
-        services[index].name &&
-        index+1 === services.length
-      ) {
-        setServices([...services, {
-          _id: null,
-          type: '',
-          subType: '',
-          name: '',
-          class: '',
-          price: 0,
-          quantity: 0
-        }]);
-        break;
-      }
-      if (
-        !services[index].name &&
-        services[index+1]?.name
-      ) {
-        setServices([...services.slice(0, index), ...services.slice(index+1, services.length)]);
-        break;
-      }
-      if (
-        services.length > 1 &&
-        !services[services.length-1].name &&
-        !services[services.length-2].name
-      ) {
-        setServices(services.slice(0, services.length-1));
-        break;
-      }
+    if (_transactions && _services && isFormLoading) {
+      setIsFormLoading(false);
+      loadForm();
     }
-
-    setTotalPrice(newTotalPrice);
-  }, [services]);
+  }, [_transactions]);
 
 
-
-  async function loadFormInitialData() {
-    const res = await Fetch(`/transaction/get-all?_id=${_id}&dateTime&services&totalPrice&paidStatus&note`);
-    if (res?.ok) {
-      if (res.payload.length === 0) navigate('/transaction');
-      else {
-        setDateTime({isAuto: false, value: res.payload[0].dateTime});
-        setCustomerName(res.payload[0].customerName);
-        setServices(res.payload[0].services);
-        setTotalPrice(res.payload[0].totalPrice);
-        setPaidStatus(res.payload[0].paidStatus);
-        setNote(res.payload[0].note ? res.payload[0].note : '');
-        setIsFormLoadingInitialData(false);
-      }
-    }
-  }
-
-  async function formOnSubmit(e) {
-    e.preventDefault();
-    if (openFormDeleteDialog) setOpenFormDeleteDialog(false);
-    setIsFormSubmitting(true);
-
-    const payload = {
-      _id,
-      dateTime: dateTime.isAuto ? getCurrentTime() : dateTime.value,
-      customerName: customerName.trimEnd(),
-      services: services.filter(service => service.quantity > 0),
-      totalPrice: parseInt(totalPrice),
-      paidStatus,
-      note: note?.trimEnd()
-    };
-
-    const res = await Fetch(
-      `/transaction/${formType}`,
-      (formType === 'create') ? 'POST' : (formType === 'update') ? 'PUT' : 'DELETE',
-      payload
-    );
-    if (res) {
-      setIsFormSubmitting(false);
-      if (res.ok) {
-        const socket = createSocket();
-        socket.emit(
-          `transaction-${(formType === 'create') ? 'new' : formType}`,
-          _id ? {_id} : undefined
-        );
-      }
-      else setFormErrMsg(res.message);
-
-      if (formType === 'delete') navigate('/transaction');
-      else setOpenPrintInvoiceDialog(true);
-    }
-  }
-
-  function formClear() {
-    setDateTime({isAuto: true, value: null});
+  
+  function clearForm() {
+    setIsDateTimeAuto(true);
+    setDateTime('--T::00.000Z');
+    setCustomerName('');
     setServices([{
       _id: null,
+      query: '',
       type: '',
       subType: '',
       name: '',
+      priceList: null,
       class: '',
       price: 0,
       quantity: 0
     }]);
     setTotalPrice(0);
-    setPaidStatus(false);
+    setIsPaid(false);
+    setVehicleType('');
+    setVehiclePlate('');
     setNote('');
   }
 
-  function formReset() {
-    setIsFormLoadingInitialData(true);
-    loadFormInitialData();
+  function loadForm() {
+    const transaction = _transactions.filter(transaction => transaction._id === _id)[0];
+
+    if (!transaction) navigate('/transaction');
+    else {
+      setDateTime(transaction.dateTime);
+      setCustomerName(transaction.customerName);
+      setServices([...transaction.services.map(service => ({
+        ...service,
+        query: `${service.type ? service.type : ''}${service.subType ? ` (${service.subType})` : ''} - ${service.name}`,
+        priceList: _services.filter(thisService => thisService._id === service._id)[0].price
+      })), {
+        _id: null,
+        query: '',
+        type: '',
+        subType: '',
+        name: '',
+        priceList: null,
+        class: '',
+        price: 0,
+        quantity: 0
+      }]);
+      setTotalPrice(transaction.totalPrice);
+      setIsPaid(transaction.isPaid);
+      setVehicleType(transaction.vehicleType ? transaction.vehicleType : '');
+      setVehiclePlate(transaction.vehiclePlate ? transaction.vehiclePlate : '');
+      setNote(transaction.note ? transaction.note : '');
+    }
   }
 
-  function serviceNameOnChange(value, index) {
-    const newServices = services.map((service, thisIndex) => {
-      if (index === thisIndex) {
-        if (value[0]) {
-          const selectedService = SERVICES.filter(SERVICE => value[0] === SERVICE._id)[0];
-          return {
-            _id: value[0],
-            type: selectedService.type.name,
-            subType: selectedService.subType,
-            name: selectedService.name,
-            class: '',
-            price: 0,
-            quantity: 0
-          };
-        }
+  async function formSubmit(e) {
+    e?.preventDefault();
+    setIsFormSubmitting(true);
 
-        return {
-          _id: null,
-          type: '',
-          subType: '',
-          name: value[1].trimStart().toUpperCase(),
-          class: '',
-          price: 0,
-          quantity: 0
-        };
+    let payload = {};
+
+    if (isFormCreate) {
+      payload = {
+        dateTime: isDateTimeAuto ? getCurrentTime() : toProperDateTime(dateTime),
+        customerName: toProperString(customerName),
+        services: services.filter(service => service.quantity > 0).map(service => ({
+          _id: service._id,
+          type: service.type,
+          subType: service.subType,
+          name: service.name,
+          class: service.class,
+          price: service.price,
+          quantity: service.quantity
+        })),
+        totalPrice,
+        isPaid,
+        vehicleType: toProperString(vehicleType),
+        vehiclePlate: toProperString(vehiclePlate),
+        note: toProperString(note)
+      };
+    } else if (isFormUpdate) {
+      payload = {
+        _id,
+        dateTime: isDateTimeAuto ? getCurrentTime() : toProperDateTime(dateTime),
+        customerName: toProperString(customerName),
+        services: services.filter(service => service.quantity > 0).map(service => ({
+          _id: service._id,
+          type: service.type,
+          subType: service.subType,
+          name: service.name,
+          class: service.class,
+          price: service.price,
+          quantity: service.quantity
+        })),
+        totalPrice,
+        isPaid,
+        vehicleType: toProperString(vehicleType),
+        vehiclePlate: toProperString(vehiclePlate),
+        note: toProperString(note)
+      };
+    } else if (isFormDelete) {
+      payload = {
+        _id
+      };
+    }
+
+    const res = await Fetch(
+      '/transaction',
+      isFormCreate ? 'POST' : isFormUpdate ? 'PUT' : isFormDelete ? 'DELETE' : undefined,
+      payload, {title: `Sedang ${isFormCreate ? 'menambahkan' : isFormUpdate ? 'memperbarui' : isFormDelete ? 'menghapus' : ''} data transaksi ...`},
+      true
+    );
+    if (res) {
+      setIsFormSubmitting(false);
+      if (res.ok) {
+        setIsPrintInvoiceDialogOpen(true);
+
+        const socket = createSocket();
+        if (isFormCreate) socket.emit('transaction-create');
+        else if (isFormUpdate) socket.emit('transaction-update', _id);
+        else if (isFormDelete) socket.emit('transaction-delete', _id);
       }
+    }
+  }
 
-      return service;
+  function handleChangeService(newService, index) {
+    let newServices = [...services];
+    newServices[index] = newService;
+    newServices = [...newServices.filter(service => service.query)];
+    newServices.push({
+      _id: null,
+      query: '',
+      type: '',
+      subType: '',
+      name: '',
+      priceList: null,
+      class: '',
+      price: 0,
+      quantity: 0
     });
-
     setServices(newServices);
-  }
-
-  function serviceClassOnChange(value, index) {
-    const newServices = services.map((service, thisIndex) => {
-      if (index === thisIndex) {
-        const selectedService = SERVICES.filter(SERVICE => service._id === SERVICE._id)[0];
-        return {
-          ...service,
-          class: value,
-          quantity: 1,
-          price: selectedService.price[`class${value}`]
-        };
-      }
-      
-      return service;
-    });
-
-    setServices(newServices);
-  }
-
-  function serviceQuantityOnChange(value, index) {
-    const newServices = services.map((service, thisIndex) => {
-      if (index === thisIndex) {
-        return {
-          ...service,
-          quantity: value ? (service.quantity+1) : (service.quantity-1)
-        };
-      }
-
-      return service;
-    });
-
-    setServices(newServices);
-  }
-
-  function printInvoice() {
-    setOpenPrintInvoiceDialog(false);
-    console.log('printInvoice');
-    navigate('/transaction');
+    
+    const newTotalPrice = newServices.reduce((thisTotalPrice, service) => {
+      return thisTotalPrice + (service.price*service.quantity);
+    }, 0);
+    setTotalPrice(newTotalPrice);
   }
 
 
+
+  if (!isFormCreate && !isFormUpdate && !isFormDelete) return <Navigate to='/transaction' />
 
   return (
     <main>
-      <form className='h-full flex flex-col' onSubmit={formOnSubmit}>
-        <div className='text-xl'>{(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'} Transaksi</div>
+      <Button
+        label='Kembali'
+        onClick={() => navigate('/transaction')}
+        size='md'
+      />
 
-        {(isFormLoadingInitialData || !SERVICES) && <div className='text-lg'>Sedang memuat data, mohon tunggu ...</div>}
-        {(SERVICES?.length === 0) && <div className='text-lg text-red-500'>Layanan masih kosong, silahkan mengisi layanan terlebih dahulu.</div>}
-        {isFormSubmitting && <div className='text-lg'>Sedang {(formType === 'create') ? 'menambahkan' : (formType === 'update') ? 'mengubah' : 'menghapus'} data, mohon tunggu ...</div>}
-        {formErrMsg && <div className='text-lg text-red-500'>{formErrMsg}</div>}
+      <div className='mt-4 text-2xl'>
+        {isFormCreate ? 'Tambah ' :
+        isFormUpdate ? 'Perbarui ' :
+        isFormDelete ? 'Hapus ' : ''}
+        Transaksi
+      </div>
 
-        {(!isFormLoadingInitialData && SERVICES?.length > 0) && (
-          <>
-            <div className='pt-4 pb-8 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 md:gap-8 overflow-y-auto'>
-              <div>
-                <Input
-                  label='Nama Pelanggan'
-                  value={customerName}
-                  onChange={value => setCustomerName(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Select
-                  className='mt-4'
-                  label='Tanggal & Waktu'
-                  value={dateTime.isAuto}
-                  onChange={value => setDateTime({...dateTime, isAuto: JSON.parse(value)})}
-                  options={[[true, 'AUTOMATIS'], [false, 'MANUAL']]}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                {(!dateTime.isAuto) && (
-                  <DateTime
-                    className='mt-2'
-                    value={dateTime.value}
-                    onChange={value => setDateTime({...dateTime, value})}
-                    size='lg'
-                    disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                  />
-                )}
-                {services.map((service, index) => (
-                  <div key={index} className='mt-8'>
-                    <div className='text-xl'>Layanan {index+1}</div>
-                    <div className='flex flex-row justify-between gap-2 md:gap-4'>
-                      <div className='flex flex-col justify-between w-3/4 md:w-4/5 lg:w-5/6'>
-                        <div className=''>
-                          <InputOption
-                            label='Tipe - Subtipe - Nama'
-                            value={service._id ? `(${service.type}${service.subType ? ` - ${service.subType}` : ''}) ${service.name}` : service.name}
-                            onChange={value => serviceNameOnChange(value, index)}
-                            options={SERVICES.map(thisService => [thisService._id, `(${thisService.type.name}${thisService.subType ? ` - ${thisService.subType}` : ''}) ${thisService.name}`])}
-                            size='lg'
-                            disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                          />
-                        </div>
-                        <div className=''>
-                          <Select
-                            label='Kelas - Harga'
-                            value={service.class}
-                            onChange={value => serviceClassOnChange(value, index)}
-                            options={['1', '2', '3', '4', '5'].map(number => SERVICES.filter(SERVICE => service?._id === SERVICE._id)[0]?.price[`class${number}`] && [number, `Kelas ${number} - ${splitString(SERVICES.filter(SERVICE => service?._id === SERVICE._id)[0]?.price[`class${number}`], 3, '.')}`])?.filter(option => option)}
-                            placeholder='(Kelas - Harga)'
-                            size='lg'
-                            disabled={!service._id || isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                          />
-                        </div>
-                      </div>
-                      <div className='w-1/4 md:w-1/5 lg:w-1/6 flex flex-col'>
-                        <div className='text-lg text-center'>Kuantitas</div>
-                        <div className='flex-1 mt-2 flex flex-col gap-2'>
-                          <Button
-                            className='flex-1'
-                            label='+'
-                            onClick={() => serviceQuantityOnChange(true, index)}
-                            color='blue'
-                            size='md'
-                            disabled={!service.class || isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                          />
-                          <Input
-                            className='flex-1'
-                            value={service.quantity}
-                            size='md'
-                            disabled
-                          />
-                          <Button
-                            className='flex-1'
-                            label='-'
-                            onClick={() => serviceQuantityOnChange(false, index)}
-                            color='red'
-                            size='md'
-                            disabled={service.quantity === 0 || isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                          />
-                        </div>
-                      </div>
+      {(!_services) ? (
+        <div className='mt-4 text-lg'>Sedang memuat data layanan, mohon tunggu ...</div>
+      ) : (_services.length === 0) ? (
+        <div className='mt-4 text-lg'>Data layanan kosong, silahkan tambah data layanan terlebih dahulu</div>
+      ) : (
+        <form onSubmit={formSubmit} className='mt-4'>
+          <div className='grid gap-4 grid-cols-1 sm:grid-cols-2'>
+            <div className='flex flex-col gap-4'>
+              <Input
+                label='Nama Pelanggan'
+                value={customerName}
+                onChange={value => setCustomerName(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Jenis Kendaraan'
+                value={vehicleType}
+                onChange={value => setVehicleType(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Plat Kendaraan'
+                value={vehiclePlate}
+                onChange={value => setVehiclePlate(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              {services.map((service, index) => (
+                <div key={index} className='flex gap-2 border border-neutral-700 rounded p-4'>
+                  <div className='flex-1 flex flex-col justify-between'>
+                    <InputOption
+                      label={`Layanan ${index+1}`}
+                      value={service._id ? `${service.type ? `${service.type}` : '-'}${service.subType ? ` (${service.subType})` : ''} - ${service.name}` : service.query}
+                      options={_services.map(thisService => [thisService, `${thisService.type ? thisService.type.name : ''}${thisService.subType ? ` (${thisService.subType})` : ''} - ${thisService.name}`])}
+                      onChange={value => value[0] ? handleChangeService({
+                        _id: value[0]._id,
+                        query: value[1],
+                        type: value[0].type?.name,
+                        subType: value[0].subType,
+                        name: value[0].name,
+                        priceList: value[0].price,
+                        class: '',
+                        price: 0,
+                        quantity: 0
+                      }, index) : handleChangeService({
+                        ...service,
+                        query: value[1]
+                      }, index)}
+                      placeholder='Tipe (Subtipe) - Nama'
+                      size='lg'
+                      disabled={isFormDelete || isFormSubmitting}
+                    />
+                    <Select
+                      label='Kelas'
+                      value={service.class}
+                      options={service.priceList ? Object.keys(service.priceList).filter(key => service.priceList[key]).map(key => [key.slice(-1), `Kelas ${key.slice(-1)} (${splitString(service.priceList[key], 3, '.')})`]) : []}
+                      onChange={value => {
+                        handleChangeService({...service,
+                          class: value,
+                          price: service.priceList[`class${value}`],
+                          quantity: 1
+                        }, index);
+                      }}
+                      placeholder='Kelas (Harga)'
+                      size='lg'
+                      disabled={!service._id || isFormDelete || isFormSubmitting}
+                    />
+                  </div>
+                  <div className='w-1/4 sm:w-1/5 flex flex-col'>
+                    <label className='text-xl'>Kuantitas</label>
+                    <div className='flex-1 grid gap-2'>
+                      <Button
+                        label='+'
+                        onClick={() => handleChangeService({...service,
+                          quantity: service.quantity+1
+                        }, index)}
+                        theme='blue'
+                        disabled={!service._id || !service.class || isFormDelete || isFormSubmitting}
+                      />
+                      <Input
+                        value={service.quantity}
+                        size='lg'
+                        disabled
+                      />
+                      <Button
+                        label='-'
+                        onClick={() => (service.quantity === 1) ? handleChangeService({
+                          ...service,
+                          query: ''
+                        }, index) : handleChangeService({...service,
+                          quantity: service.quantity-1
+                        }, index)}
+                        theme='red'
+                        disabled={!service._id || !service.class || isFormDelete || isFormSubmitting}
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+            </div>
+            <div className='flex flex-col gap-4'>
+              <Select
+                label='Tanggal & Waktu'
+                value={isDateTimeAuto}
+                options={[[true, 'AUTOMATIS'], [false, 'MANUAL']].map(option => [option[0], option[1]])}
+                onChange={value => setIsDateTimeAuto(JSON.parse(value))}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              {!isDateTimeAuto && (
+                <InputDateTime
+                  className='-mt-4'
+                  value={dateTime}
+                  onChange={value => setDateTime(value)}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+              )}
+              <Select
+                label='Status Bayar'
+                value={isPaid}
+                options={[[true, 'LUNAS'], [false, 'TIDAK LUNAS']].map(option => [option[0], option[1]])}
+                onChange={value => setIsPaid(JSON.parse(value))}
+                size='lg'
+                theme={isPaid ? 'green' : 'red'}
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Keterangan'
+                value={note}
+                onChange={value => setNote(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
               <div>
+                <label className='text-xl'>Total Layanan</label>
                 <table className='w-full'>
-                  <thead className='bg-neutral-300'>
-                    <tr>
-                      <th rowSpan={2} className='p-2 border border-neutral-500'>No.</th>
-                      <th rowSpan={2} className='p-2 border border-neutral-500 text-start'>Tipe (Subtipe) - Nama</th>
-                      <th rowSpan={2} className='p-2 border border-neutral-500'>Kelas Kendaraan</th>
-                      <th className='p-2 border border-neutral-500'>Harga</th>
-                      <th rowSpan={2} className='p-2 border border-neutral-500'>Total Harga</th>
-                    </tr>
-                    <tr>
-                      <th className='p-2 border border-neutral-500'>Kuantitas</th>
+                  <thead>
+                    <tr className='bg-neutral-300'>
+                      {[
+                        'No.',
+                        'Layanan',
+                        'Kelas',
+                        'Harga',
+                        'Kuantitas',
+                        'Total Harga'
+                      ].map((title, index) => (
+                        <th key={index} className='p-2 border border-neutral-700'>{title}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {services.map((service, index) => (service.quantity > 0) && (
-                      [0, 1].map(thisIndex => !thisIndex ? (
-                        <tr key={thisIndex}>
-                          <td rowSpan={2} className='p-2 border border-neutral-500 text-center'>{index+1}</td>
-                          <td rowSpan={2} className='p-2 border border-neutral-500'>{service.type}{service.subType ? ` (${service.subType})` : ''} - {service.name}</td>
-                          <td rowSpan={2} className='p-2 border border-neutral-500 text-center'>{service.class}</td>
-                          <td className='p-2 border border-neutral-500 text-center'>{splitString(service.price, 3, '.')}</td>
-                          <td rowSpan={2} className='p-2 border border-neutral-500 text-center'>{splitString(service.quantity * service.price, 3, '.')}</td>
-                        </tr>
-                      ) : (
-                        <tr key={thisIndex}>
-                          <td className='p-2 border border-neutral-500 text-center'>{service.quantity}</td>
-                        </tr>
-                      ))
+                    {services.filter(service => service._id && (service.quantity > 0)).map((service, index) => (
+                      <tr key={index}>
+                        <td className='p-2 border border-neutral-700 text-center'>{index+1}</td>
+                        <td className='p-2 border border-neutral-700'>{service.type ? service.type : '-'}{service.subType ? ` (${service.subType})` : ''} - {service.name}</td>
+                        <td className='p-2 border border-neutral-700 text-center'>{service.class}</td>
+                        <td className='p-2 border border-neutral-700 text-end'>{splitString(service.price, 3, '.')}</td>
+                        <td className='p-2 border border-neutral-700 text-end'>{service.quantity}</td>
+                        <td className='p-2 border border-neutral-700 text-end'>{splitString(service.price*service.quantity, 3, '.')}</td>
+                      </tr>
                     ))}
-                    <tr className='bg-neutral-300 border border-neutral-500 font-bold text-lg'>
-                      <td className='p-2 border border-neutral-500'>Total</td>
-                      <td colSpan={3} className='p-2 border border-neutral-500 text-center'>{services.reduce((accumulator, service) => {return accumulator + service.quantity}, 0)} Layanan</td>
-                      <td className='p-2 border border-neutral-500 text-center'>{splitString(totalPrice, 3, '.')}</td>
+                    <tr className='bg-neutral-300'>
+                      <td colSpan={5} className='p-2 border border-neutral-700 text-xl font-bold'>Total</td>
+                      <td className='p-2 border border-neutral-700 text-xl font-bold text-end whitespace-nowrap'>Rp. {splitString(totalPrice, 3, '.')}</td>
                     </tr>
                   </tbody>
                 </table>
-                <Select
-                  className='mt-8'
-                  label='Status Bayar'
-                  value={paidStatus}
-                  onChange={value => setPaidStatus(JSON.parse(value))}
-                  options={[[true, 'LUNAS'], [false, 'TIDAK LUNAS']]}
-                  size='lg'
-                  color={paidStatus ? 'green' : 'red'}
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Keterangan'
-                  value={note}
-                  onChange={value => setNote(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
               </div>
             </div>
+          </div>
 
-            <div className='flex flex-col sm:flex-row gap-2 sm:gap-4 md:gap-8'>
+          {isFormCreate ? (
+            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
               <Button
-                className='flex-1'
-                label='Kembali'
-                onClick={() => navigate('/transaction')}
+                label='Bersihkan'
+                onClick={clearForm}
                 size='lg'
+                disabled={isFormSubmitting}
               />
-              {(formType === 'create') ? (
-                <Button
-                  className='flex-1'
-                  label='Bersihkan'
-                  onClick={formClear}
-                  size='lg'
-                  color='red'
-                  disabled={isFormSubmitting}
-                />
-              ) : (formType === 'update') && (
-                <Button
-                  className='flex-1'
-                  label='Atur Ulang'
-                  onClick={formReset}
-                  size='lg'
-                  color='red'
-                  disabled={isFormLoadingInitialData || isFormSubmitting}
-                />
-              )}
               <Button
-                className='flex-1'
-                label={(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'}
-                onClick={(formType === 'delete') ? () => setOpenFormDeleteDialog(true) : null}
-                type={(formType === 'delete') ? 'button' : 'submit'}
+                label='Tambah'
+                type='submit'
                 size='lg'
-                color={(formType === 'delete') ? 'red' : 'blue'}
-                disabled={isFormLoadingInitialData || isFormSubmitting}
+                theme='blue'
+                disabled={isFormSubmitting}
               />
             </div>
-          </>
-        )}
-      </form>
+          ) : isFormUpdate ? (
+            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-3'>
+              <Button
+                label='Bersihkan'
+                onClick={clearForm}
+                size='lg'
+                disabled={isFormSubmitting}
+              />
+              <Button
+                label='Muat Ulang'
+                onClick={loadForm}
+                size='lg'
+                disabled={isFormSubmitting}
+              />
+              <Button
+                label='Perbarui'
+                type='submit'
+                size='lg'
+                theme='blue'
+                disabled={isFormSubmitting}
+              />
+            </div>
+          ) : isFormDelete && (
+            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
+              <Button
+                label='Muat Ulang'
+                onClick={loadForm}
+                size='lg'
+                disabled={isFormSubmitting}
+              />
+              <Button
+                label='Hapus'
+                onClick={() => setIsDeleteConfirmationDialogOpen(true)}
+                size='lg'
+                theme='red'
+                disabled={isFormSubmitting}
+              />
+            </div>
+          )}
+        </form>
+      )}
 
-      {/* Print Invoice Dialog */}
-      {openPrintInvoiceDialog && (
+
+
+      {(isFormDelete && isDeleteConfirmationDialogOpen) && (
         <ConfirmationDialog
-          title='Print Faktur'
-          description='Apakah anda ingin mencetak faktur?'
-          onCancel={() => {setOpenPrintInvoiceDialog(false); navigate('/transaction');}}
-          onConfirm={printInvoice}
+          title='Konfirmasi penghapusan data'
+          description='Apakah anda yakin ingin menghapus data ini?'
+          onCancel={() => setIsDeleteConfirmationDialogOpen(false)}
+          onConfirm={() => {setIsDeleteConfirmationDialogOpen(false); formSubmit(); setIsDeleteConfirmationDialogOpen(false);}}
+          theme='red'
         />
       )}
 
-      {/* Form Delete Dialog */}
-      {openFormDeleteDialog && (
+      {isPrintInvoiceDialogOpen && (
         <ConfirmationDialog
-          title='Hapus data'
-          description='Apakah anda yakin ingin menghapus data ini?'
-          onCancel={() => setOpenFormDeleteDialog(false)}
-          onConfirm={formOnSubmit}
-          color='red'
+          title='Konfirmasi pencetakan faktur'
+          description='Apakah anda ingin mencetak faktur?'
+          onCancel={() => {setIsPrintInvoiceDialogOpen(false); navigate('/transaction');}}
+          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createTransactionInvoicePDF(); navigate('/transaction');}}
+          theme='blue'
         />
       )}
     </main>

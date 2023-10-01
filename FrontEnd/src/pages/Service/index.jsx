@@ -1,248 +1,189 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, Input, Select } from '../../components';
-import { splitString } from '../../functions';
+import { splitString, toProperString } from '../../functions';
 
 
 
-export default function Type() {
+export default function Service() {
   const navigate = useNavigate();
+  
+  const { _services, _types } = useSelector(state => state._app);
 
-  const { services, types } = useSelector(state => state.app);
-
-  const [filteredServices, setFilteredServices] = useState(null);
-  const [filter, setFilter] = useState({
-    type: 'SEMUA',
-    subType: '',
-    name: '',
-    priceClass1: '',
-    priceClass2: '',
-    priceClass3: '',
-    priceClass4: '',
-    priceClass5: '',
-    note: ''
-  });
-
-
-
-  useEffect(() => {
-    if (services) {
-      const newFilteredServices = services.filter(service =>
-        ((filter.type === 'SEMUA') || (service?.type?.name.includes(filter.type))) &&
-        (!filter.subType || ((filter.subType === '-') && !service.subType) || (service.subType?.includes(filter.subType))) &&
-        (!filter.name || (service.name.includes(filter.name))) &&
-        (!filter.priceClass1 || ((filter.priceClass1 === '-') && !service.price.class1) || (service.price.class1?.toString().includes(filter.priceClass1))) &&
-        (!filter.priceClass2 || ((filter.priceClass2 === '-') && !service.price.class2) || (service.price.class2?.toString().includes(filter.priceClass2))) &&
-        (!filter.priceClass3 || ((filter.priceClass3 === '-') && !service.price.class3) || (service.price.class3?.toString().includes(filter.priceClass3))) &&
-        (!filter.priceClass4 || ((filter.priceClass4 === '-') && !service.price.class4) || (service.price.class4?.toString().includes(filter.priceClass4))) &&
-        (!filter.priceClass5 || ((filter.priceClass5 === '-') && !service.price.class5) || (service.price.class5?.toString().includes(filter.priceClass5))) &&
-        (!filter.note || ((filter.note === '-') && !service.note) || (service.note?.includes(filter.note)))
-      );
-      setFilteredServices(newFilteredServices);
-    }
-  }, [services, types, filter.name, filter.type, filter.subType, filter.priceClass1, filter.priceClass2, filter.priceClass3, filter.priceClass4, filter.priceClass5, filter.note]);
+  const [type_name, setType_name] = useState('SEMUA');
+  const [subType, setSubType] = useState('');
+  const [name, setName] = useState('');
+  const [priceClass1, setPriceClass1] = useState('');
+  const [priceClass2, setPriceClass2] = useState('');
+  const [priceClass3, setPriceClass3] = useState('');
+  const [priceClass4, setPriceClass4] = useState('');
+  const [priceClass5, setPriceClass5] = useState('');
+  const [note, setNote] = useState('');
 
 
 
   function clearFilter() {
-    setFilter({
-      type: 'SEMUA',
-      subType: '',
-      name: '',
-      priceClass1: '',
-      priceClass2: '',
-      priceClass3: '',
-      priceClass4: '',
-      priceClass5: '',
-      note: ''
-    });
+    setType_name('SEMUA');
+    setSubType('');
+    setName('');
+    setPriceClass1('');
+    setPriceClass2('');
+    setPriceClass3('');
+    setPriceClass4('');
+    setPriceClass5('');
+    setNote('');
+  }
+
+  function filtered_services() {
+    return _services?.filter(service =>
+      (type_name === 'SEMUA' || (type_name === '-' && !service.type) || (service.type?.name === type_name)) &&
+      (!subType || ((subType === '-') && !service.subType) || service.subType?.includes(toProperString(subType))) &&
+      (!name || service.name.includes(toProperString(name))) &&
+      (!priceClass1 || ((priceClass1 === '-') && !service.price.class1) || service.price.class1?.toString().includes(priceClass1)) &&
+      (!priceClass2 || ((priceClass2 === '-') && !service.price.class2) || service.price.class2?.toString().includes(priceClass2)) &&
+      (!priceClass3 || ((priceClass3 === '-') && !service.price.class3) || service.price.class3?.toString().includes(priceClass3)) &&
+      (!priceClass4 || ((priceClass4 === '-') && !service.price.class4) || service.price.class4?.toString().includes(priceClass4)) &&
+      (!priceClass5 || ((priceClass5 === '-') && !service.price.class5) || service.price.class5?.toString().includes(priceClass5)) &&
+      (!note || ((note === '-') && !service.note) || service.note?.includes(toProperString(note)))
+    );
   }
 
 
 
   return (
     <main>
-      <div>
-        <Button
-          label='Tambah Layanan'
-          onClick={() => navigate('/service/form/create')}
-          size='lg'
-          color='blue'
-        />
-      </div>
+      <Button
+        className='whitespace-nowrap'
+        label='Tambah Layanan'
+        onClick={() => navigate('/service/form/create')}
+        size='md'
+        theme='blue'
+      />
 
-      <div className='mt-4 overflow-auto'>
-        <table className='w-full border border-blue-500'>
-          <thead className='bg-blue-300'>
-            <tr className='text-lg border-y border-blue-500'>
-              {['Tipe', 'Subtipe', 'Nama'].map((title, index) => (
-                <th
-                  key={index}
-                  rowSpan={2}
-                  className='p-2 border-x border-blue-500'
-                >
-                  {title}
+      {!_services ? (
+        <div className='mt-4 text-center text-xl'>Sedang memuat data, mohon tunggu ...</div>
+      ) : (_services.length === 0) ? (
+        <div className='mt-4 text-center text-xl'>Data kosong</div>
+      ) : (
+        <div className='mt-8 overflow-auto'>
+          <div className='text-2xl'>Data Layanan</div>
+          <table className='mt-4 w-full'>
+            <thead className='bg-blue-500 border-2 border-blue-700'>
+              <tr>
+                {['Tipe', 'Subtipe', 'Nama'].map((title, index) => <th key={index} rowSpan={2} className='border border-blue-700 p-2'>{title}</th>)}
+                {['Harga'].map((title, index) => <th key={index} colSpan={5} className='border border-blue-700 p-2'>{title}</th>)}
+                {['Keterangan', 'Aksi'].map((title, index) => <th key={index} rowSpan={2} className='border border-blue-700 p-2'>{title}</th>)}
+              </tr>
+              <tr>
+                {['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5'].map((title, index) => <th key={index} className='border border-blue-700 p-2'>{title}</th>)}
+              </tr>
+              <tr>
+                <th className='border border-blue-700  font-normal p-2'>
+                  <Select
+                    value={type_name}
+                    options={[{name: 'SEMUA'}, ..._types, {name: '-'}].map(option => [option.name, option.name])}
+                    onChange={value => setType_name(value)}
+                    placeholder='filter'
+                  />
                 </th>
-              ))}
-              <th colSpan={5} className='p-2 border-x border-blue-500'>Harga</th>
-              {['Keterangan', 'Aksi'].map((title, index) => (
-                <th
-                  key={index}
-                  rowSpan={2}
-                  className='p-2 border-x border-blue-500'
-                >
-                  {title}
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={subType}
+                    onChange={value => setSubType(value)}
+                    placeholder='filter'
+                  />
                 </th>
-              ))}
-            </tr>
-            <tr className='text-lg border-y border-blue-500'>
-              {['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5'].map((title, index) => <th key={index} className='p-2 border-x border-blue-500'>{title}</th>)}
-            </tr>
-            {((services?.length > 0) && (types?.length > 0)) && (
-              <>
-                <tr className='border-y border-blue-500'>
-                  <th className='p-2 border-x border-blue-500'>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={name}
+                    onChange={value => setName(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={priceClass1}
+                    onChange={value => setPriceClass1(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={priceClass2}
+                    onChange={value => setPriceClass2(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={priceClass3}
+                    onChange={value => setPriceClass3(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={priceClass4}
+                    onChange={value => setPriceClass4(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={priceClass5}
+                    onChange={value => setPriceClass5(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2'>
+                  <Input
+                    value={note}
+                    onChange={value => setNote(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th className='border border-blue-700 font-normal p-2 whitespace-nowrap'>
+                  <Button
+                    className='w-full'
+                    label='Bersihkan filter'
+                    onClick={clearFilter}
+                  />
+                </th>
+              </tr>
+              <tr>
+                <th colSpan={10} className='text-left p-2 font-normal'>Total {filtered_services().length} dari {_services.length}</th>
+              </tr>
+            </thead>
+            <tbody className='border-2 border-blue-700'>
+              {filtered_services()?.map((service, index) => (
+                <tr key={index} className='odd:bg-neutral-200 even:bg-neutral-300 hover:bg-blue-300'>
+                  <td className='p-2'>{service.type?.name ? service.type.name : '-'}</td>
+                  <td className='p-2'>{service.subType ? service.subType : '-'}</td>
+                  <td className='p-2'>{service.name}</td>
+                  <td className='p-2 text-right'>{service.price.class1 ? splitString(service.price.class1, 3, '.') : '-'}</td>
+                  <td className='p-2 text-right'>{service.price.class2 ? splitString(service.price.class2, 3, '.') : '-'}</td>
+                  <td className='p-2 text-right'>{service.price.class3 ? splitString(service.price.class3, 3, '.') : '-'}</td>
+                  <td className='p-2 text-right'>{service.price.class4 ? splitString(service.price.class4, 3, '.') : '-'}</td>
+                  <td className='p-2 text-right'>{service.price.class5 ? splitString(service.price.class5, 3, '.') : '-'}</td>
+                  <td className='p-2'>{service.note ? service.note : '-'}</td>
+                  <td className='p-2'>
                     <Select
-                      className='font-normal'
-                      value={filter.type}
-                      options={[{name: 'SEMUA'}, ...types].map(option => [option.name, option.name])}
-                      onChange={value => setFilter({...filter, type: value})}
-                      size='md'
+                      options={[
+                        ['PERBARUI', `/service/form/update/${service._id}`],
+                        ['HAPUS', `/service/form/delete/${service._id}`]
+                      ].map(option => [option[1], option[0]])}
+                      onChange={value => navigate(value)}
+                      placeholder='(Aksi)'
                     />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.subType}
-                      onChange={value => setFilter({...filter, subType: value.trimStart().toUpperCase()})}
-                      placeholder='filter subtipe'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.name}
-                      onChange={value => setFilter({...filter, name: value.trimStart().toUpperCase()})}
-                      placeholder='filter nama'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.priceClass1}
-                      onChange={value => setFilter({...filter, priceClass1: value.trim()})}
-                      placeholder='filter harga kelas 1'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.priceClass2}
-                      onChange={value => setFilter({...filter, priceClass2: value.trim()})}
-                      placeholder='filter harga kelas 2'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.priceClass3}
-                      onChange={value => setFilter({...filter, priceClass3: value.trim()})}
-                      placeholder='filter harga kelas 3'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.priceClass4}
-                      onChange={value => setFilter({...filter, priceClass4: value.trim()})}
-                      placeholder='filter harga kelas 4'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.priceClass5}
-                      onChange={value => setFilter({...filter, priceClass5: value.trim()})}
-                      placeholder='filter harga kelas 5'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500'>
-                    <Input
-                      className='font-normal'
-                      value={filter.note}
-                      onChange={value => setFilter({...filter, note: value.trimStart().toUpperCase()})}
-                      placeholder='filter keterangan'
-                      size='md'
-                    />
-                  </th>
-                  <th className='p-2 border-x border-blue-500 w-0 whitespace-nowrap'>
-                    <Button
-                      className='w-full font-normal'
-                      label='Bersihkan Filter'
-                      onClick={clearFilter}
-                      size='md'
-                    />
-                  </th>
+                  </td>
                 </tr>
-                <tr className='border-y border-blue-500'>
-                  <th colSpan={10} className='p-2 text-start'>Total: {filteredServices?.length} dari {services.length}</th>
-                </tr>
-              </>
-            )}
-          </thead>
-          <tbody>
-            {!services ? (
-              <tr>
-                <td colSpan={10} className='p-2 text-center'>Sedang memuat data mohon tunggu ...</td>
-              </tr>
-            ) : (services.length === 0) ? (
-              <tr>
-                <td colSpan={10} className='p-2 text-center'>Data kosong.</td>
-              </tr>
-            ) : (filteredServices?.length === 0) && (
-              <tr>
-                <td colSpan={10} className='p-2 text-center'>Data tidak ditemukan.</td>
-              </tr>
-            )}
-            {filteredServices?.map((service, index) => (
-              <tr key={index} className='odd:bg-neutral-200 even:bg-neutral-300 hover:bg-blue-300'>
-                <td className='p-2'>{service?.type?.name ? service.type.name : '-'}</td>
-                <td className='p-2'>{service.subType ? service.subType : '-'}</td>
-                <td className='p-2'>{service.name}</td>
-                <td className='p-2 text-end'>{service.price.class1 ? splitString(service.price.class1, 3, '.') : '-'}</td>
-                <td className='p-2 text-end'>{service.price.class2 ? splitString(service.price.class2, 3, '.') : '-'}</td>
-                <td className='p-2 text-end'>{service.price.class3 ? splitString(service.price.class3, 3, '.') : '-'}</td>
-                <td className='p-2 text-end'>{service.price.class4 ? splitString(service.price.class4, 3, '.') : '-'}</td>
-                <td className='p-2 text-end'>{service.price.class5 ? splitString(service.price.class5, 3, '.') : '-'}</td>
-                <td className='p-2'>{service.note ? service.note : '-'}</td>
-                <td className='p-2'>
-                  <div className='flex justify-center gap-4'>
-                    <Button
-                      label='Ubah'
-                      onClick={() => navigate(`/service/form/update?_id=${service._id}`)}
-                      color='yellow'
-                    />
-                    <Button
-                      label='Hapus'
-                      onClick={() => navigate(`/service/form/delete?_id=${service._id}`)}
-                      color='red'
-                    />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
   );
 };

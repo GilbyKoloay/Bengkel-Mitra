@@ -1,182 +1,233 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import {
+  useNavigate,
+  useLocation,
+  useParams,
+  Navigate
+} from 'react-router-dom';
 
-import { Input, Button, ConfirmationDialog } from '../../../components';
-import { Fetch, createSocket } from '../../../functions';
+import { Button, Input, ConfirmationDialog } from '../../../components';
+import {
+  Fetch,
+  createSocket,
+  notificationToast,
+  toProperString
+} from '../../../functions';
 
 
 
 export default function TypeForm() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { formType } = useParams();
+  const isFormCreate = (location.pathname.split('/')[3] === 'create') ? true : false;
+  const isFormUpdate = (location.pathname.split('/')[3] === 'update') ? true : false;
+  const isFormDelete = (location.pathname.split('/')[3] === 'delete') ? true : false;
 
-  const [parameters] = useSearchParams();
-  const _id = parameters.get('_id');
+  const { _id } = useParams();
 
+  const { _types } = useSelector(state => state._app);
+
+  const [isFormLoading, setIsFormLoading] = useState(isFormCreate ? false : true);
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
-  const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
-  const [openFormDeleteDialog, setOpenFormDeleteDialog] = useState(false);
+  const [isDeleteConfirmationDialogOpen, setIsDeleteConfirmationDialogOpen] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [formErrMsg, setFormErrMsg] = useState('');
 
 
 
   useEffect(() => {
-    if (
-      formType !== 'create' &&
-      formType !== 'update' &&
-      formType !== 'delete'
-    ) navigate('/type');
+    if (isFormUpdate || isFormDelete) {
+      const socket = createSocket();
 
-    if (
-      formType === 'update' ||
-      formType === 'delete'
-    ) loadFormInitialData();
+      socket.on('type-update', updated_id => {
+        if (_id === updated_id) notificationToast('Data ini sudah diperbarui pengguna lain.', 'Tekan tombol \'Muat Ulang\' untuk melihat data yang terbaru.', 'warning');
+      });
+
+      socket.on('type-delete', deleted_id => {
+        if (_id === deleted_id) {
+          notificationToast('Data ini sudah dihapus pengguna lain.', null, 'warning');
+          
+          setTimeout(() => {
+            navigate('/type');
+          }, 2500);
+        }
+      });
+
+      return () => socket.disconnect();
+    }
   }, []);
 
   useEffect(() => {
-    setFormErrMsg('');
-  }, [name, note]);
+    if (_types && isFormLoading) {
+      setIsFormLoading(false);
+      loadForm();
+    }
+  }, [_types]);
 
 
+  
+  function clearForm() {
+    setName('');
+    setNote('');
+  }
 
-  async function loadFormInitialData() {
-    const res = await Fetch(`/type/get-all?_id=${_id}&name&note`);
-    if (res?.ok) {
-      if (res.payload.length === 0) navigate('/type');
-      else {
-        setName(res.payload[0].name);
-        setNote(res.payload[0].note ? res.payload[0].note : '');
-        setIsFormLoadingInitialData(false);
-      }
+  function loadForm() {
+    const type = _types.filter(type => type._id === _id)[0];
+
+    if (!type) navigate('/type');
+    else {
+      setName(type.name);
+      setNote(type.note);
     }
   }
 
-  async function formOnSubmit(e) {
-    e.preventDefault();
-    if (openFormDeleteDialog) setOpenFormDeleteDialog(false);
+  async function formSubmit(e) {
+    e?.preventDefault();
     setIsFormSubmitting(true);
 
-    const payload = {
-      _id,
-      name: name.trimEnd(),
-      note: note?.trimEnd()
-    };
+    let payload = {};
+
+    if (isFormCreate) {
+      payload = {
+        name: toProperString(name),
+        note: toProperString(note)
+      };
+    } else if (isFormUpdate) {
+      payload = {
+        _id,
+        name: toProperString(name),
+        note: toProperString(note)
+      };
+    } else if (isFormDelete) {
+      payload = {
+        _id
+      };
+    }
 
     const res = await Fetch(
-      `/type/${formType}`,
-      (formType === 'create') ? 'POST' : (formType === 'update') ? 'PUT' : 'DELETE',
-      payload
+      '/type',
+      isFormCreate ? 'POST' : isFormUpdate ? 'PUT' : isFormDelete ? 'DELETE' : undefined,
+      payload, {title: `Sedang ${isFormCreate ? 'menambahkan' : isFormUpdate ? 'memperbarui' : isFormDelete ? 'menghapus' : ''} data tipe ...`},
+      true
     );
     if (res) {
       setIsFormSubmitting(false);
       if (res.ok) {
         const socket = createSocket();
-        socket.emit(
-          `type-${(formType === 'create') ? 'new' : formType}`,
-          _id ? {_id} : undefined
-        );
-
+        if (isFormCreate) socket.emit('type-create');
+        else if (isFormUpdate) socket.emit('type-update', _id);
+        else if (isFormDelete) socket.emit('type-delete', _id);
+        
         navigate('/type');
       }
-      else setFormErrMsg(res.message);
     }
   }
 
-  function formClear() {
-    setName('');
-    setNote('');
-  }
-
-  function formReset() {
-    setIsFormLoadingInitialData(true);
-    loadFormInitialData();
-  }
 
 
+  if (!isFormCreate && !isFormUpdate && !isFormDelete) return <Navigate to='/type' />
 
   return (
     <main>
-      <form className='h-full flex flex-col' onSubmit={formOnSubmit}>
-        <div className='text-xl'>{(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'} Tipe</div>
+      <Button
+        label='Kembali'
+        onClick={() => navigate('/type')}
+        size='md'
+      />
 
-        {isFormLoadingInitialData && <div className='text-lg'>Sedang memuat data, mohon tunggu ...</div>}
-        {isFormSubmitting && <div className='text-lg'>Sedang {(formType === 'create') ? 'menambahkan' : (formType === 'update') ? 'mengubah' : 'menghapus'} data, mohon tunggu ...</div>}
-        {formErrMsg && <div className='text-lg text-red-500'>{formErrMsg}</div>}
+      <div className='mt-4 text-2xl'>
+        {isFormCreate ? 'Tambah ' :
+        isFormUpdate ? 'Perbarui ' :
+        isFormDelete ? 'Hapus ' : ''}
+        Tipe
+      </div>
 
-        {!isFormLoadingInitialData && (
-          <>
-            <div className='pt-4 pb-8 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 md:gap-8 overflow-y-auto'>
-              <div>
-                <Input
-                  label='Nama'
-                  value={name}
-                  onChange={value => setName(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-              </div>
-              <div>
-                <Input
-                  className='mt-4 sm:mt-0'
-                  label='Keterangan'
-                  value={note}
-                  onChange={value => setNote(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-              </div>
-            </div>
-            <div className='flex flex-col sm:flex-row gap-2 sm:gap-4 md:gap-8'>
-              <Button
-                className='flex-1'
-                label='Kembali'
-                onClick={() => navigate('/type')}
-                size='lg'
-              />
-              {(formType === 'create') ? (
-                <Button
-                  className='flex-1'
-                  label='Bersihkan'
-                  onClick={formClear}
-                  size='lg'
-                  color='red'
-                  disabled={isFormSubmitting}
-                />
-              ) : (formType === 'update') && (
-                <Button
-                  className='flex-1'
-                  label='Atur Ulang'
-                  onClick={formReset}
-                  size='lg'
-                  color='red'
-                  disabled={isFormLoadingInitialData || isFormSubmitting}
-                />
-              )}
-              <Button
-                className='flex-1'
-                label={(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'}
-                onClick={(formType === 'delete') ? () => setOpenFormDeleteDialog(true) : null}
-                type={(formType === 'delete') ? 'button' : 'submit'}
-                size='lg'
-                color={(formType === 'delete') ? 'red' : 'blue'}
-                disabled={isFormLoadingInitialData || isFormSubmitting}
-              />
-            </div>
-          </>
+      <form onSubmit={formSubmit} className='mt-4'>
+        <div className='grid gap-4 grid-cols-1 sm:grid-cols-2'>
+          <Input
+            label='Nama'
+            value={name}
+            onChange={value => setName(value)}
+            size='lg'
+            disabled={isFormDelete || isFormSubmitting}
+          />
+          <Input
+            label='Keterangan'
+            value={note}
+            onChange={value => setNote(value)}
+            size='lg'
+            disabled={isFormDelete || isFormSubmitting}
+          />
+        </div>
+
+        {isFormCreate ? (
+          <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
+            <Button
+              label='Bersihkan'
+              onClick={clearForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Tambah'
+              type='submit'
+              size='lg'
+              theme='blue'
+              disabled={isFormSubmitting}
+            />
+          </div>
+        ) : isFormUpdate ? (
+          <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-3'>
+            <Button
+              label='Bersihkan'
+              onClick={clearForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Muat Ulang'
+              onClick={loadForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Perbarui'
+              type='submit'
+              size='lg'
+              theme='blue'
+              disabled={isFormSubmitting}
+            />
+          </div>
+        ) : isFormDelete && (
+          <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
+            <Button
+              label='Muat Ulang'
+              onClick={loadForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Hapus'
+              onClick={() => setIsDeleteConfirmationDialogOpen(true)}
+              size='lg'
+              theme='red'
+              disabled={isFormSubmitting}
+            />
+          </div>
         )}
       </form>
 
-      {/* Form Delete Dialog */}
-      {openFormDeleteDialog && (
+
+
+      {(isFormDelete && isDeleteConfirmationDialogOpen) && (
         <ConfirmationDialog
-          title='Hapus data'
+          title='Konfirmasi penghapusan data'
           description='Apakah anda yakin ingin menghapus data ini?'
-          onCancel={() => setOpenFormDeleteDialog(false)}
-          onConfirm={formOnSubmit}
-          color='red'
+          onCancel={() => setIsDeleteConfirmationDialogOpen(false)}
+          onConfirm={() => {setIsDeleteConfirmationDialogOpen(false); formSubmit(); setIsDeleteConfirmationDialogOpen(false)}}
+          theme='red'
         />
       )}
     </main>

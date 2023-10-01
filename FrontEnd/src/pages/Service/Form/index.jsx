@@ -1,28 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  useNavigate,
+  useLocation,
+  useParams,
+  Navigate
+} from 'react-router-dom';
 
 import {
-  Input,
   Button,
-  Select,
-  ConfirmationDialog
+  InputOption,
+  Input,
+  ConfirmationDialog,
 } from '../../../components';
-import { Fetch, createSocket } from '../../../functions';
+import {
+  Fetch,
+  createSocket,
+  notificationToast,
+  toProperString
+} from '../../../functions';
 
 
 
-export default function TypeForm() {
+export default function ServiceForm() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { formType } = useParams();
+  const isFormCreate = (location.pathname.split('/')[3] === 'create') ? true : false;
+  const isFormUpdate = (location.pathname.split('/')[3] === 'update') ? true : false;
+  const isFormDelete = (location.pathname.split('/')[3] === 'delete') ? true : false;
 
-  const [parameters] = useSearchParams();
-  const _id = parameters.get('_id');
+  const { _id } = useParams();
 
-  const { types } = useSelector(state => state.app);
+  const { _services, _types } = useSelector(state => state._app);
 
-  const [type, setType] = useState('');
+  const [isFormLoading, setIsFormLoading] = useState(isFormCreate ? false : true);
+  const [type, setType] = useState([null, '']);
   const [subType, setSubType] = useState('');
   const [name, setName] = useState('');
   const [price_class1, setPrice_class1] = useState('');
@@ -31,93 +44,44 @@ export default function TypeForm() {
   const [price_class4, setPrice_class4] = useState('');
   const [price_class5, setPrice_class5] = useState('');
   const [note, setNote] = useState('');
-  const [isFormLoadingInitialData, setIsFormLoadingInitialData] = useState((formType === 'create') ? false : true);
-  const [openFormDeleteDialog, setOpenFormDeleteDialog] = useState(false);
+  const [isDeleteConfirmationDialogOpen, setIsDeleteConfirmationDialogOpen] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [formErrMsg, setFormErrMsg] = useState('');
 
 
 
   useEffect(() => {
-    if (
-      formType !== 'create' &&
-      formType !== 'update' &&
-      formType !== 'delete'
-    ) navigate('/service');
+    if (isFormUpdate || isFormDelete) {
+      const socket = createSocket();
 
-    if (
-      formType === 'update' ||
-      formType === 'delete'
-    ) loadFormInitialData();
+      socket.on('service-update', updated_id => {
+        if (_id === updated_id) notificationToast('Data ini sudah diperbarui pengguna lain.', 'Tekan tombol \'Muat Ulang\' untuk melihat data yang terbaru.', 'warning');
+      });
+
+      socket.on('service-delete', deleted_id => {
+        if (_id === deleted_id) {
+          notificationToast('Data ini sudah dihapus pengguna lain.', null, 'warning');
+          
+          setTimeout(() => {
+            navigate('/service');
+          }, 2500);
+        }
+      });
+
+      return () => socket.disconnect();
+    }
   }, []);
 
   useEffect(() => {
-    setFormErrMsg('');
-  }, [name, type, subType, price_class1, price_class2, price_class3, price_class4, price_class5, note]);
-
-
-
-  async function loadFormInitialData() {
-    const res = await Fetch(`/service/get-all?_id=${_id}&name&type&subType&price`);
-    if (res?.ok) {
-      if (res.payload.length === 0) navigate('/service');
-      else {
-        setType(res.payload[0].type?._id);
-        setSubType(res.payload[0].subType ? res.payload[0].subType : '');
-        setName(res.payload[0].name);
-        setPrice_class1(res.payload[0].price.class1);
-        setPrice_class2(res.payload[0].price.class2);
-        setPrice_class3(res.payload[0].price.class3);
-        setPrice_class4(res.payload[0].price.class4);
-        setPrice_class5(res.payload[0].price.class5);
-        setNote(res.payload[0].note ? res.payload[0].note : '');
-        setIsFormLoadingInitialData(false);
-      }
+    if (_services && isFormLoading) {
+      setIsFormLoading(false);
+      loadForm();
     }
-  }
+  }, [_services]);
 
-  async function formOnSubmit(e) {
-    e.preventDefault();
-    if (openFormDeleteDialog) setOpenFormDeleteDialog(false);
-    setIsFormSubmitting(true);
 
-    const payload = {
-      _id,
-      type: type,
-      subType: subType?.trimEnd(),
-      name: name.trimEnd(),
-      price: {
-        class1: parseInt(price_class1),
-        class2: parseInt(price_class2),
-        class3: parseInt(price_class3),
-        class4: parseInt(price_class4),
-        class5: parseInt(price_class5)
-      },
-      note: note?.trimEnd()
-    };
-
-    const res = await Fetch(
-      `/service/${formType}`,
-      (formType === 'create') ? 'POST' : (formType === 'update') ? 'PUT' : 'DELETE',
-      payload
-    );
-    if (res) {
-      setIsFormSubmitting(false);
-      if (res.ok) {
-        const socket = createSocket();
-        socket.emit(
-          `service-${(formType === 'create') ? 'new' : formType}`,
-          _id ? {_id} : undefined
-        );
-
-        navigate('/service');
-      }
-      else setFormErrMsg(res.message);
-    }
-  }
-
-  function formClear() {
-    setType('');
+  
+  function clearForm() {
+    setType([null, '']);
     setSubType('');
     setName('');
     setPrice_class1('');
@@ -128,152 +92,249 @@ export default function TypeForm() {
     setNote('');
   }
 
-  function formReset() {
-    setIsFormLoadingInitialData(true);
-    loadFormInitialData();
+  function loadForm() {
+    const service = _services.filter(service => service._id === _id)[0];
+
+    if (!service) navigate('/service');
+    else {
+      setType([
+        service.type,
+        service.type?.name ? service.type.name : ''
+      ]);
+      setSubType(service.subType ? service.subType : '');
+      setName(service.name);
+      setPrice_class1(service.price.class1 ? service.price.class1 : '');
+      setPrice_class2(service.price.class2 ? service.price.class2 : '');
+      setPrice_class3(service.price.class3 ? service.price.class3 : '');
+      setPrice_class4(service.price.class4 ? service.price.class4 : '');
+      setPrice_class5(service.price.class5 ? service.price.class5 : '');
+      setNote(service.note ? service.note : '');
+    }
+  }
+
+  async function formSubmit(e) {
+    e?.preventDefault();
+    setIsFormSubmitting(true);
+
+    let payload = {};
+
+    if (isFormCreate) {
+      payload = {
+        type: type[0]?._id,
+        subType: toProperString(subType),
+        name: toProperString(name),
+        price: {
+          class1: parseInt(price_class1),
+          class2: parseInt(price_class2),
+          class3: parseInt(price_class3),
+          class4: parseInt(price_class4),
+          class5: parseInt(price_class5),
+        },
+        note: toProperString(note)
+      };
+    } else if (isFormUpdate) {
+      payload = {
+        _id,
+        type: type[0]?._id,
+        subType: toProperString(subType),
+        name: toProperString(name),
+        price: {
+          class1: parseInt(price_class1),
+          class2: parseInt(price_class2),
+          class3: parseInt(price_class3),
+          class4: parseInt(price_class4),
+          class5: parseInt(price_class5),
+        },
+        note: toProperString(note)
+      };
+    } else if (isFormDelete) {
+      payload = {
+        _id
+      };
+    }
+
+    const res = await Fetch(
+      '/service',
+      isFormCreate ? 'POST' : isFormUpdate ? 'PUT' : isFormDelete ? 'DELETE' : undefined,
+      payload, {title: `Sedang ${isFormCreate ? 'menambahkan' : isFormUpdate ? 'memperbarui' : isFormDelete ? 'menghapus' : ''} data layanan ...`},
+      true
+    );
+    if (res) {
+      setIsFormSubmitting(false);
+      if (res.ok) {
+        const socket = createSocket();
+        if (isFormCreate) socket.emit('service-create');
+        else if (isFormUpdate) socket.emit('service-update', _id);
+        else if (isFormDelete) socket.emit('service-delete', _id);
+        
+        navigate('/service');
+      }
+    }
   }
 
 
 
+  if (!isFormCreate && !isFormUpdate && !isFormDelete) return <Navigate to='/service' />
+
   return (
     <main>
-      <form className='h-full flex flex-col' onSubmit={formOnSubmit}>
-        <div className='text-xl'>{(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'} Layanan</div>
+      <Button
+        label='Kembali'
+        onClick={() => navigate('/service')}
+        size='md'
+      />
 
-        {(isFormLoadingInitialData || !types) && <div className='text-lg'>Sedang memuat data, mohon tunggu ...</div>}
-        {(types?.length === 0) && <div className='text-lg text-red-500'>Tipe masih kosong, silahkan mengisi tipe terlebih dahulu.</div>}
-        {isFormSubmitting && <div className='text-lg'>Sedang {(formType === 'create') ? 'menambahkan' : (formType === 'update') ? 'mengubah' : 'menghapus'} data, mohon tunggu ...</div>}
-        {formErrMsg && <div className='text-lg text-red-500'>{formErrMsg}</div>}
+      <div className='mt-4 text-2xl'>
+        {isFormCreate ? 'Tambah ' :
+        isFormUpdate ? 'Perbarui ' :
+        isFormDelete ? 'Hapus ' : ''}
+        Layanan
+      </div>
 
-        {(!isFormLoadingInitialData && types?.length > 0) && (
-          <>
-            <div className='pt-4 pb-8 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 md:gap-8 overflow-y-auto'>
-              <div>
-                <Select
-                  label='Tipe'
-                  value={type}
-                  onChange={value => setType(value)}
-                  options={types.map(option => ([option._id, option.name]))}
-                  placeholder='(TIPE)'
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Subtipe'
-                  value={subType}
-                  onChange={value => setSubType(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Nama'
-                  value={name}
-                  onChange={value => setName(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Keterangan'
-                  value={note}
-                  onChange={value => setNote(value.trimStart().toUpperCase())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-              </div>
-              <div>
-                <Input
-                  className='mt-4 sm:mt-0'
-                  label='Harga Kelas 1'
-                  value={price_class1}
-                  onChange={value => setPrice_class1(value.trim())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Harga Kelas 2'
-                  value={price_class2}
-                  onChange={value => setPrice_class2(value.trim())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Harga Kelas 3'
-                  value={price_class3}
-                  onChange={value => setPrice_class3(value.trim())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Harga Kelas 4'
-                  value={price_class4}
-                  onChange={value => setPrice_class4(value.trim())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-                <Input
-                  className='mt-4'
-                  label='Harga Kelas 5'
-                  value={price_class5}
-                  onChange={value => setPrice_class5(value.trim())}
-                  size='lg'
-                  disabled={isFormLoadingInitialData || isFormSubmitting || (formType === 'delete')}
-                />
-              </div>
-            </div>
-            <div className='flex flex-col sm:flex-row gap-2 sm:gap-4 md:gap-8'>
-              <Button
-                className='flex-1'
-                label='Kembali'
-                onClick={() => navigate('/service')}
+      {(!_types) ? (
+        <div className='mt-4 text-lg'>Sedang memuat data tipe, mohon tunggu ...</div>
+      ) : (_types.length === 0) ? (
+        <div className='mt-4 text-lg'>Data tipe kosong, silahkan tambah data tipe terlebih dahulu</div>
+      ) : (
+        <form onSubmit={formSubmit} className='mt-4'>
+          <div className='grid gap-4 grid-cols-1 sm:grid-cols-2'>
+            <div className='flex flex-col gap-4'>
+              <InputOption
+                label='Tipe'
+                value={type[1]}
+                options={_types.map(type => [type, type.name])}
+                onChange={value => setType([value[0], value[1]])}
                 size='lg'
+                disabled={isFormDelete || isFormSubmitting}
               />
-              {(formType === 'create') ? (
-                <Button
-                  className='flex-1'
-                  label='Bersihkan'
-                  onClick={formClear}
-                  size='lg'
-                  color='red'
-                  disabled={isFormSubmitting}
-                />
-              ) : (formType === 'update') && (
-                <Button
-                  className='flex-1'
-                  label='Atur Ulang'
-                  onClick={formReset}
-                  size='lg'
-                  color='red'
-                  disabled={isFormLoadingInitialData || isFormSubmitting}
-                />
-              )}
-              <Button
-                className='flex-1'
-                label={(formType === 'create') ? 'Tambah' : (formType === 'update') ? 'Ubah' : 'Hapus'}
-                onClick={(formType === 'delete') ? () => setOpenFormDeleteDialog(true) : null}
-                type={(formType === 'delete') ? 'button' : 'submit'}
+              <Input
+                label='Subtipe'
+                value={subType}
+                onChange={value => setSubType(value)}
                 size='lg'
-                color={(formType === 'delete') ? 'red' : 'blue'}
-                disabled={isFormLoadingInitialData || isFormSubmitting}
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Nama'
+                value={name}
+                onChange={value => setName(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Keterangan'
+                value={note}
+                onChange={value => setNote(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
               />
             </div>
-          </>
-        )}
-      </form>
+            <div className='flex flex-col gap-4'>
+              <Input
+                label='Harga Kelas 1'
+                value={price_class1}
+                onChange={value => setPrice_class1(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Harga Kelas 2'
+                value={price_class2}
+                onChange={value => setPrice_class2(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Harga Kelas 3'
+                value={price_class3}
+                onChange={value => setPrice_class3(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Harga Kelas 4'
+                value={price_class4}
+                onChange={value => setPrice_class4(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+              <Input
+                label='Harga Kelas 5'
+                value={price_class5}
+                onChange={value => setPrice_class5(value)}
+                size='lg'
+                disabled={isFormDelete || isFormSubmitting}
+              />
+            </div>
+          </div>
 
-      {/* Form Delete Dialog */}
-      {openFormDeleteDialog && (
+          {isFormCreate ? (
+            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
+              <Button
+                label='Bersihkan'
+                onClick={clearForm}
+                size='lg'
+                disabled={isFormSubmitting}
+              />
+              <Button
+                label='Tambah'
+                type='submit'
+                size='lg'
+                theme='blue'
+                disabled={isFormSubmitting}
+              />
+            </div>
+          ) : isFormUpdate ? (
+            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-3'>
+              <Button
+                label='Bersihkan'
+                onClick={clearForm}
+                size='lg'
+                disabled={isFormSubmitting}
+              />
+              <Button
+                label='Muat Ulang'
+                onClick={loadForm}
+                size='lg'
+                disabled={isFormSubmitting}
+              />
+              <Button
+                label='Perbarui'
+                type='submit'
+                size='lg'
+                theme='blue'
+                disabled={isFormSubmitting}
+              />
+            </div>
+          ) : isFormDelete && (
+            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
+              <Button
+                label='Muat Ulang'
+                onClick={loadForm}
+                size='lg'
+                disabled={isFormSubmitting}
+              />
+              <Button
+                label='Hapus'
+                onClick={() => setIsDeleteConfirmationDialogOpen(true)}
+                size='lg'
+                theme='red'
+                disabled={isFormSubmitting}
+              />
+            </div>
+          )}
+        </form>
+      )}
+
+
+
+      {(isFormDelete && isDeleteConfirmationDialogOpen) && (
         <ConfirmationDialog
-          title='Hapus data'
+          title='Konfirmasi penghapusan data'
           description='Apakah anda yakin ingin menghapus data ini?'
-          onCancel={() => setOpenFormDeleteDialog(false)}
-          onConfirm={formOnSubmit}
-          color='red'
+          onCancel={() => setIsDeleteConfirmationDialogOpen(false)}
+          onConfirm={() => {setIsDeleteConfirmationDialogOpen(false); formSubmit(); setIsDeleteConfirmationDialogOpen(false);}}
+          theme='red'
         />
       )}
     </main>

@@ -1,65 +1,67 @@
+import { toProperString } from '../../functions';
+
+
+
 export default function InputOption({
   className='',
-  label=null,
+  label='',
   value='',
-  onChange=null,
   options=null,
+  onChange=null,
   placeholder='',
+  disabled=false,
   size='sm',
-  color='neutral',
-  disabled=false
+  theme='neutral'
 }) {
   return (
-    <div className={className}>
+    <div
+      className={`flex flex-col
+        ${className}
+      `}
+    >
       {label && (
-        <label className={
-          (size === 'sm') ? 'text-base'
-          : (size === 'md') ? 'text-lg'
-          : (size === 'lg') ? 'text-xl' : ''}
+        <label
+          className={
+            (size === 'sm') ? 'text-base' :
+            (size === 'md') ? 'text-lg' :
+            (size === 'lg') ? 'text-xl' : ''
+          }
         >
           {label}
         </label>
       )}
       <input
-        className={`px-2 h-full w-full border rounded focus:outline focus:outline-2 focus:-outline-offset-2
-          ${(size === 'sm') ? 'py-1 text-sm'
-          : (size === 'md') ? 'py-1 text-base'
-          : (size === 'lg') ? 'py-2 text-lg' : ''}
-          ${disabled ? 'bg-neutral-500 border-neutral-700 hover:cursor-not-allowed'
-          : (color === 'neutral') ? 'bg-neutral-300 border-neutral-700 focus:outline-neutral-700'
-          : (color === 'red') ? 'bg-red-300 border-red-700 focus:outline-red-700'
-          : (color === 'yellow') ? 'bg-yellow-300 border-yellow-700 focus:outline-yellow-700'
-          : (color === 'green') ? 'bg-green-300 border-green-700 focus:outline-green-700'
-          : (color === 'cyan') ? 'bg-cyan-300 border-cyan-700 focus:outline-cyan-700'
-          : (color === 'blue') ? 'bg-blue-300 border-blue-700 focus:outline-blue-700'
-          : (color === 'purple') ? 'bg-purple-300 border-purple-700 focus:outline-purple-700' : ''}
+        className={`w-full border-2 focus:outline focus:outline-1 focus:outline-offset-1 placeholder:text-neutral-500
+          ${(size === 'sm') ? 'py-1 px-1 text-sm' :
+            (size === 'md') ? 'py-1 px-2 text-base' :
+            (size === 'lg') ? 'py-2 px-2 text-lg' : ''
+          }
+          ${disabled ? 'bg-neutral-500 border-neutral-700 rounded hover:cursor-not-allowed' : (
+            (theme === 'neutral') ? 'bg-neutral-300 border-neutral-700 rounded focus:outline-neutral-700' : ''
+          )}
         `}
         value={value}
         onChange={e => {
-          let newValue = [null, e.target.value];
-          options?.forEach(option => {if (e.target.value.toUpperCase() === option[1]) newValue = [option[0], option[1]]});
-          onChange(newValue);
+          const optionExist = options.filter(option => option[1] === toProperString(e.target.value))[0];
+          if (optionExist) onChange([optionExist[0], e.target.value]);
+          else onChange([null, e.target.value]);
         }}
         placeholder={placeholder}
         disabled={disabled}
       />
       {value && (
-        <div className={`max-h-64 overflow-y-auto border rounded hover:cursor-pointer`}>
-          {options?.map(option => (option[1].includes(value) && (value !== option[1])) && (
+        <div className={`w-full border rounded max-h-48 overflow-y-auto
+          ${(theme === 'neutral') ? 'border-neutral-700' : ''}
+        `}>
+          {options.filter(option => option[1].includes(toProperString(value))).map((option, index) => (option[1] !== toProperString(value)) && (
             <div
-              key={option[0]}
-              className={`
-                ${(size === 'sm') ? 'p-1 text-sm'
-                : (size === 'md') ? 'p-1 text-base'
-                : (size === 'lg') ? 'p-2 text-lg' : ''}
-                ${disabled ? 'bg-neutral-500 border-neutral-700 hover:cursor-not-allowed'
-                : (color === 'neutral') ? 'bg-neutral-300 border-neutral-700 hover:bg-neutral-500 focus:outline-neutral-700'
-                : (color === 'red') ? 'bg-red-300 border-red-700 hover:bg-red-500 focus:outline-red-700'
-                : (color === 'yellow') ? 'bg-yellow-300 border-yellow-700 hover:bg-yellow-500 focus:outline-yellow-700'
-                : (color === 'green') ? 'bg-green-300 border-green-700 hover:bg-green-500 focus:outline-green-700'
-                : (color === 'cyan') ? 'bg-cyan-300 border-cyan-700 hover:bg-cyan-500 focus:outline-cyan-700'
-                : (color === 'blue') ? 'bg-blue-300 border-blue-700 hover:bg-blue-500 focus:outline-blue-700'
-                : (color === 'purple') ? 'bg-purple-300 border-purple-700 hover:bg-purple-500 focus:outline-purple-700' : ''}
+              key={index}
+              className={`hover:cursor-pointer py-1 px-2
+                ${(size === 'sm') ? 'text-sm' :
+                  (size === 'md') ? 'text-base' :
+                  (size === 'lg') ? 'text-lg' : ''
+                }
+                ${(theme === 'neutral') ? 'hover:bg-neutral-300' : ''}
               `}
               onClick={() => onChange([option[0], option[1]])}
             >

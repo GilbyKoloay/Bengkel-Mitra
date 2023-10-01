@@ -1,89 +1,75 @@
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-import { Button, Select } from '../';
-import {
-  clear_token,
-  clearServices,
-  clearTypes,
-  clearTransactions
-} from '../../redux/app';
-
-
-
-const PageButton = ({ label, URL }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-
-
-  return (
-    <Button
-      label={label}
-      onClick={() => navigate(URL)}
-      size='md'
-      color='blue'
-      disabled={location.pathname === URL}
-    />
-  );
-};
+import { Select, Button, ConfirmationDialog } from '../';
+import { _app } from '../../redux';
 
 
 
 export default function Nav() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
+  const pages = [
+    ['/service', 'Layanan'],
+    ['/type', 'Tipe'],
+    ['/transaction', 'Transaksi']
+  ];
 
-
-  function logoutOnClick() {
-    dispatch(clear_token());
-    dispatch(clearServices());
-    dispatch(clearTypes());
-    dispatch(clearTransactions());
-  }
+  const [isLogoutConfirmDialogOpen, setIsLogoutConfirmDialogOpen] = useState(false);
 
 
 
   return (
-    <nav className='bg-blue-300 flex-1 border round border-blue-700 px-8 flex justify-between gap-8'>
-      <div className='hidden md:flex text-xl flex-col justify-center items-center'>
-        <div>Bengkel</div>
-        <div>Mitra</div>
-      </div>
-
-      <div className='flex-1 flex items-center'>
-        <div className='sm:hidden h-full w-full py-2'>
-          <Select
-            className='h-full w-full'
-            value={location.pathname}
-            onChange={value => navigate(value)}
-            options={[
-              ['/service', 'Layanan'],
-              ['/type', 'Tipe'],
-              ['/transaction', 'Transaksi'],
-            ]}
-            size='lg'
-            color='blue'
-          />
-        </div>
-        <div className='hidden sm:flex h-full w-full py-2 gap-4'>
-          <PageButton label='Layanan' URL='/service' />
-          <PageButton label='Tipe' URL='/type' />
-          <PageButton label='Transaksi' URL='/transaction' />
-        </div>
-      </div>
-
-      <div className='py-2'>
-        <Button
-          className='h-full'
-          label='Keluar'
-          onClick={logoutOnClick}
+    <nav className='h-[10vh] bg-gradient-to-r from-cyan-300 via-blue-300 to-violet-300 border-b-2 border-blue-500 flex justify-between items-center px-4'>
+      <div className='flex sm:hidden'>
+        <Select
+          className='flex-1 mx-4'
+          value={
+            (location.pathname.includes('/service')) ? '/service' :
+            (location.pathname.includes('/type')) ? '/type' :
+            (location.pathname.includes('/transaction')) ? '/transaction' : ''
+          }
+          options={pages}
+          onChange={value => navigate(value)}
+          placeholder='(Halaman)'
           size='md'
-          color='red'
+          theme='blue'
         />
       </div>
+      <div className='hidden sm:flex gap-4'>
+        {pages.map((page, index) => (
+          <Button
+            key={index}
+            label={page[1]}
+            onClick={() => navigate(page[0])}
+            disabled={location.pathname.includes(page[0])}
+            size='md'
+            theme='blue'
+          />
+        ))}
+      </div>
+
+      <div>
+        <Button
+          label='Keluar'
+          onClick={() => setIsLogoutConfirmDialogOpen(true)}
+          size='md'
+          theme='red'
+        />
+      </div>
+
+      {isLogoutConfirmDialogOpen && (
+        <ConfirmationDialog
+          title='Konfirmasi Keluar'
+          description='Apakah anda yakin ingin keluar?'
+          onCancel={() => setIsLogoutConfirmDialogOpen(false)}
+          onConfirm={() => {setIsLogoutConfirmDialogOpen(false); dispatch(_app.clearToken())}}
+          theme='red'
+        />
+      )}
     </nav>
   );
 };
