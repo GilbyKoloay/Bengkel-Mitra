@@ -209,7 +209,7 @@ export default function TransactionForm() {
     if (res) {
       setIsFormSubmitting(false);
       if (res.ok) {
-        setIsPrintInvoiceDialogOpen(true);
+        setIsPrintInvoiceDialogOpen(payload);
 
         const socket = createSocket();
         if (isFormCreate) socket.emit('transaction-create');
@@ -510,7 +510,7 @@ export default function TransactionForm() {
           title='Konfirmasi pencetakan faktur'
           description='Apakah anda ingin mencetak faktur?'
           onCancel={() => {setIsPrintInvoiceDialogOpen(false); navigate('/transaction');}}
-          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createTransactionInvoicePDF(); navigate('/transaction');}}
+          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createTransactionInvoicePDF(isPrintInvoiceDialogOpen); navigate('/transaction');}}
           theme='blue'
         />
       )}
