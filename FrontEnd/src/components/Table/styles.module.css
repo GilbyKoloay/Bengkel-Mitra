@@ -1,0 +1,35 @@
+/* Table */
+
+.head tr th {
+  background-color: #3B82F6;
+  border: 1px solid #1D4ED8;
+  padding: 0.5rem;
+}
+
+.head tr.filter th {
+  font-weight: 400;
+}
+.head tr.filter th:last-child {
+  white-space: nowrap;
+}
+
+.head tr.info th {
+  text-align: left;
+}
+
+
+
+.data tr:nth-child(odd) {
+  background-color: #E5E5E5;
+}
+.data tr:nth-child(even) {
+  background-color: #D4D4D4;
+}
+.data tr:hover {
+  background-color: #93C5FD;
+}
+
+.data tr td {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
