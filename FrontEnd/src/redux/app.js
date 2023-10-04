@@ -8,7 +8,8 @@ export const _tokenSlice = createSlice({
     _token: JSON.parse(sessionStorage.getItem('_token')),
     _services: null,
     _types: null,
-    _transactions: null
+    _transactions: null,
+    _invoices: null
   },
   reducers: {
     setToken: (state, action) => {
@@ -36,6 +37,12 @@ export const _tokenSlice = createSlice({
     },
     clearTransactions: state => {
       state._transactions = null;
+    },
+    setInvoices: (state, action) => {
+      state._invoices = action.payload;
+    },
+    clearInvoices: state => {
+      state._invoices = null;
     }
   }
 });
@@ -47,7 +54,9 @@ export const {
   setTypes,
   clearTypes,
   setTransactions,
-  clearTransactions
+  clearTransactions,
+  setInvoices,
+  clearInvoices
 } = _tokenSlice.actions;
 
 export default _tokenSlice.reducer;

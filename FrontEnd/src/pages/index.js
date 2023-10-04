@@ -11,6 +11,8 @@ import TypeForm from './Type/Form';
 import Transaction from './Transaction';
 import TransactionForm from './Transaction/Form';
 
+import Invoice from './Invoice';
+
 
 
 export {
@@ -23,5 +25,7 @@ export {
   TypeForm,
 
   Transaction,
-  TransactionForm
+  TransactionForm,
+
+  Invoice
 };
