@@ -93,6 +93,17 @@ io.on('connection', socket => {
     io.emit('transaction-create');
     io.emit('transaction-delete', _id);
   });
+
+  // invoice
+  socket.on('invoice-create', () => io.emit('invoice-create'));
+  socket.on('invoice-update', _id => {
+    io.emit('invoice-create');
+    io.emit('invoice-update', _id);
+  });
+  socket.on('invoice-delete', _id => {
+    io.emit('invoice-create');
+    io.emit('invoice-delete', _id);
+  });
 });
 
 
