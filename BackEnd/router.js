@@ -3,7 +3,8 @@ import express from 'express';
 import {
   service as serviceController,
   Type as typeController,
-  transaction as transactionController
+  transaction as transactionController,
+  invoice as invoiceController
 } from './controllers/index.js';
 
 
@@ -24,6 +25,8 @@ router.post('/transaction', transactionController.post);
 router.get('/transaction', transactionController.get);
 router.put('/transaction', transactionController.put);
 router.delete('/transaction', transactionController.delete);
+
+router.post('/invoice', invoiceController.post);
 
 
 
