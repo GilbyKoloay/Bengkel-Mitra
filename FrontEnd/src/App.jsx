@@ -12,7 +12,8 @@ import {
   Type,
   TypeForm,
   Transaction,
-  TransactionForm
+  TransactionForm,
+  Invoice
 } from './pages';
 import { _app } from './redux';
 
@@ -41,11 +42,16 @@ export default function App() {
       socket.on('transaction-update', getTransaction);
       socket.on('transaction-delete', getTransaction);
 
+      socket.on('invoice-create', getInvoice);
+      socket.on('invoice-update', getInvoice);
+      socket.on('invoice-delete', getInvoice);
+
 
       
       getType();
       getService();
       getTransaction();
+      getInvoice();
 
       return () => socket.disconnect();
     } 
@@ -53,6 +59,7 @@ export default function App() {
       dispatch(_app.clearTypes());
       dispatch(_app.clearServices());
       dispatch(_app.clearTransactions());
+      dispatch(_app.clearInvoices());
     }
   }, [_token]);
 
@@ -71,6 +78,11 @@ export default function App() {
   async function getTransaction() {
     const res = await Fetch('/transaction');
     if (res.ok) dispatch(_app.setTransactions(res.payload));
+  }
+
+  async function getInvoice() {
+    const res = await Fetch('/invoice');
+    if (res.ok) dispatch(_app.setInvoices(res.payload));
   }
 
 
@@ -103,7 +115,10 @@ export default function App() {
           <Route path='/transaction/form/delete/:_id' element={<TransactionForm />} />
           <Route path='/transaction/*' element={<Navigate to='/transaction' />} />
 
-          <Route path='*' element={<Navigate to='/service' />} />
+          <Route path='/invoice' element={<Invoice />} />
+          <Route path='/invoice/*' element={<Navigate to='/invoice' />} />
+
+          <Route path='*' element={<Navigate to='/invoice' />} />
         </Routes>
       )}
 

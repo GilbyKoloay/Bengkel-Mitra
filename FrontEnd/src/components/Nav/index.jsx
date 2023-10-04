@@ -15,7 +15,8 @@ export default function Nav() {
   const pages = [
     ['/service', 'Layanan'],
     ['/type', 'Tipe'],
-    ['/transaction', 'Transaksi']
+    ['/transaction', 'Transaksi'],
+    ['/invoice', 'Faktur']
   ];
 
   const [isLogoutConfirmDialogOpen, setIsLogoutConfirmDialogOpen] = useState(false);
@@ -43,6 +44,7 @@ export default function Nav() {
         {pages.map((page, index) => (
           <Button
             key={index}
+            className='hidden sm:inline-block'
             label={page[1]}
             onClick={() => navigate(page[0])}
             disabled={location.pathname.includes(page[0])}
