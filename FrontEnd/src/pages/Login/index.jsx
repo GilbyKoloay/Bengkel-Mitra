@@ -37,8 +37,8 @@ export default function Login() {
 
   return (
     <main className='h-screen flex justify-center items-center bg-gradient-to-b from-cyan-500 via-blue-500 to-violet-500'>
-      <form className='w-full max-w-[80vw] sm:max-w-[70vw] md:max-w-[60vw] lg:max-w-[50vw] xl:max-w-[40vw]' onSubmit={onSubmit}>
-        <Input
+      <form onSubmit={onSubmit} className='w-5/6 sm:w-4/6 md:w-3/6 lg:w-2/6'>
+      <Input
           label='Nama Pengguna'
           value={username}
           onChange={value => setUsername(value)}
