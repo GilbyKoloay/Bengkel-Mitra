@@ -27,6 +27,7 @@ router.put('/transaction', transactionController.put);
 router.delete('/transaction', transactionController.delete);
 
 router.post('/invoice', invoiceController.post);
+router.get('/invoice', invoiceController.get);
 
 
 
