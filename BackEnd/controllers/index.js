@@ -20,6 +20,7 @@ import transactionDelete from './transaction/delete.js';
 import invoicePost from './invoice/post.js';
 import invoiceGet from './invoice/get.js';
 import invoicePut from './invoice/put.js';
+import invoiceDelete from './invoice/delete.js';
 
 
 
