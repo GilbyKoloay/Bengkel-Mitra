@@ -23,23 +23,23 @@ export default function Nav() {
 
 
   return (
-    <nav className='h-[10vh] bg-gradient-to-r from-cyan-300 via-blue-300 to-violet-300 border-b-2 border-blue-500 flex justify-between items-center px-4'>
-      <div className='flex sm:hidden'>
+    <nav className='bg-gradient-to-r from-cyan-300 via-blue-300 to-violet-300 border-b-2 border-blue-700 h-16 px-4 flex justify-between items-center gap-4'>
+      <div className='w-full flex items-center gap-2'>
         <Select
-          className='flex-1 mx-4'
+          className='w-full sm:hidden'
           value={
             (location.pathname.includes('/service')) ? '/service' :
             (location.pathname.includes('/type')) ? '/type' :
-            (location.pathname.includes('/transaction')) ? '/transaction' : ''
+            (location.pathname.includes('/transaction')) ? '/transaction' :
+            (location.pathname.includes('/invoice')) ? '/invoice' : ''
           }
           options={pages}
           onChange={value => navigate(value)}
           placeholder='(Halaman)'
-          size='md'
+          size='lg'
           theme='blue'
         />
-      </div>
-      <div className='hidden sm:flex gap-4'>
+
         {pages.map((page, index) => (
           <Button
             key={index}
@@ -52,14 +52,14 @@ export default function Nav() {
         ))}
       </div>
 
-      <div>
-        <Button
-          label='Keluar'
-          onClick={() => setIsLogoutConfirmDialogOpen(true)}
-          size='md'
-          theme='red'
-        />
-      </div>
+      <Button
+        label='Keluar'
+        onClick={() => setIsLogoutConfirmDialogOpen(true)}
+        size='md'
+        theme='red'
+      />
+
+
 
       {isLogoutConfirmDialogOpen && (
         <ConfirmationDialog
