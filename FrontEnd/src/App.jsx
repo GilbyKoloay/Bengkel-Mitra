@@ -13,7 +13,8 @@ import {
   TypeForm,
   Transaction,
   TransactionForm,
-  Invoice
+  Invoice,
+  InvoiceForm
 } from './pages';
 import { _app } from './redux';
 
@@ -116,6 +117,9 @@ export default function App() {
           <Route path='/transaction/*' element={<Navigate to='/transaction' />} />
 
           <Route path='/invoice' element={<Invoice />} />
+          <Route path='/invoice/form/create' element={<InvoiceForm />} />
+          <Route path='/invoice/form/update/:_id' element={<InvoiceForm />} />
+          <Route path='/invoice/form/delete/:_id' element={<InvoiceForm />} />
           <Route path='/invoice/*' element={<Navigate to='/invoice' />} />
 
           <Route path='*' element={<Navigate to='/invoice' />} />
