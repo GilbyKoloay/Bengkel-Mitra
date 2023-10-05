@@ -9,7 +9,7 @@ import {
   Input,
   Select
 } from '../../components';
-import { createTransactionInvoicePDF, splitString, toProperString } from '../../functions';
+import { createTransactionPDF, splitString, toProperString } from '../../functions';
 import { Main } from '../../layouts';
 
 
@@ -264,12 +264,12 @@ export default function Transaction() {
               <td rowSpan={transaction.services.length} className='align-text-top'>
                 <Select
                   options={[
-                    'CETAK FAKTUR',
+                    'CETAK',
                     'PERBARUI',
                     'HAPUS'
                   ].map(option => [option, option])}
                   onChange={value => {
-                    if (value === 'CETAK FAKTUR') createTransactionInvoicePDF(transaction);
+                    if (value === 'CETAK') createTransactionPDF(transaction);
                     else if (value === 'PERBARUI') navigate(`/transaction/form/update/${transaction._id}`);
                     else if (value === 'HAPUS') navigate(`/transaction/form/delete/${transaction._id}`);
                   }}

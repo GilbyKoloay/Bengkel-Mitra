@@ -99,10 +99,13 @@ export default function Type() {
               <td>
                 <Select
                   options={[
-                    ['PERBARUI', `/type/form/update/${type._id}`],
-                    ['HAPUS', `/type/form/delete/${type._id}`]
-                  ].map(option => [option[1], option[0]])}
-                  onChange={value => navigate(value)}
+                    'PERBARUI',
+                    'HAPUS'
+                  ].map(option => [option, option])}
+                  onChange={value => {
+                    if (value === 'PERBARUI') navigate(`/type/form/update/${type._id}`);
+                    else if (value === 'HAPUS') navigate(`/type/form/delete/${type._id}`);
+                  }}
                   placeholder='(Aksi)'
                 />
               </td>

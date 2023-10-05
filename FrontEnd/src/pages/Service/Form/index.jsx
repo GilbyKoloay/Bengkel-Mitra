@@ -19,6 +19,7 @@ import {
   notificationToast,
   toProperString
 } from '../../../functions';
+import { Form } from '../../../layouts';
 
 
 
@@ -177,28 +178,16 @@ export default function ServiceForm() {
   if (!isFormCreate && !isFormUpdate && !isFormDelete) return <Navigate to='/service' />
 
   return (
-    <main>
-      <Button
-        label='Kembali'
-        onClick={() => navigate('/service')}
-        size='md'
-      />
-
-      <div className='mt-4 text-2xl'>
-        {isFormCreate ? 'Tambah ' :
-        isFormUpdate ? 'Perbarui ' :
-        isFormDelete ? 'Hapus ' : ''}
-        Layanan
-      </div>
-
-      {(!_types) ? (
-        <div className='mt-4 text-lg'>Sedang memuat data tipe, mohon tunggu ...</div>
-      ) : (_types.length === 0) ? (
-        <div className='mt-4 text-lg'>Data tipe kosong, silahkan tambah data tipe terlebih dahulu</div>
-      ) : (
-        <form onSubmit={formSubmit} className='mt-4'>
-          <div className='grid gap-4 grid-cols-1 sm:grid-cols-2'>
-            <div className='flex flex-col gap-4'>
+    <>
+      <Form
+        title={`${isFormCreate ? 'Tambah' : isFormUpdate ? 'Perbarui' : isFormDelete ? 'Hapus' : ''} Layanan`}
+        form={!_types ? (
+          <div className='text-center text-xl col-span-full'>Sedang memuat data, mohon tunggu ...</div>
+        ) : (_types.length === 0) ? (
+          <div className='text-center text-xl col-span-full'>Data tipe kosong, silahkan tambah data tipe terlebih dahulu</div>
+        ) : (
+          <div className='flex-1 overflow-auto gap-y-2 gap-x-4 flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3'>
+            <div className='flex flex-col gap-2'>
               <InputOption
                 label='Tipe'
                 value={type[1]}
@@ -214,6 +203,8 @@ export default function ServiceForm() {
                 size='lg'
                 disabled={isFormDelete || isFormSubmitting}
               />
+            </div>
+            <div className='flex flex-col gap-2'>
               <Input
                 label='Nama'
                 value={name}
@@ -229,8 +220,9 @@ export default function ServiceForm() {
                 disabled={isFormDelete || isFormSubmitting}
               />
             </div>
-            <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-2'>
               <Input
+                className='sm:col-start-1'
                 label='Harga Kelas 1'
                 value={price_class1}
                 onChange={value => setPrice_class1(value)}
@@ -238,6 +230,7 @@ export default function ServiceForm() {
                 disabled={isFormDelete || isFormSubmitting}
               />
               <Input
+                className='sm:col-start-2'
                 label='Harga Kelas 2'
                 value={price_class2}
                 onChange={value => setPrice_class2(value)}
@@ -245,6 +238,7 @@ export default function ServiceForm() {
                 disabled={isFormDelete || isFormSubmitting}
               />
               <Input
+                className='sm:col-start-1'
                 label='Harga Kelas 3'
                 value={price_class3}
                 onChange={value => setPrice_class3(value)}
@@ -252,6 +246,7 @@ export default function ServiceForm() {
                 disabled={isFormDelete || isFormSubmitting}
               />
               <Input
+                className='sm:col-start-2'
                 label='Harga Kelas 4'
                 value={price_class4}
                 onChange={value => setPrice_class4(value)}
@@ -259,6 +254,7 @@ export default function ServiceForm() {
                 disabled={isFormDelete || isFormSubmitting}
               />
               <Input
+                className='sm:col-start-1'
                 label='Harga Kelas 5'
                 value={price_class5}
                 onChange={value => setPrice_class5(value)}
@@ -267,67 +263,66 @@ export default function ServiceForm() {
               />
             </div>
           </div>
-
-          {isFormCreate ? (
-            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
-              <Button
-                label='Bersihkan'
-                onClick={clearForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Tambah'
-                type='submit'
-                size='lg'
-                theme='blue'
-                disabled={isFormSubmitting}
-              />
-            </div>
-          ) : isFormUpdate ? (
-            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-3'>
-              <Button
-                label='Bersihkan'
-                onClick={clearForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Muat Ulang'
-                onClick={loadForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Perbarui'
-                type='submit'
-                size='lg'
-                theme='blue'
-                disabled={isFormSubmitting}
-              />
-            </div>
-          ) : isFormDelete && (
-            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
-              <Button
-                label='Muat Ulang'
-                onClick={loadForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Hapus'
-                onClick={() => setIsDeleteConfirmationDialogOpen(true)}
-                size='lg'
-                theme='red'
-                disabled={isFormSubmitting}
-              />
-            </div>
-          )}
-        </form>
-      )}
-
-
-
+        )}
+        onSubmit={formSubmit}
+        isLoading={isFormLoading}
+        actions={isFormCreate ? (
+          <>
+            <Button
+              label='Bersihkan'
+              onClick={clearForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Tambah'
+              type='submit'
+              size='lg'
+              theme='blue'
+              disabled={isFormSubmitting}
+            />
+          </>
+        ) : isFormUpdate ? (
+          <>
+            <Button
+              label='Bersihkan'
+              onClick={clearForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Muat Ulang'
+              onClick={loadForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Perbarui'
+              type='submit'
+              size='lg'
+              theme='blue'
+              disabled={isFormSubmitting}
+            />
+          </>
+        ) : isFormDelete && (
+          <>
+            <Button
+              label='Muat Ulang'
+              onClick={loadForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Hapus'
+              onClick={() => setIsDeleteConfirmationDialogOpen(true)}
+              size='lg'
+              theme='red'
+              disabled={isFormSubmitting}
+            />
+          </>
+        )}
+      />
+    
       {(isFormDelete && isDeleteConfirmationDialogOpen) && (
         <ConfirmationDialog
           title='Konfirmasi penghapusan data'
@@ -337,6 +332,6 @@ export default function ServiceForm() {
           theme='red'
         />
       )}
-    </main>
+    </>
   );
 };

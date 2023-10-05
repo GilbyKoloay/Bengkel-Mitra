@@ -1,39 +1,11 @@
 import html2pdf from 'html2pdf.js';
 
 import { MitraOto as MitraOtoImg } from '../assets/img';
-import { splitString } from './';
+import { toProperDateTime, splitString } from './';
 
 
 
-function toProperDate(dateTime) {
-  const year = dateTime.split('T')[0].split('-')[0];
-  let month = dateTime.split('T')[0].split('-')[1];
-  let day = dateTime.split('T')[0].split('-')[2];
-
-  if (month === '01') month = 'Januari';
-  else if (month === '02') month = 'Februari';
-  else if (month === '03') month = 'Maret';
-  else if (month === '04') month = 'April';
-  else if (month === '05') month = 'Mei';
-  else if (month === '06') month = 'Juni';
-  else if (month === '07') month = 'Juli';
-  else if (month === '08') month = 'Agustus';
-  else if (month === '09') month = 'September';
-  else if (month === '10') month = 'Oktober';
-  else if (month === '11') month = 'November';
-  else if (month === '12') month = 'Desember';
-
-  if (
-    parseInt(day) > 0 &&
-    parseInt(day) < 10
-  ) day = day.slice(1);
-
-  return `${day} ${month} ${year}`
-}
-
-
-
-export default function createTransactionInvoicePDF(transaction) {
+export default function createTransactionPDF(transaction) {
   let body = '';
   transaction.services.forEach((service, index) => {
     body += `
@@ -158,7 +130,7 @@ export default function createTransactionInvoicePDF(transaction) {
             <p>:</p>
           </div>
           <div class='value'>
-            <p>${toProperDate(transaction.dateTime)}</p>
+            <p>${toProperDateTime(transaction.dateTime, true)}</p>
             <p>${transaction.customerName}</p>
             <p>${transaction.vehicleType ? transaction.vehicleType : '-'}</p>
             <p>${transaction.vehiclePlate ? transaction.vehiclePlate : '-'}</p>

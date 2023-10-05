@@ -7,7 +7,8 @@ import splitString from './splitString';
 import getCurrentTime from './getCurrentTime';
 import toProperString from './toProperString';
 import toProperDateTime from './toProperDateTime';
-import createTransactionInvoicePDF from './createTransactionInvoicePDF';
+import createTransactionPDF from './createTransactionPDF';
+import createInvoicePDF from './createInvoicePDF';
 
 
 
@@ -19,5 +20,6 @@ export {
   getCurrentTime,
   toProperString,
   toProperDateTime,
-  createTransactionInvoicePDF
+  createTransactionPDF,
+  createInvoicePDF
 };

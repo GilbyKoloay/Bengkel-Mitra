@@ -12,6 +12,7 @@ import Transaction from './Transaction';
 import TransactionForm from './Transaction/Form';
 
 import Invoice from './Invoice';
+import InvoiceForm from './Invoice/Form';
 
 
 
@@ -27,5 +28,6 @@ export {
   Transaction,
   TransactionForm,
 
-  Invoice
+  Invoice,
+  InvoiceForm
 };

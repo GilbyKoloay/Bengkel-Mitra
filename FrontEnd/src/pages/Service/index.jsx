@@ -193,10 +193,13 @@ export default function Service() {
               <td>
                 <Select
                   options={[
-                    ['PERBARUI', `/service/form/update/${service._id}`],
-                    ['HAPUS', `/service/form/delete/${service._id}`]
-                  ].map(option => [option[1], option[0]])}
-                  onChange={value => navigate(value)}
+                    'PERBARUI',
+                    'HAPUS'
+                  ].map(option => [option, option])}
+                  onChange={value => {
+                    if (value === 'PERBARUI') navigate(`/service/form/update/${service._id}`);
+                    else if (value === 'HAPUS') navigate(`/service/form/delete/${service._id}`);
+                  }}
                   placeholder='(Aksi)'
                 />
               </td>
