@@ -21,7 +21,7 @@ import {
   getCurrentTime,
   toProperString,
   toProperDateTime,
-  createTransactionPDF
+  createInvoicePDF
 } from '../../../functions';
 import { Form } from '../../../layouts';
 
@@ -42,12 +42,12 @@ export default function InvoiceForm() {
   const [isFormLoading, setIsFormLoading] = useState(isFormCreate ? false : true);
   
   const [isCreateDateAuto, setIsCreateDateAuto] = useState(isFormCreate ? true : false);
-  const [createDate, setCreateDate] = useState('--T::00.000Z');
+  const [createDate, setCreateDate] = useState('--T00:00:00.000Z');
   const [customerName, setCustomerName] = useState('');
   const [vehicleType, setVehicleType] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
-  const [entryDate, setEntryDate] = useState('--T::00.000Z');
-  const [outDate, setOutDate] = useState('--T::00.000Z');
+  const [entryDate, setEntryDate] = useState('--T00:00:00.000Z');
+  const [outDate, setOutDate] = useState('--T00:00:00.000Z');
   const [kilometer, setKilometer] = useState('');
   const [services, setServices] = useState([{
     primary: [''],
@@ -95,12 +95,12 @@ export default function InvoiceForm() {
   
   function clearForm() {
     setIsCreateDateAuto(true);
-    setCreateDate('--T::00.000Z');
+    setCreateDate('--T00:00:00.000Z');
     setCustomerName('');
     setVehicleType('');
     setVehiclePlate('');
-    setEntryDate('--T::00.000Z');
-    setOutDate('--T::00.000Z');
+    setEntryDate('--T00:00:00.000Z');
+    setOutDate('--T00:00:00.000Z');
     setKilometer('');
     setServices([{
       primary: [''],
@@ -121,8 +121,8 @@ export default function InvoiceForm() {
       setCustomerName(invoice.customerName ? invoice.customerName : '');
       setVehicleType(invoice.vehicleType ? invoice.vehicleType : '');
       setVehiclePlate(invoice.vehiclePlate ? invoice.vehiclePlate : '');
-      setEntryDate(invoice.outDate ? invoice.outDate : '--T::00.000Z');
-      setOutDate(invoice.entryDate ? invoice.entryDate : '--T::00.000Z');
+      setEntryDate(invoice.outDate ? invoice.outDate : '--T00:00:00.000Z');
+      setOutDate(invoice.entryDate ? invoice.entryDate : '--T00:00:00.000Z');
       setKilometer(invoice.kilometer ? invoice.kilometer : '');
       setServices([...invoice.services.map(service => ({
         primary: [...service.primary, ''],
@@ -154,8 +154,8 @@ export default function InvoiceForm() {
         outDate: toProperDateTime(outDate),
         kilometer: parseInt(kilometer),
         services: services.slice(0, -1).map(service => ({
-          primary: service.primary.slice(0, -1),
-          secondary: service.secondary.slice(0, -1),
+          primary: service.primary.slice(0, -1).map(primary => toProperString(primary)),
+          secondary: service.secondary.slice(0, -1).map(secondary => toProperString(secondary)),
           price: parseInt(service.price)
         })),
         totalPrice: parseInt(totalPrice),
@@ -172,8 +172,8 @@ export default function InvoiceForm() {
         outDate: toProperDateTime(outDate),
         kilometer: parseInt(kilometer),
         services: services.slice(0, -1).map(service => ({
-          primary: service.primary.slice(0, -1),
-          secondary: service.secondary.slice(0, -1),
+          primary: service.primary.slice(0, -1).map(primary => toProperString(primary)),
+          secondary: service.secondary.slice(0, -1).map(secondary => toProperString(secondary)),
           price: parseInt(service.price)
         })),
         totalPrice: parseInt(totalPrice),
@@ -438,7 +438,7 @@ export default function InvoiceForm() {
           title='Konfirmasi pencetakan faktur'
           description='Apakah anda ingin mencetak faktur?'
           onCancel={() => {setIsPrintInvoiceDialogOpen(false); navigate('/invoice');}}
-          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createTransactionPDF(isPrintInvoiceDialogOpen); navigate('/invoice');}}
+          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createInvoicePDF(isPrintInvoiceDialogOpen); navigate('/invoice');}}
           theme='blue'
         />
       )}
