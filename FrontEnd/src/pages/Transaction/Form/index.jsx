@@ -22,9 +22,10 @@ import {
   getCurrentTime,
   toProperString,
   toProperDateTime,
-  createTransactionInvoicePDF,
+  createTransactionPDF,
   splitString
 } from '../../../functions';
+import { Form } from '../../../layouts';
 
 
 
@@ -64,7 +65,7 @@ export default function TransactionForm() {
   const [note, setNote] = useState('');
   const [isDeleteConfirmationDialogOpen, setIsDeleteConfirmationDialogOpen] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [isPrintInvoiceDialogOpen, setIsPrintInvoiceDialogOpen] = useState(false);
+  const [isPrintTransactionDialogOpen, setIsPrintTransactionDialogOpen] = useState(false);
 
 
 
@@ -73,7 +74,7 @@ export default function TransactionForm() {
       const socket = createSocket();
 
       socket.on('transaction-update', updated_id => {
-        if (_id === updated_id && !isPrintInvoiceDialogOpen) notificationToast('Data ini sudah diperbarui pengguna lain.', 'Tekan tombol \'Muat Ulang\' untuk melihat data yang terbaru.', 'warning');
+        if (_id === updated_id && !isPrintTransactionDialogOpen) notificationToast('Data ini sudah diperbarui pengguna lain.', 'Tekan tombol \'Muat Ulang\' untuk melihat data yang terbaru.', 'warning');
       });
 
       socket.on('transaction-delete', deleted_id => {
@@ -169,7 +170,7 @@ export default function TransactionForm() {
 
   async function formSubmit(e) {
     e?.preventDefault();
-    // setIsFormSubmitting(true);
+    setIsFormSubmitting(true);
 
     let payload = {};
 
@@ -235,7 +236,7 @@ export default function TransactionForm() {
         else if (isFormDelete) socket.emit('transaction-delete', _id);
 
         if (isFormDelete) navigate('/transaction');
-        else setIsPrintInvoiceDialogOpen(payload);
+        else setIsPrintTransactionDialogOpen(payload);
       }
     }
   }
@@ -268,289 +269,261 @@ export default function TransactionForm() {
   if (!isFormCreate && !isFormUpdate && !isFormDelete) return <Navigate to='/transaction' />
 
   return (
-    <main>
-      <Button
-        label='Kembali'
-        onClick={() => navigate('/transaction')}
-        size='md'
-      />
-
-      <div className='mt-4 text-2xl'>
-        {isFormCreate ? 'Tambah ' :
-        isFormUpdate ? 'Perbarui ' :
-        isFormDelete ? 'Hapus ' : ''}
-        Transaksi
-      </div>
-
-      {(!_services) ? (
-        <div className='mt-4 text-lg'>Sedang memuat data layanan, mohon tunggu ...</div>
-      ) : (_services.length === 0) ? (
-        <div className='mt-4 text-lg'>Data layanan kosong, silahkan tambah data layanan terlebih dahulu</div>
-      ) : (
-        <form onSubmit={formSubmit} className='mt-4'>
-          <div className='grid gap-4 grid-cols-1 sm:grid-cols-2'>
-            <div className='flex flex-col gap-4'>
-              <Input
-                label='Nama Pelanggan'
-                value={customerName}
-                onChange={value => setCustomerName(value)}
-                size='lg'
-                disabled={isFormDelete || isFormSubmitting}
-              />
-              <Input
-                label='Jenis Kendaraan'
-                value={vehicleType}
-                onChange={value => setVehicleType(value)}
-                size='lg'
-                disabled={isFormDelete || isFormSubmitting}
-              />
-              <Input
-                label='Plat Kendaraan'
-                value={vehiclePlate}
-                onChange={value => setVehiclePlate(value)}
-                size='lg'
-                disabled={isFormDelete || isFormSubmitting}
-              />
-              {services.map((service, index) => (
-                <div key={index} className='flex gap-2 border border-neutral-700 rounded p-4'>
-                  <div className='flex-1 flex flex-col justify-between'>
-                    <InputOption
-                      label={`Layanan ${index+1}`}
-                      value={service._id ? `${service.type ? `${service.type}` : '-'}${service.subType ? ` (${service.subType})` : ''} - ${service.name}` : service.query}
-                      options={_services.map(thisService => [thisService, `${thisService.type ? thisService.type.name : ''}${thisService.subType ? ` (${thisService.subType})` : ''} - ${thisService.name}`])}
-                      onChange={value => value[0] ? handleChangeService({
-                        _id: value[0]._id,
-                        query: value[1],
-                        type: value[0].type?.name,
-                        subType: value[0].subType,
-                        name: value[0].name,
-                        priceList: value[0].price,
-                        class: '',
-                        price: 0,
-                        quantity: 0
-                      }, index) : handleChangeService({
-                        ...service,
-                        query: value[1]
-                      }, index)}
-                      placeholder='Tipe (Subtipe) - Nama'
-                      size='lg'
-                      disabled={isFormDelete || isFormSubmitting}
-                    />
-                    <Select
-                      label='Kelas'
-                      value={service.class}
-                      options={service.priceList ? Object.keys(service.priceList).filter(key => service.priceList[key]).map(key => [key.slice(-1), `Kelas ${key.slice(-1)} (${splitString(service.priceList[key], 3, '.')})`]) : []}
-                      onChange={value => {
-                        handleChangeService({...service,
-                          class: value,
-                          price: service.priceList[`class${value}`],
-                          quantity: 1
-                        }, index);
-                      }}
-                      placeholder='Kelas (Harga)'
-                      size='lg'
-                      disabled={!service._id || isFormDelete || isFormSubmitting}
-                    />
-                  </div>
-                  <div className='w-1/4 sm:w-1/5 flex flex-col'>
-                    <label className='text-xl'>Kuantitas</label>
-                    <div className='flex-1 grid gap-2'>
-                      <Button
-                        label='+'
-                        onClick={() => handleChangeService({...service,
-                          quantity: service.quantity+1
-                        }, index)}
-                        theme='blue'
-                        disabled={!service._id || !service.class || isFormDelete || isFormSubmitting}
-                      />
-                      <Input
-                        value={service.quantity}
-                        size='lg'
-                        disabled
-                      />
-                      <Button
-                        label='-'
-                        onClick={() => (service.quantity === 1) ? handleChangeService({
+    <>
+      <Form
+        title={`${isFormCreate ? 'Tambah' : isFormUpdate ? 'Perbarui' : isFormDelete ? 'Hapus' : ''} Transaksi`}
+        form={!_services ? (
+          <div className='text-center text-xl col-span-full'>Sedang memuat data, mohon tunggu ...</div>
+        ) : (_services.length === 0) ? (
+          <div className='text-center text-xl col-span-full'>Data layanan kosong, silahkan tambah data layanan terlebih dahulu</div>
+        ) : (
+          <div className='flex-1 overflow-auto gap-y-2 gap-x-4 flex flex-col'>
+            <div className='flex flex-col gap-y-2 gap-x-4 sm:grid sm:grid-cols-3'>
+              <div className='flex flex-col gap-2'>
+                <Select
+                  label='No. Faktur'
+                  value={isInvoiceNumberAuto}
+                  options={[[true, 'AUTOMATIS'], [false, 'MANUAL']].map(option => [option[0], option[1]])}
+                  onChange={value => setIsInvoiceNumberAuto(JSON.parse(value))}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+                <Select
+                  label='Tanggal & Waktu'
+                  value={isDateTimeAuto}
+                  options={[[true, 'AUTOMATIS'], [false, 'MANUAL']].map(option => [option[0], option[1]])}
+                  onChange={value => setIsDateTimeAuto(JSON.parse(value))}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+              </div>
+              <div className='flex flex-col gap-2'>
+                <Input
+                  label='Nama Pelanggan'
+                  value={customerName}
+                  onChange={value => setCustomerName(value)}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+                <Input
+                  label='Jenis Kendaraan'
+                  value={vehicleType}
+                  onChange={value => setVehicleType(value)}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+                <Input
+                  label='Plat Kendaraan'
+                  value={vehiclePlate}
+                  onChange={value => setVehiclePlate(value)}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+              </div>
+              <div className='flex flex-col gap-2'>
+                <Select
+                  label='Status Bayar'
+                  value={isPaid}
+                  options={[[true, 'LUNAS'], [false, 'TIDAK LUNAS']].map(option => [option[0], option[1]])}
+                  onChange={value => setIsPaid(JSON.parse(value))}
+                  size='lg'
+                  theme={isPaid ? 'green' : 'red'}
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+                <Input
+                  label='Keterangan'
+                  value={note}
+                  onChange={value => setNote(value)}
+                  size='lg'
+                  disabled={isFormDelete || isFormSubmitting}
+                />
+              </div>
+            </div>
+            <div className='flex flex-col gap-y-2 gap-x-4 md:grid md:grid-cols-2'>
+              <div className='flex flex-col gap-2'>
+                {services.map((service, index) => (
+                  <div key={index} className='flex gap-2 border border-neutral-700 rounded p-4'>
+                    <div className='flex-1 flex flex-col justify-between'>
+                      <InputOption
+                        label={`Layanan ${index+1}`}
+                        value={service._id ? `${service.type ? `${service.type}` : '-'}${service.subType ? ` (${service.subType})` : ''} - ${service.name}` : service.query}
+                        options={_services.map(thisService => [thisService, `${thisService.type ? thisService.type.name : ''}${thisService.subType ? ` (${thisService.subType})` : ''} - ${thisService.name}`])}
+                        onChange={value => value[0] ? handleChangeService({
+                          _id: value[0]._id,
+                          query: value[1],
+                          type: value[0].type?.name,
+                          subType: value[0].subType,
+                          name: value[0].name,
+                          priceList: value[0].price,
+                          class: '',
+                          price: 0,
+                          quantity: 0
+                        }, index) : handleChangeService({
                           ...service,
-                          query: ''
-                        }, index) : handleChangeService({...service,
-                          quantity: service.quantity-1
+                          query: value[1]
                         }, index)}
-                        theme='red'
-                        disabled={!service._id || !service.class || isFormDelete || isFormSubmitting}
+                        placeholder='Tipe (Subtipe) - Nama'
+                        size='lg'
+                        disabled={isFormDelete || isFormSubmitting}
+                      />
+                      <Select
+                        label='Kelas'
+                        value={service.class}
+                        options={service.priceList ? Object.keys(service.priceList).filter(key => service.priceList[key]).map(key => [key.slice(-1), `Kelas ${key.slice(-1)} (${splitString(service.priceList[key], 3, '.')})`]) : []}
+                        onChange={value => {
+                          handleChangeService({...service,
+                            class: value,
+                            price: service.priceList[`class${value}`],
+                            quantity: 1
+                          }, index);
+                        }}
+                        placeholder='Kelas (Harga)'
+                        size='lg'
+                        disabled={!service._id || isFormDelete || isFormSubmitting}
                       />
                     </div>
+                    <div className='w-1/4 sm:w-1/5 flex flex-col'>
+                      <label className='text-xl'>Kuantitas</label>
+                      <div className='flex-1 grid gap-2'>
+                        <Button
+                          label='+'
+                          onClick={() => handleChangeService({...service,
+                            quantity: service.quantity+1
+                          }, index)}
+                          theme='blue'
+                          disabled={!service._id || !service.class || isFormDelete || isFormSubmitting}
+                        />
+                        <Input
+                          value={service.quantity}
+                          size='lg'
+                          disabled
+                        />
+                        <Button
+                          label='-'
+                          onClick={() => (service.quantity === 1) ? handleChangeService({
+                            ...service,
+                            query: ''
+                          }, index) : handleChangeService({...service,
+                            quantity: service.quantity-1
+                          }, index)}
+                          theme='red'
+                          disabled={!service._id || !service.class || isFormDelete || isFormSubmitting}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            <div className='flex flex-col gap-4'>
-              <Select
-                label='No. Faktur'
-                value={isInvoiceNumberAuto}
-                options={[[true, 'AUTOMATIS'], [false, 'MANUAL']].map(option => [option[0], option[1]])}
-                onChange={value => setIsInvoiceNumberAuto(JSON.parse(value))}
-                size='lg'
-                disabled={isFormDelete || isFormSubmitting}
-              />
-              {!isInvoiceNumberAuto && (
-                <Input
-                  value={invoiceNumber}
-                  onChange={value => setInvoiceNumber(value)}
-                  size='lg'
-                  disabled={isFormDelete || isFormSubmitting}
-                />
-              )}
-              <Select
-                label='Tanggal & Waktu'
-                value={isDateTimeAuto}
-                options={[[true, 'AUTOMATIS'], [false, 'MANUAL']].map(option => [option[0], option[1]])}
-                onChange={value => setIsDateTimeAuto(JSON.parse(value))}
-                size='lg'
-                disabled={isFormDelete || isFormSubmitting}
-              />
-              {!isDateTimeAuto && (
-                <InputDateTime
-                  className='-mt-4'
-                  value={dateTime}
-                  onChange={value => setDateTime(value)}
-                  size='lg'
-                  disabled={isFormDelete || isFormSubmitting}
-                />
-              )}
-              <Select
-                label='Status Bayar'
-                value={isPaid}
-                options={[[true, 'LUNAS'], [false, 'TIDAK LUNAS']].map(option => [option[0], option[1]])}
-                onChange={value => setIsPaid(JSON.parse(value))}
-                size='lg'
-                theme={isPaid ? 'green' : 'red'}
-                disabled={isFormDelete || isFormSubmitting}
-              />
-              <Input
-                label='Keterangan'
-                value={note}
-                onChange={value => setNote(value)}
-                size='lg'
-                disabled={isFormDelete || isFormSubmitting}
-              />
-              <div>
-                <label className='text-xl'>Total Layanan</label>
-                <table className='w-full'>
-                  <thead>
-                    <tr className='bg-neutral-300'>
-                      {[
-                        'No.',
-                        'Layanan',
-                        'Kelas',
-                        'Harga',
-                        'Kuantitas',
-                        'Total Harga'
-                      ].map((title, index) => (
-                        <th key={index} className='p-2 border border-neutral-700'>{title}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {services.filter(service => service._id && (service.quantity > 0)).map((service, index) => (
-                      <tr key={index}>
-                        <td className='p-2 border border-neutral-700 text-center'>{index+1}</td>
-                        <td className='p-2 border border-neutral-700'>{service.type ? service.type : '-'}{service.subType ? ` (${service.subType})` : ''} - {service.name}</td>
-                        <td className='p-2 border border-neutral-700 text-center'>{service.class}</td>
-                        <td className='p-2 border border-neutral-700 text-end'>{splitString(service.price, 3, '.')}</td>
-                        <td className='p-2 border border-neutral-700 text-end'>{service.quantity}</td>
-                        <td className='p-2 border border-neutral-700 text-end'>{splitString(service.price*service.quantity, 3, '.')}</td>
+                ))}
+              </div>
+              <div className='flex flex-col gap-2'>
+                <div>
+                  <label className='text-xl'>Total Layanan</label>
+                  <table className='w-full'>
+                    <thead>
+                      <tr className='bg-neutral-300'>
+                        {[
+                          'No.',
+                          'Layanan',
+                          'Kelas',
+                          'Harga',
+                          'Kuantitas',
+                          'Total Harga'
+                        ].map((title, index) => (
+                          <th key={index} className='p-2 border border-neutral-700'>{title}</th>
+                        ))}
                       </tr>
-                    ))}
-                    <tr className='bg-neutral-300'>
-                      <td colSpan={5} className='p-2 border border-neutral-700 text-xl font-bold'>Total</td>
-                      <td className='p-2 border border-neutral-700 text-xl font-bold text-end whitespace-nowrap'>Rp. {splitString(totalPrice, 3, '.')}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {services.filter(service => service._id && (service.quantity > 0)).map((service, index) => (
+                        <tr key={index}>
+                          <td className='p-2 border border-neutral-700 text-center'>{index+1}</td>
+                          <td className='p-2 border border-neutral-700'>{service.type ? service.type : '-'}{service.subType ? ` (${service.subType})` : ''} - {service.name}</td>
+                          <td className='p-2 border border-neutral-700 text-center'>{service.class}</td>
+                          <td className='p-2 border border-neutral-700 text-end'>{splitString(service.price, 3, '.')}</td>
+                          <td className='p-2 border border-neutral-700 text-end'>{service.quantity}</td>
+                          <td className='p-2 border border-neutral-700 text-end'>{splitString(service.price*service.quantity, 3, '.')}</td>
+                        </tr>
+                      ))}
+                      <tr className='bg-neutral-300'>
+                        <td colSpan={5} className='p-2 border border-neutral-700 text-xl font-bold'>Total</td>
+                        <td className='p-2 border border-neutral-700 text-xl font-bold text-end whitespace-nowrap'>Rp. {splitString(totalPrice, 3, '.')}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
+        )}
+        onSubmit={formSubmit}
+        isLoading={isFormLoading}
+        actions={isFormCreate ? (
+          <>
+            <Button
+              label='Bersihkan'
+              onClick={clearForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Tambah'
+              type='submit'
+              size='lg'
+              theme='blue'
+              disabled={isFormSubmitting}
+            />
+          </>
+        ) : isFormUpdate ? (
+          <>
+            <Button
+              label='Bersihkan'
+              onClick={clearForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Muat Ulang'
+              onClick={loadForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Perbarui'
+              type='submit'
+              size='lg'
+              theme='blue'
+              disabled={isFormSubmitting}
+            />
+          </>
+        ) : isFormDelete && (
+          <>
+            <Button
+              label='Muat Ulang'
+              onClick={loadForm}
+              size='lg'
+              disabled={isFormSubmitting}
+            />
+            <Button
+              label='Hapus'
+              onClick={() => setIsDeleteConfirmationDialogOpen(true)}
+              size='lg'
+              theme='red'
+              disabled={isFormSubmitting}
+            />
+          </>
+        )}
+      />
 
-          {isFormCreate ? (
-            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
-              <Button
-                label='Bersihkan'
-                onClick={clearForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Tambah'
-                type='submit'
-                size='lg'
-                theme='blue'
-                disabled={isFormSubmitting}
-              />
-            </div>
-          ) : isFormUpdate ? (
-            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-3'>
-              <Button
-                label='Bersihkan'
-                onClick={clearForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Muat Ulang'
-                onClick={loadForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Perbarui'
-                type='submit'
-                size='lg'
-                theme='blue'
-                disabled={isFormSubmitting}
-              />
-            </div>
-          ) : isFormDelete && (
-            <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
-              <Button
-                label='Muat Ulang'
-                onClick={loadForm}
-                size='lg'
-                disabled={isFormSubmitting}
-              />
-              <Button
-                label='Hapus'
-                onClick={() => setIsDeleteConfirmationDialogOpen(true)}
-                size='lg'
-                theme='red'
-                disabled={isFormSubmitting}
-              />
-            </div>
-          )}
-        </form>
-      )}
 
 
-
-      {(isFormDelete && isDeleteConfirmationDialogOpen) && (
+      {isPrintTransactionDialogOpen && (
         <ConfirmationDialog
-          title='Konfirmasi penghapusan data'
-          description='Apakah anda yakin ingin menghapus data ini?'
-          onCancel={() => setIsDeleteConfirmationDialogOpen(false)}
-          onConfirm={() => {setIsDeleteConfirmationDialogOpen(false); formSubmit(); setIsDeleteConfirmationDialogOpen(false);}}
-          theme='red'
-        />
-      )}
-
-      {isPrintInvoiceDialogOpen && (
-        <ConfirmationDialog
-          title='Konfirmasi pencetakan faktur'
-          description='Apakah anda ingin mencetak faktur?'
-          onCancel={() => {setIsPrintInvoiceDialogOpen(false); navigate('/transaction');}}
-          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createTransactionInvoicePDF(isPrintInvoiceDialogOpen); navigate('/transaction');}}
+          title='Konfirmasi pencetakan transaksi'
+          description='Apakah anda ingin mencetak transaksi?'
+          onCancel={() => {setIsPrintTransactionDialogOpen(false); navigate('/transaction');}}
+          onConfirm={() => {setIsPrintTransactionDialogOpen(false); createTransactionPDF(isPrintTransactionDialogOpen); navigate('/transaction');}}
           theme='blue'
         />
       )}
-    </main>
+    </>
   );
 };
