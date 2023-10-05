@@ -14,6 +14,7 @@ import {
   notificationToast,
   toProperString
 } from '../../../functions';
+import { Form } from '../../../layouts';
 
 
 
@@ -130,40 +131,31 @@ export default function TypeForm() {
   if (!isFormCreate && !isFormUpdate && !isFormDelete) return <Navigate to='/type' />
 
   return (
-    <main>
-      <Button
-        label='Kembali'
-        onClick={() => navigate('/type')}
-        size='md'
-      />
-
-      <div className='mt-4 text-2xl'>
-        {isFormCreate ? 'Tambah ' :
-        isFormUpdate ? 'Perbarui ' :
-        isFormDelete ? 'Hapus ' : ''}
-        Tipe
-      </div>
-
-      <form onSubmit={formSubmit} className='mt-4'>
-        <div className='grid gap-4 grid-cols-1 sm:grid-cols-2'>
-          <Input
-            label='Nama'
-            value={name}
-            onChange={value => setName(value)}
-            size='lg'
-            disabled={isFormDelete || isFormSubmitting}
-          />
-          <Input
-            label='Keterangan'
-            value={note}
-            onChange={value => setNote(value)}
-            size='lg'
-            disabled={isFormDelete || isFormSubmitting}
-          />
-        </div>
-
-        {isFormCreate ? (
-          <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
+    <>
+      <Form
+        title={`${isFormCreate ? 'Tambah' : isFormUpdate ? 'Perbarui' : isFormDelete ? 'Hapus' : ''} Tipe`}
+        form={(
+          <div className='flex-1 overflow-auto gap-y-2 gap-x-4 flex flex-col sm:grid sm:grid-cols-2'>
+            <Input
+              label='Nama'
+              value={name}
+              onChange={value => setName(value)}
+              size='lg'
+              disabled={isFormDelete || isFormSubmitting}
+            />
+            <Input
+              label='Keterangan'
+              value={note}
+              onChange={value => setNote(value)}
+              size='lg'
+              disabled={isFormDelete || isFormSubmitting}
+            />
+          </div>
+        )}
+        onSubmit={formSubmit}
+        isLoading={isFormLoading}
+        actions={isFormCreate ? (
+          <>
             <Button
               label='Bersihkan'
               onClick={clearForm}
@@ -177,9 +169,9 @@ export default function TypeForm() {
               theme='blue'
               disabled={isFormSubmitting}
             />
-          </div>
+          </>
         ) : isFormUpdate ? (
-          <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-3'>
+          <>
             <Button
               label='Bersihkan'
               onClick={clearForm}
@@ -199,9 +191,9 @@ export default function TypeForm() {
               theme='blue'
               disabled={isFormSubmitting}
             />
-          </div>
+          </>
         ) : isFormDelete && (
-          <div className='mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2'>
+          <>
             <Button
               label='Muat Ulang'
               onClick={loadForm}
@@ -215,9 +207,9 @@ export default function TypeForm() {
               theme='red'
               disabled={isFormSubmitting}
             />
-          </div>
+          </>
         )}
-      </form>
+      />
 
 
 
@@ -230,6 +222,6 @@ export default function TypeForm() {
           theme='red'
         />
       )}
-    </main>
+    </>
   );
 };
