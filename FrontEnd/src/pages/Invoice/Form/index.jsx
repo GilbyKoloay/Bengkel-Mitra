@@ -442,6 +442,16 @@ export default function InvoiceForm() {
           theme='blue'
         />
       )}
+
+      {(isFormDelete && isDeleteConfirmationDialogOpen) && (
+        <ConfirmationDialog
+          title='Konfirmasi penghapusan data'
+          description='Apakah anda yakin ingin menghapus data ini?'
+          onCancel={() => setIsDeleteConfirmationDialogOpen(false)}
+          onConfirm={() => {setIsDeleteConfirmationDialogOpen(false); formSubmit(); setIsDeleteConfirmationDialogOpen(false)}}
+          theme='red'
+        />
+      )}
     </>
   );
 };
