@@ -13,9 +13,9 @@ export default function Nav() {
   const dispatch = useDispatch();
 
   const pages = [
-    ['/service', 'Layanan'],
-    ['/type', 'Tipe'],
-    ['/transaction', 'Transaksi'],
+    // ['/service', 'Layanan'],
+    // ['/type', 'Tipe'],
+    // ['/transaction', 'Transaksi'],
     ['/invoice', 'Faktur']
   ];
 

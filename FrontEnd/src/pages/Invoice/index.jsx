@@ -184,7 +184,7 @@ export default function Invoice() {
               <td>{invoice.createDate.slice(0, 10).split('-').reverse().join('-')}</td>
               <td>{invoice.customerName ? invoice.customerName : '-'}</td>
               <td>{invoice.vehicleType ? invoice.vehicleType : '-'}</td>
-              <td>{invoice.vehiclePlate ? invoice.vehiclePlate : '-'}</td>
+              <td className='whitespace-nowrap'>{invoice.vehiclePlate ? invoice.vehiclePlate : '-'}</td>
               <td>{invoice.entryDate ? invoice.entryDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
               <td>{invoice.outDate ? invoice.outDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
               <td>{invoice.kilometer ? invoice.kilometer : '-'}</td>
