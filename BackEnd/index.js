@@ -61,38 +61,38 @@ app.use((req, res) => {
 
 // socket.io
 io.on('connection', socket => {
-  // service
-  socket.on('service-create', () => io.emit('service-create'));
-  socket.on('service-update', payload => {
-    io.emit('service-create');
-    io.emit('service-update', {_id: payload._id});
-  });
-  socket.on('service-delete', payload => {
-    io.emit('service-create');
-    io.emit('service-delete', {_id: payload._id});
-  });
+  // // service
+  // socket.on('service-create', () => io.emit('service-create'));
+  // socket.on('service-update', payload => {
+  //   io.emit('service-create');
+  //   io.emit('service-update', {_id: payload._id});
+  // });
+  // socket.on('service-delete', payload => {
+  //   io.emit('service-create');
+  //   io.emit('service-delete', {_id: payload._id});
+  // });
 
-  // type
-  socket.on('type-create', () => io.emit('type-create'));
-  socket.on('type-update', _id => {
-    io.emit('type-create');
-    io.emit('type-update', _id);
-  });
-  socket.on('type-delete', _id => {
-    io.emit('type-create');
-    io.emit('type-delete', _id);
-  });
+  // // type
+  // socket.on('type-create', () => io.emit('type-create'));
+  // socket.on('type-update', _id => {
+  //   io.emit('type-create');
+  //   io.emit('type-update', _id);
+  // });
+  // socket.on('type-delete', _id => {
+  //   io.emit('type-create');
+  //   io.emit('type-delete', _id);
+  // });
 
-  // transaction
-  socket.on('transaction-create', () => io.emit('transaction-create'));
-  socket.on('transaction-update', _id => {
-    io.emit('transaction-create');
-    io.emit('transaction-update', _id);
-  });
-  socket.on('transaction-delete', _id => {
-    io.emit('transaction-create');
-    io.emit('transaction-delete', _id);
-  });
+  // // transaction
+  // socket.on('transaction-create', () => io.emit('transaction-create'));
+  // socket.on('transaction-update', _id => {
+  //   io.emit('transaction-create');
+  //   io.emit('transaction-update', _id);
+  // });
+  // socket.on('transaction-delete', _id => {
+  //   io.emit('transaction-create');
+  //   io.emit('transaction-delete', _id);
+  // });
 
   // invoice
   socket.on('invoice-create', () => io.emit('invoice-create'));
