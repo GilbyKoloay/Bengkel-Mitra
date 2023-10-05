@@ -9,7 +9,7 @@ import {
   Input,
   Select
 } from '../../components';
-import { splitString, toProperString, createTransactionInvoicePDF } from '../../functions';
+import { splitString, toProperString, createTransactionPDF } from '../../functions';
 import { Main } from '../../layouts';
 
 
@@ -199,12 +199,17 @@ export default function Invoice() {
               <td>
                 <Select
                   options={[
-                    ['LIHAT DETAIL', () => navigate(`/invoice/detail/${invoice._id}`)],
-                    ['CETAK', () => createTransactionInvoicePDF(invoice)],
-                    ['PERBARUI', () => navigate(`/invoice/form/update/${invoice._id}`)],
-                    ['HAPUS', () => navigate(`/invoice/form/delete/${invoice._id}`)]
-                  ].map(option => [option[1], option[0]])}
-                  onChange={value => value[1]}
+                    'LIHAT DETAIL',
+                    'CETAK',
+                    'PERBARUI',
+                    'HAPUS'
+                  ].map(option => [option, option])}
+                  onChange={value => {
+                    if (value === 'LIHAT DETAIL') navigate(`/invoice/detail/${invoice._id}`);
+                    else if (value === 'CETAK') createTransactionPDF(invoice);
+                    else if (value === 'PERBARUI') navigate(`/invoice/form/update/${invoice._id}`)
+                    else if (value === 'HAPUS') navigate(`/invoice/form/delete/${invoice._id}`)
+                  }}
                   placeholder='(Aksi)'
                 />
               </td>
