@@ -1,6 +1,5 @@
 import html2pdf from 'html2pdf.js';
 
-import { MitraOto as MitraOtoImg } from '../assets/img';
 import { toProperDateTime, splitString, getCurrentTime } from './';
 
 
@@ -43,20 +42,12 @@ export default function createInvoicePDF(invoice) {
         padding: 0;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         color: black;
-        font-size: 12px;
+        font-size: 10px;
       }
 
       /* header */
       header {
-        margin-bottom: 16px;
-        height: 96px;
-        display: flex;
-        align-items: center;
-        gap: 32px;
-      }
-      header img {
-        height: 100%;
-        border-radius: 2px;
+        margin-bottom: 8px;
       }
       header div:first-child {
         font-size: 20px;
@@ -70,9 +61,11 @@ export default function createInvoicePDF(invoice) {
 
       /* section - first */
       section:first-child {
-        margin-top: 16px;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      section:first-child div {
+        font-size: 12px;
       }
 
       /* section - 2 */
@@ -144,18 +137,16 @@ export default function createInvoicePDF(invoice) {
         margin-bottom: 4px;
       }
       section:last-child div {
+        font-size: 12px;
         text-align: end;
       }
     </style>
 
     <body>
       <header>
-        <img src=${MitraOtoImg} />
-        <div>
-          <div>Mitra Oto</div>
-          <div>Jl. Pingkan Matindas No. 48, Dendengan Dalam</div>
-          <div>No. HP: 0813 5607 1990</div>
-        </div>
+        <div>Mitra Oto</div>
+        <div>Jl. Pingkan Matindas No. 48, Dendengan Dalam</div>
+        <div>No. HP: 0813 5607 1990</div>
       </header>
 
       <hr />
