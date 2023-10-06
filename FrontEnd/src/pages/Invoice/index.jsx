@@ -11,6 +11,7 @@ import {
 } from '../../components';
 import { splitString, toProperString, createInvoicePDF } from '../../functions';
 import { Main } from '../../layouts';
+import DetailDialog from './DetailDialog';
 
 
 
@@ -28,6 +29,7 @@ export default function Invoice() {
   const [kilometer, setKilometer] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
   const [note, setNote] = useState('');
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
 
 
@@ -66,151 +68,167 @@ export default function Invoice() {
 
 
   return (
-    <Main
-      header={
-        <>
-          <Button
-            className='whitespace-nowrap'
-            label='Tambah Faktur'
-            onClick={() => navigate('/invoice/form/create')}
-            size='md'
-            theme='blue'
+    <>
+      <Main
+        header={
+          <>
+            <Button
+              className='whitespace-nowrap'
+              label='Tambah Faktur'
+              onClick={() => navigate('/invoice/form/create')}
+              size='md'
+              theme='blue'
+            />
+          </>
+        }
+        title='Data Faktur'
+        table={!_invoices ? (
+          <div className='mt-4 text-center text-xl'>Sedang memuat data, mohon tunggu ...</div>
+        ) : (_invoices.length === 0) ? (
+          <div className='mt-4 text-center text-xl'>Data kosong</div>
+        ) : (
+          <Table
+            titles={[
+              <>
+                {[
+                  'Tanggal Pembuatan',
+                  'Nama Pelanggan',
+                  'Jenis Kendaraan',
+                  'No. Polisi',
+                  'Tanggal Masuk',
+                  'Tanggal Keluar',
+                  'Kilometer',
+                  'Total Harga',
+                  'Keterangan',
+                  'Aksi'
+                ].map((title, index) => <th key={index}>{title}</th>)}
+              </>
+            ]}
+            filters={
+              <>
+                <th>
+                  <InputDateTime
+                    useTime={false}
+                    value={createDate}
+                    onChange={value => setCreateDate(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <Input
+                    value={customerName}
+                    onChange={value => setCustomerName(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <Input
+                    value={vehicleType}
+                    onChange={value => setVehicleType(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <Input
+                    value={vehiclePlate}
+                    onChange={value => setVehiclePlate(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <InputDateTime
+                    useTime={false}
+                    value={entryDate}
+                    onChange={value => setEntryDate(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <InputDateTime
+                    useTime={false}
+                    value={outDate}
+                    onChange={value => setOutDate(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <Input
+                    value={kilometer}
+                    onChange={value => setKilometer(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <Input
+                    value={totalPrice}
+                    onChange={value => setTotalPrice(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <Input
+                    value={note}
+                    onChange={value => setNote(value)}
+                    placeholder='filter'
+                  />
+                </th>
+                <th>
+                  <Button
+                    className='w-full'
+                    label='Bersihkan filter'
+                    onClick={clearFilter}
+                  />
+                </th>
+              </>
+            }
+            info={<th colSpan={10}>Total {filtered_invoices().length} dari {_invoices.length}</th>}
+            data={filtered_invoices()?.map((invoice, index) => (
+              <tr
+                key={index}
+                className='hover:cursor-pointer'
+                onClick={() => setSelectedInvoice(invoice)}
+              >
+                <td>{invoice.createDate.slice(0, 10).split('-').reverse().join('-')}</td>
+                <td>{invoice.customerName ? invoice.customerName : '-'}</td>
+                <td>{invoice.vehicleType ? invoice.vehicleType : '-'}</td>
+                <td className='whitespace-nowrap'>{invoice.vehiclePlate ? invoice.vehiclePlate : '-'}</td>
+                <td>{invoice.entryDate ? invoice.entryDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
+                <td>{invoice.outDate ? invoice.outDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
+                <td>{invoice.kilometer ? invoice.kilometer : '-'}</td>
+                <td className='text-right whitespace-nowrap'>Rp. {splitString(invoice.totalPrice, 3, '.')}</td>
+                <td>{invoice.note ? invoice.note : '-'}</td>
+                <td>
+                  <Select
+                    options={[
+                      'LIHAT DETAIL',
+                      'CETAK',
+                      'PERBARUI',
+                      'HAPUS'
+                    ].map(option => [option, option])}
+                    onChange={value => {
+                      if (value === 'LIHAT DETAIL') navigate(`/invoice/detail/${invoice._id}`);
+                      else if (value === 'CETAK') createInvoicePDF(invoice);
+                      else if (value === 'PERBARUI') navigate(`/invoice/form/update/${invoice._id}`)
+                      else if (value === 'HAPUS') navigate(`/invoice/form/delete/${invoice._id}`)
+                    }}
+                    placeholder='(Aksi)'
+                  />
+                </td>
+              </tr>
+            ))}
           />
-        </>
-      }
-      title='Data Faktur'
-      table={!_invoices ? (
-        <div className='mt-4 text-center text-xl'>Sedang memuat data, mohon tunggu ...</div>
-      ) : (_invoices.length === 0) ? (
-        <div className='mt-4 text-center text-xl'>Data kosong</div>
-      ) : (
-        <Table
-          titles={[
-            <>
-              {[
-                'Tanggal Pembuatan',
-                'Nama Pelanggan',
-                'Jenis Kendaraan',
-                'No. Polisi',
-                'Tanggal Masuk',
-                'Tanggal Keluar',
-                'Kilometer',
-                'Total Harga',
-                'Keterangan',
-                'Aksi'
-              ].map((title, index) => <th key={index}>{title}</th>)}
-            </>
-          ]}
-          filters={
-            <>
-              <th>
-                <InputDateTime
-                  useTime={false}
-                  value={createDate}
-                  onChange={value => setCreateDate(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <Input
-                  value={customerName}
-                  onChange={value => setCustomerName(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <Input
-                  value={vehicleType}
-                  onChange={value => setVehicleType(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <Input
-                  value={vehiclePlate}
-                  onChange={value => setVehiclePlate(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <InputDateTime
-                  useTime={false}
-                  value={entryDate}
-                  onChange={value => setEntryDate(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <InputDateTime
-                  useTime={false}
-                  value={outDate}
-                  onChange={value => setOutDate(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <Input
-                  value={kilometer}
-                  onChange={value => setKilometer(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <Input
-                  value={totalPrice}
-                  onChange={value => setTotalPrice(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <Input
-                  value={note}
-                  onChange={value => setNote(value)}
-                  placeholder='filter'
-                />
-              </th>
-              <th>
-                <Button
-                  className='w-full'
-                  label='Bersihkan filter'
-                  onClick={clearFilter}
-                />
-              </th>
-            </>
-          }
-          info={<th colSpan={10}>Total {filtered_invoices().length} dari {_invoices.length}</th>}
-          data={filtered_invoices()?.map((invoice, index) => (
-            <tr key={index}>
-              <td>{invoice.createDate.slice(0, 10).split('-').reverse().join('-')}</td>
-              <td>{invoice.customerName ? invoice.customerName : '-'}</td>
-              <td>{invoice.vehicleType ? invoice.vehicleType : '-'}</td>
-              <td className='whitespace-nowrap'>{invoice.vehiclePlate ? invoice.vehiclePlate : '-'}</td>
-              <td>{invoice.entryDate ? invoice.entryDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
-              <td>{invoice.outDate ? invoice.outDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
-              <td>{invoice.kilometer ? invoice.kilometer : '-'}</td>
-              <td className='text-right whitespace-nowrap'>Rp. {splitString(invoice.totalPrice, 3, '.')}</td>
-              <td>{invoice.note ? invoice.note : '-'}</td>
-              <td>
-                <Select
-                  options={[
-                    'LIHAT DETAIL',
-                    'CETAK',
-                    'PERBARUI',
-                    'HAPUS'
-                  ].map(option => [option, option])}
-                  onChange={value => {
-                    if (value === 'LIHAT DETAIL') navigate(`/invoice/detail/${invoice._id}`);
-                    else if (value === 'CETAK') createInvoicePDF(invoice);
-                    else if (value === 'PERBARUI') navigate(`/invoice/form/update/${invoice._id}`)
-                    else if (value === 'HAPUS') navigate(`/invoice/form/delete/${invoice._id}`)
-                  }}
-                  placeholder='(Aksi)'
-                />
-              </td>
-            </tr>
-          ))}
+        )}
+      />
+
+
+
+      {selectedInvoice && (
+        <DetailDialog
+          title='Detail Faktur'
+          onClose={() => setSelectedInvoice(null)}
+          invoice={selectedInvoice}
         />
       )}
-    />
+    </>
   );
 };
