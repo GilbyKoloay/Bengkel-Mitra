@@ -2,20 +2,20 @@
 
 import login from './login.js';
 
-import servicePost from './service/post.js';
-import serviceGet from './service/get.js';
-import servicePut from './service/put.js';
-import serviceDelete from './service/delete.js';
+// import servicePost from './service/post.js';
+// import serviceGet from './service/get.js';
+// import servicePut from './service/put.js';
+// import serviceDelete from './service/delete.js';
 
-import typePost from './type/post.js';
-import typeGet from './type/get.js';
-import typePut from './type/put.js';
-import typeDelete from './type/delete.js';
+// import typePost from './type/post.js';
+// import typeGet from './type/get.js';
+// import typePut from './type/put.js';
+// import typeDelete from './type/delete.js';
 
-import transactionPost from './transaction/post.js';
-import transactionGet from './transaction/get.js';
-import transactionPut from './transaction/put.js';
-import transactionDelete from './transaction/delete.js';
+// import transactionPost from './transaction/post.js';
+// import transactionGet from './transaction/get.js';
+// import transactionPut from './transaction/put.js';
+// import transactionDelete from './transaction/delete.js';
 
 import invoicePost from './invoice/post.js';
 import invoiceGet from './invoice/get.js';
@@ -24,26 +24,26 @@ import invoiceDelete from './invoice/delete.js';
 
 
 
-const service = {
-  post: servicePost,
-  get: serviceGet,
-  put: servicePut,
-  delete: serviceDelete
-};
+// const service = {
+//   post: servicePost,
+//   get: serviceGet,
+//   put: servicePut,
+//   delete: serviceDelete
+// };
 
-const Type = {
-  post: typePost,
-  get: typeGet,
-  put: typePut,
-  delete: typeDelete
-};
+// const Type = {
+//   post: typePost,
+//   get: typeGet,
+//   put: typePut,
+//   delete: typeDelete
+// };
 
-const transaction = {
-  post: transactionPost,
-  get: transactionGet,
-  put: transactionPut,
-  delete: transactionDelete
-};
+// const transaction = {
+//   post: transactionPost,
+//   get: transactionGet,
+//   put: transactionPut,
+//   delete: transactionDelete
+// };
 
 const invoice = {
   post: invoicePost,
@@ -56,8 +56,8 @@ const invoice = {
 
 export {
   login,
-  service,
-  Type,
-  transaction,
+  // service,
+  // Type,
+  // transaction,
   invoice
 };
