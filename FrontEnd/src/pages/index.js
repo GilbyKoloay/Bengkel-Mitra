@@ -12,6 +12,7 @@ import Login from './Login';
 // import TransactionForm from './Transaction/Form';
 
 import Invoice from './Invoice';
+import InvoiceSelected from './Invoice/Selected';
 import InvoiceForm from './Invoice/Form';
 
 
@@ -29,5 +30,6 @@ export {
   // TransactionForm,
 
   Invoice,
+  InvoiceSelected,
   InvoiceForm
 };
