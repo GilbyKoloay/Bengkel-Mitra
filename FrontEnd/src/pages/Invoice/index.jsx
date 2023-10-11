@@ -6,12 +6,10 @@ import {
   Button,
   Table,
   InputDateTime,
-  Input,
-  Select
+  Input
 } from '../../components';
-import { splitString, toProperString, createInvoicePDF } from '../../functions';
+import { splitString, toProperString } from '../../functions';
 import { Main } from '../../layouts';
-import DetailDialog from './DetailDialog';
 
 
 
@@ -29,21 +27,8 @@ export default function Invoice() {
   const [kilometer, setKilometer] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
   const [note, setNote] = useState('');
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
 
-
-  function clearFilter() {
-    setCreateDate('--T00:00:00.000Z');
-    setCustomerName('');
-    setVehicleType('');
-    setVehiclePlate('');
-    setEntryDate('--T00:00:00.000Z');
-    setOutDate('--T00:00:00.000Z');
-    setKilometer('');
-    setTotalPrice('');
-    setNote('');
-  }
 
   function filtered_invoices() {
     return _invoices?.filter(invoice =>
@@ -99,8 +84,7 @@ export default function Invoice() {
                   'Tanggal Keluar',
                   'Kilometer',
                   'Total Harga',
-                  'Keterangan',
-                  'Aksi'
+                  'Keterangan'
                 ].map((title, index) => <th key={index}>{title}</th>)}
               </>
             ]}
@@ -172,63 +156,35 @@ export default function Invoice() {
                     placeholder='filter'
                   />
                 </th>
-                <th>
-                  <Button
-                    className='w-full'
-                    label='Bersihkan filter'
-                    onClick={clearFilter}
-                  />
-                </th>
               </>
             }
             info={<th colSpan={10}>Total {filtered_invoices().length} dari {_invoices.length}</th>}
             data={filtered_invoices()?.map((invoice, index) => (
-              <tr
-                key={index}
-                className='hover:cursor-pointer'
-                onClick={() => setSelectedInvoice(invoice)}
-              >
-                <td>{invoice.createDate.slice(0, 10).split('-').reverse().join('-')}</td>
-                <td>{invoice.customerName ? invoice.customerName : '-'}</td>
-                <td>{invoice.vehicleType ? invoice.vehicleType : '-'}</td>
-                <td className='whitespace-nowrap'>{invoice.vehiclePlate ? invoice.vehiclePlate : '-'}</td>
-                <td>{invoice.entryDate ? invoice.entryDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
-                <td>{invoice.outDate ? invoice.outDate.slice(0, 10).split('-').reverse().join('-') : '-'}</td>
-                <td>{invoice.kilometer ? invoice.kilometer : '-'}</td>
-                <td className='text-right whitespace-nowrap'>Rp. {splitString(invoice.totalPrice, 3, '.')}</td>
-                <td>{invoice.note ? invoice.note : '-'}</td>
-                <td>
-                  <Select
-                    options={[
-                      'LIHAT DETAIL',
-                      'CETAK',
-                      'PERBARUI',
-                      'HAPUS'
-                    ].map(option => [option, option])}
-                    onChange={value => {
-                      if (value === 'LIHAT DETAIL') navigate(`/invoice/detail/${invoice._id}`);
-                      else if (value === 'CETAK') createInvoicePDF(invoice);
-                      else if (value === 'PERBARUI') navigate(`/invoice/form/update/${invoice._id}`)
-                      else if (value === 'HAPUS') navigate(`/invoice/form/delete/${invoice._id}`)
-                    }}
-                    placeholder='(Aksi)'
-                  />
-                </td>
+              <tr key={index} className='hover:cursor-pointer'>
+                {[
+                  [invoice?.createDate?.slice(0, 10)?.split('-')?.reverse()?.join('-'), ''],
+                  [invoice?.customerName, ''],
+                  [invoice?.vehicleType, ''],
+                  [invoice?.vehiclePlate, 'whitespace-nowrap'],
+                  [invoice?.entryDate?.slice(0, 10)?.split('-')?.reverse()?.join('-'), ''],
+                  [invoice?.outDate?.slice(0, 10)?.split('-')?.reverse()?.join('-'), ''],
+                  [invoice?.kilometer, ''],
+                  [`Rp. ${splitString(invoice?.totalPrice, 3, '.')}`, 'text-right whitespace-nowrap'],
+                  [invoice?.note, '']
+                ].map(([value, className], index) => (
+                  <td
+                    key={index}
+                    className={className}
+                    onClick={() => navigate(`/invoice/${invoice._id}`)}
+                  >
+                    {value ? value : '-'}
+                  </td>
+                ))}
               </tr>
             ))}
           />
         )}
       />
-
-
-
-      {selectedInvoice && (
-        <DetailDialog
-          title='Detail Faktur'
-          onClose={() => setSelectedInvoice(null)}
-          invoice={selectedInvoice}
-        />
-      )}
     </>
   );
 };

@@ -8,6 +8,7 @@ import InputDateTime from './InputDateTime';
 import InputOption from './InputOption';
 import Table from './Table';
 import ConfirmationDialog from './ConfirmationDialog';
+import InvoicePDF from './InvoicePDF';
 
 
 
@@ -19,5 +20,6 @@ export {
   InputDateTime,
   InputOption,
   Table,
-  ConfirmationDialog
+  ConfirmationDialog,
+  InvoicePDF
 };

@@ -1,3 +1,4 @@
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -13,15 +14,15 @@ import {
   InputDateTime,
   Input,
   ConfirmationDialog,
+  InvoicePDF as PDF
 } from '../../../components';
 import {
   Fetch,
   createSocket,
   notificationToast,
-  getCurrentTime,
+  getCurrentDateTime,
   toProperString,
-  toProperDateTime,
-  createInvoicePDF
+  toProperDateTime
 } from '../../../functions';
 import { Form } from '../../../layouts';
 
@@ -146,7 +147,7 @@ export default function InvoiceForm() {
 
     if (isFormCreate) {
       payload = {
-        createDate: isCreateDateAuto ? getCurrentTime() : toProperDateTime(createDate),
+        createDate: isCreateDateAuto ? getCurrentDateTime() : toProperDateTime(createDate),
         customerName: toProperString(customerName),
         vehicleType: toProperString(vehicleType),
         vehiclePlate: toProperString(vehiclePlate),
@@ -164,7 +165,7 @@ export default function InvoiceForm() {
     } else if (isFormUpdate) {
       payload = {
         _id,
-        createDate: isCreateDateAuto ? getCurrentTime() : toProperDateTime(createDate),
+        createDate: isCreateDateAuto ? getCurrentDateTime() : toProperDateTime(createDate),
         customerName: toProperString(customerName),
         vehicleType: toProperString(vehicleType),
         vehiclePlate: toProperString(vehiclePlate),
@@ -437,10 +438,24 @@ export default function InvoiceForm() {
         <ConfirmationDialog
           title='Konfirmasi pencetakan faktur'
           description='Apakah anda ingin mencetak faktur?'
-          onCancel={() => {setIsPrintInvoiceDialogOpen(false); navigate('/invoice');}}
-          onConfirm={() => {setIsPrintInvoiceDialogOpen(false); createInvoicePDF(isPrintInvoiceDialogOpen); navigate('/invoice');}}
-          theme='blue'
-        />
+        >
+          <>
+            <Button
+              className='flex-1 sm:flex-[0]'
+              label='Batal'
+              onClick={() => {setIsPrintInvoiceDialogOpen(false); navigate('/invoice');}}
+              size='md'
+            />
+            <PDFDownloadLink
+              className='flex-1 sm:flex-[0] border-2 py-1 px-4 text-lg bg-blue-300 border-blue-700 rounded text-center hover:bg-blue-500 hover:cursor-pointer focus:outline focus:outline-1 focus:outline-offset-1 focus:outline-blue-700'
+              document={<PDF invoice={isPrintInvoiceDialogOpen} />}
+              fileName='Faktur.pdf'
+              onClick={() => setTimeout(() => {setIsPrintInvoiceDialogOpen(false); navigate('/invoice');}, 500)}
+            >
+              {({ blob, url, loading, error }) => loading ? '' : 'Konfirmasi'}
+            </PDFDownloadLink>
+          </>
+        </ConfirmationDialog>
       )}
 
       {(isFormDelete && isDeleteConfirmationDialogOpen) && (

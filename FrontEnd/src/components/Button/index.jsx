@@ -18,6 +18,7 @@ export default function Button({
         ${disabled ? 'bg-neutral-500 border-neutral-700 rounded hover:cursor-not-allowed' : (
           (theme === 'neutral') ? 'bg-neutral-300 border-neutral-700 rounded hover:bg-neutral-500 focus:outline-neutral-700' :
           (theme === 'red') ? 'bg-red-300 border-red-700 rounded hover:bg-red-500 focus:outline-red-700' :
+          (theme === 'yellow') ? 'bg-yellow-300 border-yellow-700 rounded hover:bg-yellow-500 focus:outline-yellow-700' :
           (theme === 'blue') ? 'bg-blue-300 border-blue-700 rounded hover:bg-blue-500 focus:outline-blue-700' : ''
         )}
       `}
