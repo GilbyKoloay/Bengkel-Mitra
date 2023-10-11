@@ -5,6 +5,7 @@ import { Button } from '../';
 export default function ConfirmationDialog({
   title='',
   description='',
+  children,
   onCancel=null,
   onConfirm=null,
   theme='neutral'
@@ -23,19 +24,25 @@ export default function ConfirmationDialog({
           </>
         )}
         <div className='flex gap-4 sm:justify-end'>
-          <Button
-            className='flex-1 sm:flex-[0]'
-            label='Batal'
-            onClick={onCancel}
-            size='md'
-          />
-          <Button
-            className='flex-1 sm:flex-[0]'
-            label='Konfirmasi'
-            onClick={onConfirm}
-            size='md'
-            theme={theme}
-          />
+          {children ? (
+            children
+          ) : (
+            <>
+              <Button
+                className='flex-1 sm:flex-[0]'
+                label='Batal'
+                onClick={onCancel}
+                size='md'
+              />
+              <Button
+                className='flex-1 sm:flex-[0]'
+                label='Konfirmasi'
+                onClick={onConfirm}
+                size='md'
+                theme={theme}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>
