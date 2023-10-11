@@ -27,14 +27,20 @@ export default async function post(req, res) {
       note: stringValidator(req.body?.note)
     };
     if (!payload.createDate) return Res(res, 400, null, 'Tanggal pembuatan tidak valid');
-    if (payload.services?.length > 0) payload.services.forEach(service => {
-      if (
-        service.primary?.length === 0 &&
-        service.secondary?.length === 0
-      ) return Res(res, 400, null, 'Pekerjaan tidak valid');
-      if (!service.price) return Res(res, 400, null, 'Harga pekerjaan tidak valid');
-    });
-    else return Res(res, 400, null, 'Pekerjaan tidak valid');
+    if (payload.services.length === 0) return Res(res, 400, null, 'Pekerjaan tidak valid');
+    else {
+      let invalid = false;
+      payload.services.forEach(service => {
+        if (
+          (
+            service.primary.length === 0 &&
+            service.secondary.length === 0
+          ) ||
+          !service.price
+        ) invalid = true;
+      });
+      if (invalid) return Res(res, 400, null, 'Pekerjaan tidak valid');
+    }
     if (!payload.totalPrice) return Res(res, 400, null, 'Total harga tidak valid');
 
     const result = await invoiceCollection.create(payload);
