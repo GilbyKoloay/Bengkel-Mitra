@@ -43,6 +43,6 @@ export default async function post(req, res) {
   }
   catch (err) {
     console.log('controllers/invoice/post.', err);
-    // return Res(res, 500);
+    return Res(res, 500);
   }
 };
