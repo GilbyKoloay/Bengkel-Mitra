@@ -1,18 +1,13 @@
 {
   "files": {
-    "main.css": "/static/css/main.c7adcdd4.css",
-    "main.js": "/static/js/main.3283225e.js",
-    "static/js/703.4f4f9ada.chunk.js": "/static/js/703.4f4f9ada.chunk.js",
-    "static/js/513.2f5a1a8a.chunk.js": "/static/js/513.2f5a1a8a.chunk.js",
-    "static/media/MitraOto.jpg": "/static/media/MitraOto.bdec333108594444d67a.jpg",
+    "main.css": "/static/css/main.807e2e65.css",
+    "main.js": "/static/js/main.9e54be99.js",
     "index.html": "/index.html",
-    "main.c7adcdd4.css.map": "/static/css/main.c7adcdd4.css.map",
-    "main.3283225e.js.map": "/static/js/main.3283225e.js.map",
-    "703.4f4f9ada.chunk.js.map": "/static/js/703.4f4f9ada.chunk.js.map",
-    "513.2f5a1a8a.chunk.js.map": "/static/js/513.2f5a1a8a.chunk.js.map"
+    "main.807e2e65.css.map": "/static/css/main.807e2e65.css.map",
+    "main.9e54be99.js.map": "/static/js/main.9e54be99.js.map"
   },
   "entrypoints": [
-    "static/css/main.c7adcdd4.css",
-    "static/js/main.3283225e.js"
+    "static/css/main.807e2e65.css",
+    "static/js/main.9e54be99.js"
   ]
 }
