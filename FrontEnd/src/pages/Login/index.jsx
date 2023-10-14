@@ -24,7 +24,6 @@ export default function Login() {
       username: username.trim(),
       password: password.trim()
     };
-    console.log('payload', payload);
 
     const res = await Fetch('/login', 'POST', payload, {title: 'Mohon tunggu ...'}, true);
     if (res) {

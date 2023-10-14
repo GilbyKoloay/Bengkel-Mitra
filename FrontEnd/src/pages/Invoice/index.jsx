@@ -26,7 +26,6 @@ export default function Invoice() {
   const [outDate, setOutDate] = useState('--T00:00:00.000Z');
   const [kilometer, setKilometer] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
-  const [note, setNote] = useState('');
 
 
 
@@ -45,8 +44,7 @@ export default function Invoice() {
       (!outDate.split('T')[0].split('-')[1] || invoice.outDate?.split('T')[0]?.split('-')[1]?.includes(outDate.split('T')[0].split('-')[1])) &&
       (!outDate.split('T')[0].split('-')[0] || invoice.outDate?.split('T')[0]?.split('-')[0]?.includes(outDate.split('T')[0].split('-')[0])) &&
       (!kilometer || ((kilometer === '-') && !invoice.kilometer) || invoice.kilometer?.toString()?.includes(toProperString(kilometer))) &&
-      (!totalPrice || ((totalPrice === '-') && !invoice.totalPrice) || invoice.totalPrice?.toString()?.includes(toProperString(totalPrice))) &&
-      (!note || ((note === '-') && !invoice.note) || invoice.note?.includes(toProperString(note)))
+      (!totalPrice || ((totalPrice === '-') && !invoice.totalPrice) || invoice.totalPrice?.toString()?.includes(toProperString(totalPrice)))
     );
   }
 
@@ -83,8 +81,7 @@ export default function Invoice() {
                   'Tanggal Masuk',
                   'Tanggal Keluar',
                   'Kilometer',
-                  'Total Harga',
-                  'Keterangan'
+                  'Total Harga'
                 ].map((title, index) => <th key={index}>{title}</th>)}
               </>
             ]}
@@ -149,13 +146,6 @@ export default function Invoice() {
                     placeholder='filter'
                   />
                 </th>
-                <th>
-                  <Input
-                    value={note}
-                    onChange={value => setNote(value)}
-                    placeholder='filter'
-                  />
-                </th>
               </>
             }
             info={<th colSpan={10}>Total {filtered_invoices().length} dari {_invoices.length}</th>}
@@ -169,8 +159,7 @@ export default function Invoice() {
                   [invoice?.entryDate?.slice(0, 10)?.split('-')?.reverse()?.join('-'), ''],
                   [invoice?.outDate?.slice(0, 10)?.split('-')?.reverse()?.join('-'), ''],
                   [invoice?.kilometer, ''],
-                  [`Rp. ${splitString(invoice?.totalPrice, 3, '.')}`, 'text-right whitespace-nowrap'],
-                  [invoice?.note, '']
+                  [`Rp. ${splitString(invoice?.totalPrice, 3, '.')}`, 'text-right whitespace-nowrap']
                 ].map(([value, className], index) => (
                   <td
                     key={index}
