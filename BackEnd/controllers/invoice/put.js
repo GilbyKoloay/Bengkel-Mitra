@@ -20,35 +20,37 @@ export default async function post(req, res) {
       entryDate: dateTimeValidator(req.body?.entryDate),
       outDate: dateTimeValidator(req.body?.outDate),
       kilometer: numberValidator(req.body?.kilometer),
-      services: req.body?.services?.map(service => ({
-        primary: service?.primary?.map(primary => stringValidator(primary)),
-        secondary: service?.secondary?.map(secondary => stringValidator(secondary)),
-        price: numberValidator(service?.price)
-      })),
-      totalPrice: numberValidator(req.body?.totalPrice),
-      note: stringValidator(req.body?.note)
+      services: req.body?.services?.map(subServices => (
+        subServices?.map(subService => ({
+          name: stringValidator(subService?.name),
+          price: numberValidator(subService?.price),
+          paid: numberValidator(subService?.paid),
+          note: stringValidator(subService?.note)
+        }))
+      )),
+      totalPrice: numberValidator(req.body?.totalPrice) ? parseInt(req.body.totalPrice) : 0,
+      notes: req.body?.notes?.map(note => stringValidator(note)),
+      city: stringValidator(req.body?.city)
     };
     if (!payload.createDate) return Res(res, 400, null, 'Tanggal pembuatan tidak valid');
     if (payload.services.length === 0) return Res(res, 400, null, 'Pekerjaan tidak valid');
     else {
       let invalid = false;
-      payload.services.forEach(service => {
-        if (
-          (
-            service.primary.length === 0 &&
-            service.secondary.length === 0
-          ) ||
-          !service.price
-        ) invalid = true;
+
+      payload.services.forEach(subServices => {
+        subServices.forEach(subService => {
+          if (!subService.name) invalid = true;
+        });
       });
+
       if (invalid) return Res(res, 400, null, 'Pekerjaan tidak valid');
     }
-    if (!payload.totalPrice) return Res(res, 400, null, 'Total harga tidak valid');
 
     const result = await invoiceCollection.updateOne({
       _id: payload._id
     }, {
       $set: {
+        createDate: payload.createDate,
         customerName: payload.customerName,
         vehicleType: payload.vehicleType,
         vehiclePlate: payload.vehiclePlate,
@@ -56,9 +58,9 @@ export default async function post(req, res) {
         outDate: payload.outDate,
         kilometer: payload.kilometer,
         services: payload.services,
-        note: payload.note,
         totalPrice: payload.totalPrice,
-        createDate: payload.createDate
+        notes: payload.notes,
+        city: payload.city
       }
     })
     if (!result || !result?.acknowledged) throw new Error('Terjadi kesalahan di server.');
