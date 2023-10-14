@@ -31,25 +31,31 @@ const invoiceSchema = new Schema({
     type: Number,
     default: null
   },
-  services: [{
+  services: [[{
     _id: false,
-    primary: [{
+    name: {
       type: String
-    }],
-    secondary: [{
-      type: String
-    }],
+    },
     price: {
       type: Number
+    },
+    paid: {
+      type: Number
+    },
+    note: {
+      type: String
     }
-  }],
+  }]],
   totalPrice: {
     type: Number,
-    required: true
+    default: 0
   },
-  note: {
+  notes: [{
+    type: String
+  }],
+  city: {
     type: String,
-    default: null
+    default: 'Manado'
   }
 }, {collection: 'Invoices'});
 
