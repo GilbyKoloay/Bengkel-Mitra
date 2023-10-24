@@ -4,6 +4,6 @@ export default function stringValidator(value, deleteAllSpace=false) {
     (deleteAllSpace && !value?.replaceAll(' ', ''))
   ) return null;
   
-  if (!deleteAllSpace) return value.replace(/ +/g, ' ').trim().toUpperCase();
-  return value.replaceAll(' ', '').toUpperCase();
+  if (!deleteAllSpace) return value.replace(/ +/g, ' ').trim();
+  return value.replaceAll(' ', '');
 };

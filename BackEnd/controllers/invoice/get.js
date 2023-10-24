@@ -1,13 +1,11 @@
-import { invoice as invoiceCollection } from '../../database/models/index.js';
-import { Res } from '../../functions/index.js';
+import { Res, Json } from '../../functions/index.js';
 
 
 
 export default async function get(req, res) {
   try {
-    const result = await invoiceCollection.find({}, {__v: 0});
-
-    if (!result) throw new Error('Terjadi kesalahan di server.');
+    const result = Json('invoice');
+    
     return Res(res, 200, result);
   }
   catch (err) {

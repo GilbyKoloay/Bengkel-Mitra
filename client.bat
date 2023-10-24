@@ -1,4 +1,4 @@
 @echo off
 
-start http://localhost:3001
+start http://localhost:3000
 exit

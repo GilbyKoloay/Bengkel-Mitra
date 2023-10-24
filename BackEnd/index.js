@@ -2,13 +2,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'http';
-import mongoose from 'mongoose';
 import path from 'path';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
 import { login as loginController } from './controllers/index.js';
-// import { Res } from './functions/index.js';
+import { Res } from './functions/index.js';
 import { authentication } from './middlewares/index.js';
 import router from './router.js';
 
@@ -25,16 +24,17 @@ const io = new Server(
   {cors: {origin: '*'}}
 );
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const databaseConnectionURI = 'mongodb://BM-Owner:owner@127.0.0.1:27017/BengkelMitra';
-const port = 3001;
+const port = parseInt(process.env.PORT);
 
 
 
-// serve front-end
-app.use(express.static(path.join(__dirname, 'client/build')));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-});
+// serve front-end (if is in prodution mode)
+if (process.env.APP_MODE.toLowerCase() === 'production') {
+  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  });
+}
 
 
 
@@ -53,8 +53,8 @@ app.use('/api', router);
 
 // 404 endpoint handler
 app.use((req, res) => {
-  // Res(res, 404, null, 'Endpoint not found.');
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  else if (process.env.APP_MODE.toLowerCase() === 'development') return Res(res, 404, null, 'Endpoint not found.');
 });
 
 
@@ -108,15 +108,8 @@ io.on('connection', socket => {
 
 
 
-// connect to database & run server
-mongoose.connect(databaseConnectionURI)
-  .then(() => {
-    console.log('Database connection successful.');
-    server.listen(port, err => {
-      if (err) console.log('Failed to run server.', err);
-      console.log(`Server is running on port ${port}.`);
-    });
-  })
-  .catch(err => {
-    console.log('Database connection failed.', err);
-  });
+// run server
+server.listen(port, err => {
+  if (err) console.log('Failed to run server.', err);
+  console.log(`Server is running on port ${port}.`);
+});
