@@ -1,4 +1,5 @@
 import cors from 'cors';
+import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'http';
 import path from 'path';
@@ -6,9 +7,13 @@ import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
 import { login as loginController } from './controllers/index.js';
-// import { Res } from './functions/index.js';
+import { Res } from './functions/index.js';
 import { authentication } from './middlewares/index.js';
 import router from './router.js';
+
+
+
+dotenv.config();
 
 
 
@@ -16,19 +21,20 @@ const app = express();
 const server = createServer(app);
 const io = new Server(
   server,
-  {cors: {origin: '*'}}
+  {cors: {origin: 'localhost'}}
 );
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const databaseConnectionURI = 'mongodb://BM-Owner:owner@127.0.0.1:27017/BengkelMitra';
-const port = 3000;
+const port = parseInt(process.env.PORT);
 
 
 
-// serve front-end
-app.use(express.static(path.join(__dirname, 'client/build')));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-});
+// serve front-end (if is in prodution mode)
+if (process.env.APP_MODE.toLowerCase() === 'production') {
+  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  });
+}
 
 
 
@@ -47,8 +53,8 @@ app.use('/api', router);
 
 // 404 endpoint handler
 app.use((req, res) => {
-  // Res(res, 404, null, 'Endpoint not found.');
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  else if (process.env.APP_MODE.toLowerCase() === 'development') return Res(res, 404, null, 'Endpoint not found.');
 });
 
 
