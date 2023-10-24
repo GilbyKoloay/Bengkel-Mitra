@@ -13,7 +13,7 @@ export default async function deleteDocument(req, res) {
     
     if (!data.some(thisData => thisData._id === payload._id)) return Res(res, 400, null, '_id tidak valid');
 
-    const newData = data.map(thisData => thisData._id !== payload._id);
+    const newData = data.filter(thisData => thisData._id !== payload._id);
 
     Json('invoice', newData);
 
