@@ -21,7 +21,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(
   server,
-  {cors: {origin: 'localhost'}}
+  {cors: {origin: '*'}}
 );
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = parseInt(process.env.PORT);
