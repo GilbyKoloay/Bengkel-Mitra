@@ -53,7 +53,7 @@ app.use('/api', router);
 
 // 404 endpoint handler
 app.use((req, res) => {
-  if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   else if (process.env.APP_MODE.toLowerCase() === 'development') return Res(res, 404, null, 'Endpoint not found.');
 });
 

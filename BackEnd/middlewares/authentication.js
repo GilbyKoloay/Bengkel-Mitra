@@ -13,7 +13,7 @@ export default function authentication(req, res, next) {
     const { authorization } = req.headers;
 
     if (!authorization) {
-      if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+      if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
       if (process.env.APP_MODE.toLowerCase() === 'development') return Res(res, 401, null, 'no authorization');
     }
 
@@ -21,7 +21,7 @@ export default function authentication(req, res, next) {
 
     jwt.verify(_token, process.env.SECRET_KEY, (err, decoded) => {
       if (err) {
-        if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+        if (process.env.APP_MODE.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
         if (process.env.APP_MODE.toLowerCase() === 'development') return Res(res, 401, null, 'token unverified');
       }
 
