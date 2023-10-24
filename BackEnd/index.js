@@ -1,7 +1,6 @@
 import cors from 'cors';
 import express from 'express';
 import { createServer } from 'http';
-import mongoose from 'mongoose';
 import path from 'path';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
@@ -21,7 +20,7 @@ const io = new Server(
 );
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const databaseConnectionURI = 'mongodb://BM-Owner:owner@127.0.0.1:27017/BengkelMitra';
-const port = 3001;
+const port = 3000;
 
 
 
@@ -103,15 +102,8 @@ io.on('connection', socket => {
 
 
 
-// connect to database & run server
-mongoose.connect(databaseConnectionURI)
-  .then(() => {
-    console.log('Database connection successful.');
-    server.listen(port, err => {
-      if (err) console.log('Failed to run server.', err);
-      console.log(`Server is running on port ${port}.`);
-    });
-  })
-  .catch(err => {
-    console.log('Database connection failed.', err);
-  });
+// run server
+server.listen(port, err => {
+  if (err) console.log('Failed to run server.', err);
+  console.log(`Server is running on port ${port}.`);
+});
