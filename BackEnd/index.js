@@ -25,8 +25,8 @@ const io = new Server(
   {cors: {origin: '*'}}
 );
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const databaseConnectionURI = process.env.DATABASE_CONNECTION_URI;
-const port = parseInt(process.env.PORT);
+const databaseConnectionURI = 'mongodb://BM-Owner:owner@127.0.0.1:27017/BengkelMitra';
+const port = 3001;
 
 
 
