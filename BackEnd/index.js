@@ -1,5 +1,4 @@
 import cors from 'cors';
-import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'http';
 import mongoose from 'mongoose';
@@ -11,10 +10,6 @@ import { login as loginController } from './controllers/index.js';
 // import { Res } from './functions/index.js';
 import { authentication } from './middlewares/index.js';
 import router from './router.js';
-
-
-
-dotenv.config();
 
 
 
