@@ -1,6 +1,6 @@
-import { invoice as invoiceCollection } from '../../database/models/index.js';
 import {
   Res,
+  Json,
   dateTimeValidator,
   stringValidator,
   numberValidator
@@ -44,8 +44,15 @@ export default async function post(req, res) {
       if (invalid) return Res(res, 400, null, 'Pekerjaan tidak valid');
     }
 
-    const result = await invoiceCollection.create(payload);
-    if (!result) throw new Error('Terjadi kesalahan di server.');
+    const data = Json('invoice');
+
+    const newData = [...data, {
+      _id: crypto.randomUUID(),
+      ...payload
+    }];
+
+    Json('invoice', newData);
+    
     return Res(res, 200);
   }
   catch (err) {

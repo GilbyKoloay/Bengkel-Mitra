@@ -1,9 +1,8 @@
-import { invoice as invoiceCollection } from '../../database/models/index.js';
 import {
   Res,
-  documentValidator,
-  dateTimeValidator,
+  Json,
   stringValidator,
+  dateTimeValidator,
   numberValidator
 } from '../../functions/index.js';
 
@@ -12,7 +11,7 @@ import {
 export default async function post(req, res) {
   try {
     const payload = {
-      _id: documentValidator(req.body?._id),
+      _id: stringValidator(req.body?._id),
       createDate: dateTimeValidator(req.body?.createDate),
       customerName: stringValidator(req.body?.customerName),
       vehicleType: stringValidator(req.body?.vehicleType),
@@ -46,26 +45,17 @@ export default async function post(req, res) {
       if (invalid) return Res(res, 400, null, 'Pekerjaan tidak valid');
     }
 
-    const result = await invoiceCollection.updateOne({
-      _id: payload._id
-    }, {
-      $set: {
-        createDate: payload.createDate,
-        customerName: payload.customerName,
-        vehicleType: payload.vehicleType,
-        vehiclePlate: payload.vehiclePlate,
-        entryDate: payload.entryDate,
-        outDate: payload.outDate,
-        kilometer: payload.kilometer,
-        services: payload.services,
-        totalPrice: payload.totalPrice,
-        notes: payload.notes,
-        city: payload.city
-      }
-    })
-    if (!result || !result?.acknowledged) throw new Error('Terjadi kesalahan di server.');
-    if (!result.matchedCount) return Res(res, 404, null, '_id tidak valid.');
-    if (!result.modifiedCount) return Res(res, 400, null, 'Tidak ada perubahan yang dibuat.');
+    const data = Json('invoice');
+    
+    if (!data.some(thisData => thisData._id === payload._id)) return Res(res, 400, null, '_id tidak valid');
+
+    const newData = data.map(thisData => {
+      if (thisData._id === payload._id) return payload;
+      else return thisData;
+    });
+
+    Json('invoice', newData);
+    
     return Res(res, 200);
   }
   catch (err) {
