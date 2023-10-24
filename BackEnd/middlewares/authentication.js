@@ -11,14 +11,18 @@ export default function authentication(req, res, next) {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
     const { authorization } = req.headers;
-    // if (!authorization) return Res(res, 401, null, 'no authorization');
-    if (!authorization) return res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+
+    if (!authorization) {
+      if (process.env.APP_DATA.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+      if (process.env.APP_DATA.toLowerCase() === 'development') return Res(res, 401, null, 'no authorization');
+    }
 
     const _token = authorization.split(' ')[1];
 
     jwt.verify(_token, process.env.TOKEN_SECRET_KEY, (err, decoded) => {
-      // if (err) return Res(res, 401, null, 'token unverified');
-      if (err) return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+      if (process.env.APP_DATA.toLowerCase() === 'production') return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+      if (process.env.APP_DATA.toLowerCase() === 'development') return Res(res, 401, null, 'token unverified');
+
       if (decoded) next();
     });
   }
