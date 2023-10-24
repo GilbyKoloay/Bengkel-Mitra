@@ -2,10 +2,6 @@ import { notificationToast } from './';
 
 
 
-const backendURL = process.env.REACT_APP_BACKEND_URL;
-
-
-
 export default async function Fetch(
   url='',
   method='GET',
@@ -27,7 +23,7 @@ export default async function Fetch(
     };
     if (body) init.body = JSON.stringify(body);
 
-    const req = await fetch(`${backendURL}/api${url}`, init);
+    const req = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api${url}`, init);
     const res = await req.json();
 
     if (res && reqToast) {
