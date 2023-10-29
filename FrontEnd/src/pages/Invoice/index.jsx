@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Button,
   Table,
-  InputDateTime,
+  InputDate,
   Input
 } from '../../components';
 import { splitString, toProperString } from '../../functions';
@@ -88,7 +88,7 @@ export default function Invoice() {
             filters={
               <>
                 <th>
-                  <InputDateTime
+                  <InputDate
                     useTime={false}
                     value={createDate}
                     onChange={value => setCreateDate(value)}
@@ -117,7 +117,7 @@ export default function Invoice() {
                   />
                 </th>
                 <th>
-                  <InputDateTime
+                  <InputDate
                     useTime={false}
                     value={entryDate}
                     onChange={value => setEntryDate(value)}
@@ -125,7 +125,7 @@ export default function Invoice() {
                   />
                 </th>
                 <th>
-                  <InputDateTime
+                  <InputDate
                     useTime={false}
                     value={outDate}
                     onChange={value => setOutDate(value)}
