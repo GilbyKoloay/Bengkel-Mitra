@@ -1,7 +1,60 @@
 import { useEffect } from 'react';
 
-import { Button, Select, Input } from '../../../components';
-import { splitString, notificationToast } from '../../../functions';
+import { Button, Select } from '../../../components';
+import { splitString } from '../../../functions';
+
+
+
+const TableInput = ({
+  className,
+  value,
+  onChange,
+  disabled
+}) => {
+  return (
+    <input
+      className={`h-full w-full bg-transparent p-1 border border-neutral-300 focus:bg-neutral-300 focus:outline-none ${className}`}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+    />
+  );
+};
+
+const TableSelect = ({
+  className,
+  options,
+  value,
+  onChange,
+  disabled
+}) => {
+  return (
+    <select
+    className={`h-full w-full bg-transparent p-1 border border-neutral-300 hover:cursor-pointer focus:bg-neutral-300 focus:outline-none ${className}`}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+    >
+      {options?.map((option, index) => <option key={index} value={option[0]}>{option[1]}</option>)}
+    </select>
+  );
+};
+
+const LabelInput = ({
+  className,
+  value,
+  onChange,
+  disabled
+}) => {
+  return (
+    <input
+      className={`col-start-7 col-span-2 h-full w-full bg-transparent p-1 font-bold focus:outline focus:outline-1 focus:outline-neutral-900 ${className}`}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+    />
+  );
+};
 
 
 
@@ -15,31 +68,55 @@ export default function Table({
   tableLabels,
   setTableLabels,
   disabled,
+  totalPriceErr,
+  setTotalPriceErr,
   totalPrice,
   setTotalPrice,
+  totalPaidErr,
+  setTotalPaidErr,
   totalPaid,
   setTotalPaid,
   calculated,
   setCalculated
 }) {
   useEffect(() => {
-    // calculate total paid
-    let newTotalPaid = 0;
-    services.forEach(service => service.subServices.forEach(subService => {
-      if (/^[0-9]+$/.test(subService.paid.trim())) newTotalPaid += parseInt(subService.paid.trim());
-    }));
-    setTotalPaid(newTotalPaid.toString());
-
-    // calculate total price
     let newTotalPrice = 0;
-    services.forEach(service => service.subServices.forEach(subService => {
-      if (/^[0-9]+$/.test(subService.price.trim())) newTotalPrice += parseInt(subService.price.trim());
-    }));
-    setTotalPrice(newTotalPrice.toString());
+    let newTotalPaid = 0;
 
-    // calculate calculated
-    calculateCalculated(newTotalPrice, newTotalPaid);
+    services.forEach(service => {
+      if (service.type === 'service') {
+        if (/^[0-9]+$/.test(service.price.trim())) newTotalPrice += parseInt(service.price.trim());
+        if (/^[0-9]+$/.test(service.paid.trim())) newTotalPaid += parseInt(service.paid.trim());
+      }
+    });
+
+    setTotalPrice(newTotalPrice.toString());
+    setTotalPaid(newTotalPaid.toString());
   }, [services]);
+
+  useEffect(() => {
+    let sumOfPricePerItem = 0;
+    let sumOfPaidPerItem = 0;
+
+    services.forEach(service => {
+      if (service.type === 'service') {
+        if (/^[0-9]+$/.test(service.price.trim())) sumOfPricePerItem += parseInt(service.price.trim());
+        if (/^[0-9]+$/.test(service.paid.trim())) sumOfPaidPerItem += parseInt(service.paid.trim());
+      }
+    });
+    
+    if (!/^[0-9]+$/.test(totalPrice.trim())) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena mengandung karakter yang bukan angka.`);
+    else if (parseInt(totalPrice.trim()) < sumOfPricePerItem) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena kurang dari total ${tableLabels.col3} per item (${sumOfPricePerItem}).`);
+    else setTotalPriceErr('');
+
+    if (!/^[0-9]+$/.test(totalPaid.trim())) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena mengandung karakter yang bukan angka.`);
+    else if (parseInt(totalPaid.trim()) < sumOfPaidPerItem) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena kurang dari total ${tableLabels.paid} per item (${sumOfPaidPerItem}).`);
+    else setTotalPaidErr('');
+
+    if (/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated(parseInt(totalPrice) - parseInt(totalPaid));
+    if (/^[0-9]+$/.test(totalPrice.trim()) && !/^[0-9]+$/.test(totalPaid.trim())) setCalculated(parseInt(totalPrice) - 0);
+    if (!/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated(0 - parseInt(totalPaid));
+  }, [totalPrice, totalPaid, tableLabels]);
 
 
 
@@ -55,335 +132,195 @@ export default function Table({
     document.body.removeChild(textArea);
   }
 
-  function handlePriceShowOnChange(value) {
-    if (value === 'total') {
-      const newServices = services.map(service => ({
-        ...service,
-        subServices: service.subServices.map(subService => ({
-          ...subService,
-          price: ''
-        }))
-      }));
-
-      setServices(newServices);
-    }
-
-    setPriceShow(value);
-  }
-
-  function handlePaidShowOnChange(value) {
-    if (value === 'total') {
-      const newServices = services.map(service => ({
-        ...service,
-        subServices: service.subServices.map(subService => ({
-          ...subService,
-          paid: ''
-        }))
-      }));
-      
-      setServices(newServices);
-    }
-
-    setPaidShow(value);
-  }
-
   function handleServiceOnChange(index, newValue) {
     let newServices = [...services];
+
     newServices[index] = newValue;
-    newServices = [...newServices.filter(service => service.no || (service.subServices.length > 1)), {
+
+    newServices = [
+      ...newServices.filter(service => service.no || service.name || service.price || service.paid || service.note), {
       no: '',
-      subServices: [{
-        name: '',
-        price: '',
-        paid: '',
-        note: ''
-      }]}
-    ];
-
-    setServices(newServices);
-  }
-
-  function handleSubServiceOnChange(index, service, subIndex, newValue) {
-    let newSubServices = [...services[index].subServices];
-    newSubServices[subIndex] = newValue;
-    newSubServices = [...newSubServices.filter(subService => subService.name || subService.price || subService.paid || subService.note), {
+      type: 'service',
       name: '',
       price: '',
       paid: '',
       note: ''
     }];
-    
-    handleServiceOnChange(index, {...service,subServices: newSubServices});
-  }
 
-  function handleTotalPriceOnChange(newValue) {
-    setTotalPrice(newValue);
-
-    // invalid value
-    if (!/^[0-9]+$/.test(newValue.trim())) notificationToast('Peringatan', `${tableLabels.totalPrice} tidak mengandung angka saja.`, 'warning');
-
-    // value is less than sum of all price per item
-    let sumOfPricePerItem = 0;
-    services.forEach(service => service.subServices.forEach(subService => {
-      if (!isNaN(parseInt(subService.price.trim()))) sumOfPricePerItem += parseInt(subService.price.trim());
-    }));
-    if ((parseInt(newValue.trim()) < sumOfPricePerItem)) notificationToast('Peringatan', `${tableLabels.totalPrice} kurang dari total ${tableLabels.col3} per item.`, 'warning');
-    
-    calculateCalculated(parseInt(newValue.trim()), totalPaid);
-  }
-
-  function handleTotalPaidOnChange(newValue) {
-    setTotalPaid(newValue);
-
-    // invalid value
-    if (!/^[0-9]+$/.test(newValue.trim())) notificationToast('Peringatan', `${tableLabels.totalPaid} tidak mengandung angka saja.`, 'warning');
-
-    // value is less than sum of all paid per item
-    let sumOfPaidPerItem = 0;
-    services.forEach(service => service.subServices.forEach(subService => {
-      if (!isNaN(parseInt(subService.paid.trim()))) sumOfPaidPerItem += parseInt(subService.paid.trim());
-    }));
-    if ((parseInt(newValue.trim()) < sumOfPaidPerItem)) notificationToast('Peringatan', `${tableLabels.totalPaid} kurang dari total ${tableLabels.paid} per item.`, 'warning');
-
-    calculateCalculated(totalPrice, parseInt(newValue.trim()));
-  }
-
-  function calculateCalculated(thisTotalPrice, thisTotalPaid) {
-    if (
-      !isNaN(thisTotalPrice) &&
-      !isNaN(thisTotalPaid)
-    ) setCalculated(thisTotalPrice - thisTotalPaid);
-    
-    if (isNaN(thisTotalPrice)) setCalculated(0 - thisTotalPaid);
-    else if (isNaN(thisTotalPaid)) setCalculated(thisTotalPrice - 0);
+    setServices(newServices);
   }
 
 
 
   return (
     <section>
-      <div className='border-2 border-transparent'>
-        <div className='flex flex-row'>
-          <div className='w-1/12 p-1 flex justify-center'>
-            <div />
-          </div>
-          <div className='w-11/12 flex flex-row'>
-            <div className='w-6/12 flex items-center gap-1'>
-              <Button
-                className='w-8'
-                label='●'
-                onClick={() => handleCopyTextOnClick('•')}
-              />
-              <Button
-                className='w-8'
-                label='*'
-                onClick={() => handleCopyTextOnClick('*')}
-              />
-              <Button
-                className='w-8'
-                label='-'
-                onClick={() => handleCopyTextOnClick('-')}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex flex-col gap-1'>
-              <Select
-                options={[
-                  ['all', `Gunakan ${tableLabels.col3} per item dan ${tableLabels.totalPrice}`],
-                  ['item', `Gunakan ${tableLabels.col3} per item`],
-                  ['total', `Gunakan ${tableLabels.totalPrice}`]
-                ]}
-                value={priceShow}
-                onChange={handlePriceShowOnChange}
-              />
-              <Select
-                options={[
-                  ['all', `Gunakan ${tableLabels.paid} per item dan ${tableLabels.totalPaid}`],
-                  ['item', `Gunakan ${tableLabels.paid} per item`],
-                  ['total', `Gunakan ${tableLabels.totalPaid}`]
-                ]}
-                value={paidShow}
-                onChange={handlePaidShowOnChange}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex justify-center'>
-              <div />
-            </div>
-          </div>
+      <div className='grid grid-cols-12 grid-rows-2'>
+        <div className='col-start-2 col-span-2 row-start-2 flex gap-1'>
+          <Button
+            className='w-8'
+            label='●'
+            onClick={() => handleCopyTextOnClick('•')}
+          />
+          <Button
+            className='w-8'
+            label='*'
+            onClick={() => handleCopyTextOnClick('*')}
+          />
+          <Button
+            className='w-8'
+            label='-'
+            onClick={() => handleCopyTextOnClick('-')}
+          />
+        </div>
+
+        <div className='col-start-7 col-span-4 row-span-2 flex flex-col gap-1 justify-center'>
+          <Select
+            options={[
+              ['all', `Gunakan ${tableLabels.col3} per item dan ${tableLabels.totalPrice}`],
+              ['item', `Gunakan ${tableLabels.col3} per item`],
+              ['total', `Gunakan ${tableLabels.totalPrice}`]
+            ]}
+            value={priceShow}
+            onChange={setPriceShow}
+          />
+          <Select
+            options={[
+              ['all', `Gunakan ${tableLabels.paid} per item dan ${tableLabels.totalPaid}`],
+              ['item', `Gunakan ${tableLabels.paid} per item`],
+              ['total', `Gunakan ${tableLabels.totalPaid}`]
+            ]}
+            value={paidShow}
+            onChange={setPaidShow}
+          />
         </div>
       </div>
 
-      <div className='border-2 border-neutral-900'>
-        <div className='flex flex-row border-b-2 border-neutral-900'>
-          <div className='w-1/12 p-1 flex justify-center'>
-            <Input
-              value={tableLabels.col1}
-              onChange={value => setTableLabels({...tableLabels, col1: value})}
-              disabled={disabled}
-            />
-          </div>
-          <div className='w-11/12 flex flex-row'>
-            <div className='w-6/12 p-1 flex justify-center border-l border-neutral-900'>
-              <Input
-                value={tableLabels.col2}
-                onChange={value => setTableLabels({...tableLabels, col2: value})}
-                disabled={disabled}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex justify-center border-x border-neutral-900'>
-              <Input
-                value={tableLabels.col3}
-                onChange={value => setTableLabels({...tableLabels, col3: value})}
-                disabled={disabled}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex justify-center'>
-              <Input
-                value={tableLabels.col4}
-                onChange={value => setTableLabels({...tableLabels, col4: value})}
-                disabled={disabled}
-              />
-            </div>
-          </div>
+
+
+      <div className='mt-2 border-x border-neutral-900'>
+        <div className='grid grid-cols-12 border-y border-neutral-900'>
+          <TableInput
+            className='col-span-1 text-center'
+            value={tableLabels.col1}
+            onChange={value => setTableLabels({...tableLabels, col1: value})}
+            disabled={disabled}
+          />
+          <TableInput
+            className='col-span-7 text-center'
+            value={tableLabels.col2}
+            onChange={value => setTableLabels({...tableLabels, col2: value})}
+            disabled={disabled}
+          />
+          <TableInput
+            className='col-span-2 text-center'
+            value={tableLabels.col3}
+            onChange={value => setTableLabels({...tableLabels, col3: value})}
+            disabled={disabled}
+          />
+          <TableInput
+            className='col-span-2 text-center'
+            value={tableLabels.col4}
+            onChange={value => setTableLabels({...tableLabels, col4: value})}
+            disabled={disabled}
+          />
         </div>
 
+
+
         {services.map((service, index) => (
-          <div key={index} className={`flex flex-row ${index ? 'border-t border-neutral-900 border-dashed' : ''}`}>
-            <div className='w-1/12 p-1'>
-              <Input
-                value={service.no}
-                onChange={value => handleServiceOnChange(index, {...service, no: value})}
-                disabled={disabled}
-              />
-            </div>
-            <div className='w-11/12 flex flex-col'>
-              {service.subServices.map((subService, subIndex) => (
-                <div key={subIndex} className='flex'>
-                  <div className='w-6/12 p-1 flex flex-col border-l border-neutral-900'>
-                    <div className='h-10 flex items-center'>
-                      <Input
-                        value={subService.name}
-                        onChange={value => handleSubServiceOnChange(index, service, subIndex, {...subService, name: value})}
-                        disabled={disabled}
-                      />
-                    </div>
-                    {(paidShow !== 'total') && (
-                      <div className='h-10 flex justify-end items-center'>
-                        <Input
-                          value={tableLabels.paid}
-                          onChange={value => setTableLabels({...tableLabels, paid: value})}
-                          disabled={disabled}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className='w-3/12 p-1 flex flex-col border-x border-neutral-900'>
-                    <div className='h-10 flex items-center'>
-                      {(priceShow !== 'total') && (
-                        <Input
-                          value={subService.price}
-                          onChange={value => handleSubServiceOnChange(index, service, subIndex, {...subService, price: value})}
-                          disabled={disabled}
-                        />
-                      )}
-                    </div>
-                    {(paidShow !== 'total') && (
-                      <div className='h-10 flex items-center'>
-                        <Input
-                          value={subService.paid}
-                          onChange={value => handleSubServiceOnChange(index, service, subIndex, {...subService, paid: value})}
-                          disabled={disabled}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className='w-3/12 p-1'>
-                    <Input
-                      value={subService.note}
-                      onChange={value => handleSubServiceOnChange(index, service, subIndex, {...subService, note: value})}
-                      disabled={disabled}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div key={index} className={`grid grid-cols-12 grid-rows-${(paidShow === 'total' ? '1' : '2')} ${index ? 'border-t border-neutral-900 border-dashed' : ''}`}>
+            <TableInput
+              className='row-span-2 col-span-1 text-center'
+              value={service.no}
+              onChange={value => handleServiceOnChange(index, {...service, no: value})}
+              disabled={disabled}
+            />
+            <TableSelect
+              className='row-span-1 col-span-2'
+              options={[['service', 'Pekerjaan'], ['note', 'Nota']]}
+              value={service.type}
+              onChange={value => handleServiceOnChange(index, {...service, type: value})}
+              disabled={disabled}
+            />
+            <TableInput
+              className='row-span-1 col-span-5'
+              value={service.name}
+              onChange={value => handleServiceOnChange(index, {...service, name: value})}
+              disabled={disabled}
+            />
+            <TableInput
+              className='row-span-1 col-span-2 text-center'
+              value={service.price}
+              onChange={value => handleServiceOnChange(index, {...service, price: value})}
+              disabled={disabled || (priceShow === 'total')}
+            />
+            <TableInput
+              className='row-span-1 col-span-2'
+              value={service.note}
+              onChange={value => handleServiceOnChange(index, {...service, note: value})}
+              disabled={disabled}
+            />
+            {(paidShow !== 'total') && (
+              <>
+                <TableInput
+                  className='col-start-7 row-span-1 col-span-2'
+                  value={tableLabels.paid}
+                  onChange={value => setTableLabels({...tableLabels, paid: value})}
+                  disabled={disabled}
+                />
+                <TableInput
+                  className='row-span-1 col-span-2 text-center'
+                  value={service.paid}
+                  onChange={value => handleServiceOnChange(index, {...service, paid: value})}
+                  disabled={disabled}
+                />
+              </>
+            )}
           </div>
         ))}
 
-        <div className='flex flex-row border-t-2 border-neutral-900'>
-          <div className='w-1/12 p-1 flex justify-center'>
-            <div />
-          </div>
-          <div className='w-11/12 flex flex-row'>
-            <div className='w-6/12 p-1 flex justify-center items-center border-l border-neutral-900'>
-              <Input
-                value={tableLabels.totalPrice}
-                onChange={value => setTableLabels({...tableLabels, totalPrice: value})}
-                disabled={disabled}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex justify-center border-x border-neutral-900'>
-              <Input
-                value={totalPrice}
-                onChange={handleTotalPriceOnChange}
-                disabled={disabled || (priceShow === 'item')}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex justify-center'>
-              <div />
-            </div>
-          </div>
-        </div>
 
-        <div className='flex flex-row'>
-          <div className='w-1/12 p-1 flex justify-center'>
-            <div />
-          </div>
-          <div className='w-11/12 flex flex-row'>
-            <div className='w-6/12 p-1 flex justify-center items-center border-l border-neutral-900'>
-              <Input
-                value={tableLabels.totalPaid}
-                onChange={value => setTableLabels({...tableLabels, totalPaid: value})}
-                disabled={disabled}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex justify-center border-x border-neutral-900'>
-              <Input
-                value={totalPaid}
-                onChange={handleTotalPaidOnChange}
-                disabled={disabled || (paidShow === 'item')}
-              />
-            </div>
-            <div className='w-3/12 p-1 flex justify-center'>
-              <div />
-            </div>
-          </div>
+
+        <div className='grid grid-cols-12 border-y border-neutral-900'>
+          <TableInput className='col-span-6 text-right' value={totalPriceErr} disabled />
+          <TableInput
+            className='col-start-7 col-span-2'
+            value={tableLabels.totalPrice}
+            onChange={value => setTableLabels({...tableLabels, totalPrice: value})}
+            disabled={disabled}
+          />
+          <TableInput
+            className='col-span-2 text-center'
+            value={totalPrice}
+            onChange={setTotalPrice}
+            disabled={disabled}
+          />
+
+          <TableInput className='col-span-6 text-right' value={totalPaidErr} disabled />
+          <TableInput
+            className='col-span-2'
+            value={tableLabels.totalPaid}
+            onChange={value => setTableLabels({...tableLabels, totalPaid: value})}
+            disabled={disabled}
+          />
+          <TableInput
+            className='col-span-2 text-center'
+            value={totalPaid}
+            onChange={setTotalPaid}
+            disabled={disabled}
+          />
         </div>
       </div>
 
-      <div className='border-2 border-transparent'>
-        <div className='flex flex-row'>
-          <div className='w-1/12 p-1 flex justify-center'>
-            <div />
-          </div>
-          <div className='w-11/12 flex flex-row items-center'>
-            <div className='w-6/12 flex justify-end'>
-              <div className='w-1/2 p-1 flex justify-center'>
-                <Input
-                  className='font-bold'
-                  value={tableLabels.calculated}
-                  onChange={value => setTableLabels({...tableLabels, calculated: value})}
-                  disabled={disabled}
-                />
-              </div>
-            </div>
-            <div className='w-3/12 p-1 flex justify-center'>
-              <div className='font-bold underline'>Rp. {splitString(calculated, 3, '.')}</div>
-            </div>
-            <div className='w-3/12 p-1 flex justify-center'>
-              <div />
-            </div>
-          </div>
-        </div>
+
+
+      <div className='grid grid-cols-12'>
+        <LabelInput
+          value={tableLabels.calculated}
+          onChange={value => setTableLabels({...tableLabels, calculated: value})}
+          disabled={disabled}
+        />
+        <div className='col-start-9 col-span-2 text-center p-1 font-bold underline'>Rp. {splitString(calculated, 3, '.')}</div>
       </div>
     </section>
   );

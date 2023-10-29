@@ -2,18 +2,12 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
-import {
-  Button,
-  Input,
-  InputDate,
-  Select
-} from '../../../components';
+import { Button } from '../../../components';
 import {
   Fetch,
   createSocket,
   getCurrentDateTime,
-  toProperDateTime,
-  splitString
+  toProperDateTime
 } from '../../../functions';
 import Header from './Header';
 import Info from './Info';
@@ -92,14 +86,15 @@ export default function InvoiceForm() {
   });
   const [services, setServices] = useState([{
     no: '',
-    subServices: [{
-      name: '',
-      price: '',
-      paid: '',
-      note: ''
-    }]
+    type: 'service',
+    name: '',
+    price: '',
+    paid: '',
+    note: ''
   }]);
+  const [totalPriceErr, setTotalPriceErr] = useState('');
   const [totalPrice, setTotalPrice] = useState('0');
+  const [totalPaidErr, setTotalPaidErr] = useState('');
   const [totalPaid, setTotalPaid] = useState('0');
   const [calculated, setCalculated] = useState(0);
 
@@ -143,24 +138,17 @@ export default function InvoiceForm() {
       setPriceShow(invoice.priceShow);
       setPaidShow(invoice.paidShow);
       setTableLabels(invoice.tableLabels);
-      setServices([...invoice.services.map(service => ({
-        ...service,
-        subServices: [...service.subServices, {
-          name: '',
-          price: '',
-          paid: '',
-          note: ''
-        }]
-      })), {
+      setServices([...invoice.services, {
         no: '',
-        subServices: [{
-          name: '',
-          price: '',
-          paid: '',
-          note: ''
-        }]
+        type: 'service',
+        name: '',
+        price: '',
+        paid: '',
+        note: ''
       }]);
+      setTotalPriceErr(invoice.totalPriceErr);
       setTotalPrice(invoice.totalPrice);
+      setTotalPaidErr(invoice.totalPaidErr);
       setTotalPaid(invoice.totalPaid);
       setCalculated(invoice.calculated);
 
@@ -173,7 +161,7 @@ export default function InvoiceForm() {
     }
   }
 
-  function onClear() {
+  function onReset() {
     setHeaderLabels({
       top: 'Mitra Oto',
       mid: 'Jl. Pingkan Matindas No. 48, Dendengan Dalam',
@@ -215,26 +203,27 @@ export default function InvoiceForm() {
     setPriceShow('all');
     setPaidShow('all');
     setTableLabels({
-      colOne: 'No',
-      colTwo: 'Uraian Pekerjaan',
-      colThree: 'Harga',
-      colFour: 'Keterangan',
+      col1: 'No',
+      col2: 'Uraian Pekerjaan',
+      col3: 'Harga',
+      col4: 'Keterangan',
       paid: 'Panjar',
       totalPaid: 'Biaya Panjar',
       totalPrice: 'Biaya Service',
-      calculated: 'Total'
+      calculated: 'Jumlah :'
     });
     setServices([{
       no: '',
-      subServices: [{
-        name: '',
-        price: '',
-        paid: '',
-        note: ''
-      }]
+      type: 'service',
+      name: '',
+      price: '',
+      paid: '',
+      note: ''
     }]);
-    setTotalPaid('0');
+    setTotalPriceErr('');
     setTotalPrice('0');
+    setTotalPaidErr('');
+    setTotalPaid('0');
     setCalculated(0);
 
     setNoteLabel('*catatan');
@@ -272,11 +261,10 @@ export default function InvoiceForm() {
       priceShow,
       paidShow,
       tableLabels,
-      services: services.map(service => ({
-        ...service,
-        subServices: service.subServices.slice(0, -1)
-      })).slice(0, -1),
+      services: services.slice(0, -1),
+      totalPriceErr,
       totalPrice,
+      totalPaidErr,
       totalPaid,
       calculated,
 
@@ -341,8 +329,8 @@ export default function InvoiceForm() {
         {!isFormDelete && (
           <Button
             className='whitespace-nowrap'
-            label='Bersihkan'
-            onClick={onClear}
+            label='Atur Ulang'
+            onClick={onReset}
             size='md'
           />
         )}
@@ -382,8 +370,12 @@ export default function InvoiceForm() {
           tableLabels={tableLabels}
           setTableLabels={setTableLabels}
           disabled={isFormDelete || isFormLoading || isFormSubmitting}
+          totalPriceErr={totalPriceErr}
+          setTotalPriceErr={setTotalPriceErr}
           totalPrice={totalPrice}
           setTotalPrice={setTotalPrice}
+          totalPaidErr={totalPaidErr}
+          setTotalPaidErr={setTotalPaidErr}
           totalPaid={totalPaid}
           setTotalPaid={setTotalPaid}
           calculated={calculated}
