@@ -7,6 +7,17 @@ import { _app } from '../../redux';
 
 
 
+const InputWrapper = ({ children, label }) => {
+  return (
+    <div className='flex flex-col'>
+      <div>{label}</div>
+      {children}
+    </div>
+  );
+};
+
+
+
 export default function Login() {
   const dispatch = useDispatch();
 
@@ -36,25 +47,26 @@ export default function Login() {
 
   return (
     <main className='h-screen flex justify-center items-center bg-gradient-to-b from-cyan-500 via-blue-500 to-violet-500'>
-      <form onSubmit={onSubmit} className='w-5/6 sm:w-4/6 md:w-3/6 lg:w-2/6'>
-      <Input
-          label='Nama Pengguna'
-          value={username}
-          onChange={value => setUsername(value)}
-          disabled={isFormSubmitting}
-          size='lg'
-        />
-        <Input
-          className='mt-4'
-          label='Kata Sandi'
-          value={password}
-          onChange={value => setPassword(value)}
-          disabled={isFormSubmitting}
-          type='password'
-          size='lg'
-        />
+      <form onSubmit={onSubmit} className='w-5/6 sm:w-4/6 md:w-3/6 lg:w-2/6 flex flex-col gap-4'>
+        <InputWrapper label='Nama Pengguna'>
+          <Input
+            value={username}
+            onChange={value => setUsername(value)}
+            disabled={isFormSubmitting}
+          />
+        </InputWrapper>
+
+        <InputWrapper label='Kata Sandi'>
+          <Input
+            value={password}
+            onChange={value => setPassword(value)}
+            disabled={isFormSubmitting}
+            type='password'
+          />
+        </InputWrapper>
+
         <Button
-          className='mt-8 w-full'
+          className='w-full'
           label='Masuk'
           type='submit'
           disabled={isFormSubmitting}
