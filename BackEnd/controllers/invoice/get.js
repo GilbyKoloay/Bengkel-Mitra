@@ -2,7 +2,7 @@ import { Res, Json } from '../../functions/index.js';
 
 
 
-export default async function get(req, res) {
+export default function get(req, res) {
   try {
     const result = Json('invoice');
     
