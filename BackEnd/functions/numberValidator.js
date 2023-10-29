@@ -3,7 +3,7 @@ export default function numberValidator(value) {
     !value ||
     typeof(value) === 'string' ||
     Number.isNaN(value)
-  ) return null;
+  ) return 0;
 
   return parseInt(value);
 };
