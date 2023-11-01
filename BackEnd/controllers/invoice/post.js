@@ -17,12 +17,6 @@ export default function post(req, res) {
         bot: stringValidator(req.body?.headerLabels?.bot)
       },
 
-      customerName: stringValidator(req.body?.customerName),
-      vehicleType: stringValidator(req.body?.vehicleType),
-      vehiclePlate: stringValidator(req.body?.vehiclePlate),
-      entryDate: dateTimeValidator(req.body?.entryDate),
-      outDate: dateTimeValidator(req.body?.outDate),
-      kilometer: stringValidator(req.body?.kilometer),
       info: req.body?.info?.map(item => ({
         label: stringValidator(item?.label),
         value: (item?.type === 'date') ? dateTimeValidator(item?.value) : stringValidator(item?.value),
@@ -44,14 +38,17 @@ export default function post(req, res) {
       services: req.body?.services?.map(service => ({
         no: stringValidator(service?.no),
         subServices: service?.subServices?.map(subService => ({
-          name: stringValidator(subService?.name),
-          price: stringValidator(subService?.price),
-          paid: stringValidator(subService?.paid),
-          note: stringValidator(subService?.note),
+            type: stringValidator(subService?.type),
+            name: stringValidator(subService?.name),
+            price: stringValidator(subService?.price),
+            paid: stringValidator(subService?.paid),
+            note: stringValidator(subService?.note)
         }))
       })),
-      totalPaid: stringValidator(req.body?.totalPaid),
+      totalPriceErr: stringValidator(req.body?.totalPriceErr),
       totalPrice: stringValidator(req.body?.totalPrice),
+      totalPaidErr: stringValidator(req.body?.totalPaidErr),
+      totalPaid: stringValidator(req.body?.totalPaid),
       calculated: numberValidator(req.body?.calculated),
 
       noteLabel: stringValidator(req.body?.noteLabel),
@@ -70,7 +67,7 @@ export default function post(req, res) {
     const data = Json('invoice');
 
     const newData = [...data, {
-      _id: crypto.randomUUID() + new Date().toISOString(),
+      _id: crypto.randomUUID() + '-' + new Date().toISOString().replaceAll('-', '').replaceAll('T', '-').replaceAll(':', '').replaceAll('.', '').replaceAll('Z', ''),
       ...payload
     }];
 

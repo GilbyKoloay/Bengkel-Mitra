@@ -11,7 +11,7 @@ import {
 export default function put(req, res) {
   try {
     const payload = {
-      _id: stringValidator(req.body?._id),
+      _id: req.body?._id,
 
       headerLabels: {
         top: stringValidator(req.body?.headerLabels?.top),
@@ -19,12 +19,6 @@ export default function put(req, res) {
         bot: stringValidator(req.body?.headerLabels?.bot)
       },
 
-      customerName: stringValidator(req.body?.customerName),
-      vehicleType: stringValidator(req.body?.vehicleType),
-      vehiclePlate: stringValidator(req.body?.vehiclePlate),
-      entryDate: dateTimeValidator(req.body?.entryDate),
-      outDate: dateTimeValidator(req.body?.outDate),
-      kilometer: stringValidator(req.body?.kilometer),
       info: req.body?.info?.map(item => ({
         label: stringValidator(item?.label),
         value: (item?.type === 'date') ? dateTimeValidator(item?.value) : stringValidator(item?.value),
@@ -46,14 +40,17 @@ export default function put(req, res) {
       services: req.body?.services?.map(service => ({
         no: stringValidator(service?.no),
         subServices: service?.subServices?.map(subService => ({
-          name: stringValidator(subService?.name),
-          price: stringValidator(subService?.price),
-          paid: stringValidator(subService?.paid),
-          note: stringValidator(subService?.note),
+            type: stringValidator(subService?.type),
+            name: stringValidator(subService?.name),
+            price: stringValidator(subService?.price),
+            paid: stringValidator(subService?.paid),
+            note: stringValidator(subService?.note)
         }))
       })),
-      totalPaid: stringValidator(req.body?.totalPaid),
+      totalPriceErr: stringValidator(req.body?.totalPriceErr),
       totalPrice: stringValidator(req.body?.totalPrice),
+      totalPaidErr: stringValidator(req.body?.totalPaidErr),
+      totalPaid: stringValidator(req.body?.totalPaid),
       calculated: numberValidator(req.body?.calculated),
 
       noteLabel: stringValidator(req.body?.noteLabel),
