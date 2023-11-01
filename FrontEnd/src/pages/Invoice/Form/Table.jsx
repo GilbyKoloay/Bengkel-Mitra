@@ -80,47 +80,27 @@ export default function Table({
   setCalculated
 }) {
   useEffect(() => {
-    let totalPriceOfService = 0;
-    let totalPriceOfNote = 0;
-    let newTotalPaid = 0;
+    const item = getServicesItemValue();
 
-    services.forEach(service => service.subServices.forEach(subService => {
-      if (
-        /^[0-9]+$/.test(subService.price.trim()) &&
-        (subService.type === 'SERVICE')
-      ) totalPriceOfService += parseInt(subService.price.trim());
-      if (
-        /^[0-9]+$/.test(subService.price.trim()) &&
-        (subService.type === 'NOTE')
-      ) totalPriceOfNote += parseInt(subService.price.trim());
-      if (/^[0-9]+$/.test(subService.paid.trim())) newTotalPaid += parseInt(subService.paid.trim());
-    }));
-
-    setTotalPrice(totalPriceOfService.toString());
-    setTotalPaid(newTotalPaid.toString());
-    setCalculated(((totalPriceOfService + totalPriceOfNote) - newTotalPaid).toString());
+    setTotalPrice(item.servicePrice.toString());
+    setTotalPaid(item.paid.toString());
+    setCalculated(((item.servicePrice + item.notePrice) - item.paid));
   }, [services]);
 
   useEffect(() => {
-    let sumOfItemTotalPrice = 0;
-    let sumOfItemTotalPaid = 0;
-
-    services.forEach(service => service.subServices.forEach(subService => {
-      if (/^[0-9]+$/.test(subService.price.trim())) sumOfItemTotalPrice += parseInt(subService.price.trim());
-      if (/^[0-9]+$/.test(subService.paid.trim())) sumOfItemTotalPaid += parseInt(subService.paid.trim());
-    }));
+    const item = getServicesItemValue();
 
     if (!/^[0-9]+$/.test(totalPrice.trim())) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena mengandung karakter yang bukan angka.`);
-    else if (parseInt(totalPrice.trim()) < sumOfItemTotalPrice) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena kurang dari total ${tableLabels.col3} per item (${sumOfItemTotalPrice}).`);
+    else if (parseInt(totalPrice.trim()) < item.servicePrice) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena kurang dari total ${tableLabels.col3} pekerjaan per item (${item.servicePrice}).`);
     else setTotalPriceErr('');
 
     if (!/^[0-9]+$/.test(totalPaid.trim())) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena mengandung karakter yang bukan angka.`);
-    else if (parseInt(totalPaid.trim()) < sumOfItemTotalPaid) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena kurang dari total ${tableLabels.paid} per item (${sumOfItemTotalPaid}).`);
+    else if (parseInt(totalPaid.trim()) < item.paid) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena kurang dari total ${tableLabels.paid} per item (${item.paid}).`);
     else setTotalPaidErr('');
 
-    if (/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated(parseInt(totalPrice) - parseInt(totalPaid));
-    if (/^[0-9]+$/.test(totalPrice.trim()) && !/^[0-9]+$/.test(totalPaid.trim())) setCalculated(parseInt(totalPrice) - 0);
-    if (!/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated(0 - parseInt(totalPaid));
+    if (/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated((parseInt(totalPrice) + item.notePrice) - parseInt(totalPaid));
+    if (/^[0-9]+$/.test(totalPrice.trim()) && !/^[0-9]+$/.test(totalPaid.trim())) setCalculated((parseInt(totalPrice) + item.notePrice) - 0);
+    if (!/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated(item.notePrice - parseInt(totalPaid));
   }, [totalPrice, totalPaid, tableLabels]);
 
 
@@ -181,6 +161,26 @@ export default function Table({
     };
 
     handleServiceOnChange(index, newService);
+  }
+
+  function getServicesItemValue() {
+    let servicePrice = 0;
+    let notePrice = 0;
+    let paid = 0;
+
+    services.forEach(service => service.subServices.forEach(subService => {
+      if (
+        /^[0-9]+$/.test(subService.price.trim()) &&
+        (subService.type === 'SERVICE')
+      ) servicePrice += parseInt(subService.price.trim());
+      if (
+        /^[0-9]+$/.test(subService.price.trim()) &&
+        (subService.type === 'NOTE')
+      ) notePrice += parseInt(subService.price.trim());
+      if (/^[0-9]+$/.test(subService.paid.trim())) paid += parseInt(subService.paid.trim());
+    }));
+
+    return {servicePrice, notePrice, paid};
   }
 
 
