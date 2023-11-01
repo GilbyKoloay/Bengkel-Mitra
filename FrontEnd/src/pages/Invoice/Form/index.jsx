@@ -252,7 +252,7 @@ export default function InvoiceForm() {
       priceShow,
       paidShow,
       tableLabels,
-      services: services.slice(0, -1),
+      services: services.map(service => ({...service, subServices: service.subServices.slice(0, -1)})).slice(0, -1),
       totalPriceErr,
       totalPrice,
       totalPaidErr,
@@ -340,57 +340,63 @@ export default function InvoiceForm() {
 
 
 
-      <div className='flex-1 overflow-auto border-2 border-neutral-700 p-8 flex flex-col gap-8'>
-        <Header headerLabels={headerLabels} setHeaderLabels={setHeaderLabels} />
+      {(
+        isFormCreate ||
+        (isFormUpdate && !isFormLoading) ||
+        (isFormDelete && !isFormLoading)
+      ) && (
+        <div className='flex-1 overflow-auto border-2 border-neutral-700 p-8 flex flex-col gap-8'>
+          <Header headerLabels={headerLabels} setHeaderLabels={setHeaderLabels} />
 
-        <div className='border-t-2 border-neutral-900' />
+          <div className='border-t-2 border-neutral-900' />
 
-        <Info
-          info={info}
-          setInfo={setInfo}
-          disabled={isFormDelete || isFormLoading || isFormSubmitting}
-        />
-        
-        <Table
-          services={services}
-          setServices={setServices}
-          setPriceShow={setPriceShow}
-          setPaidShow={setPaidShow}
-          priceShow={priceShow}
-          paidShow={paidShow}
-          tableLabels={tableLabels}
-          setTableLabels={setTableLabels}
-          disabled={isFormDelete || isFormLoading || isFormSubmitting}
-          totalPriceErr={totalPriceErr}
-          setTotalPriceErr={setTotalPriceErr}
-          totalPrice={totalPrice}
-          setTotalPrice={setTotalPrice}
-          totalPaidErr={totalPaidErr}
-          setTotalPaidErr={setTotalPaidErr}
-          totalPaid={totalPaid}
-          setTotalPaid={setTotalPaid}
-          calculated={calculated}
-          setCalculated={setCalculated}
-        />
+          <Info
+            info={info}
+            setInfo={setInfo}
+            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+          />
+          
+          <Table
+            services={services}
+            setServices={setServices}
+            setPriceShow={setPriceShow}
+            setPaidShow={setPaidShow}
+            priceShow={priceShow}
+            paidShow={paidShow}
+            tableLabels={tableLabels}
+            setTableLabels={setTableLabels}
+            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+            totalPriceErr={totalPriceErr}
+            setTotalPriceErr={setTotalPriceErr}
+            totalPrice={totalPrice}
+            setTotalPrice={setTotalPrice}
+            totalPaidErr={totalPaidErr}
+            setTotalPaidErr={setTotalPaidErr}
+            totalPaid={totalPaid}
+            setTotalPaid={setTotalPaid}
+            calculated={calculated}
+            setCalculated={setCalculated}
+          />
 
-        <Notes
-          noteLabel={noteLabel}
-          setNoteLabel={setNoteLabel}
-          disabled={isFormDelete || isFormLoading || isFormSubmitting}
-          notes={notes}
-          setNotes={setNotes}
-          paymentLabels={paymentLabels}
-          setPaymentLabels={setPaymentLabels}
-        />
+          <Notes
+            noteLabel={noteLabel}
+            setNoteLabel={setNoteLabel}
+            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+            notes={notes}
+            setNotes={setNotes}
+            paymentLabels={paymentLabels}
+            setPaymentLabels={setPaymentLabels}
+          />
 
-        <Footer
-          city={city}
-          setCity={setCity}
-          disabled={isFormDelete || isFormLoading || isFormSubmitting}
-          createDate={createDate}
-          setCreateDate={setCreateDate}
-        />
-      </div>
+          <Footer
+            city={city}
+            setCity={setCity}
+            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+            createDate={createDate}
+            setCreateDate={setCreateDate}
+          />
+        </div>
+      )}
     </main>
   );
 };
