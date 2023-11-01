@@ -80,37 +80,42 @@ export default function Table({
   setCalculated
 }) {
   useEffect(() => {
-    let newTotalPrice = 0;
+    let totalPriceOfService = 0;
+    let totalPriceOfNote = 0;
     let newTotalPaid = 0;
 
-    services.forEach(service => {
-      if (service.type === 'service') {
-        if (/^[0-9]+$/.test(service.price.trim())) newTotalPrice += parseInt(service.price.trim());
-        if (/^[0-9]+$/.test(service.paid.trim())) newTotalPaid += parseInt(service.paid.trim());
-      }
-    });
+    services.forEach(service => service.subServices.forEach(subService => {
+      if (
+        /^[0-9]+$/.test(subService.price.trim()) &&
+        (subService.type === 'SERVICE')
+      ) totalPriceOfService += parseInt(subService.price.trim());
+      if (
+        /^[0-9]+$/.test(subService.price.trim()) &&
+        (subService.type === 'NOTE')
+      ) totalPriceOfNote += parseInt(subService.price.trim());
+      if (/^[0-9]+$/.test(subService.paid.trim())) newTotalPaid += parseInt(subService.paid.trim());
+    }));
 
-    setTotalPrice(newTotalPrice.toString());
+    setTotalPrice(totalPriceOfService.toString());
     setTotalPaid(newTotalPaid.toString());
+    setCalculated(((totalPriceOfService + totalPriceOfNote) - newTotalPaid).toString());
   }, [services]);
 
   useEffect(() => {
-    let sumOfPricePerItem = 0;
-    let sumOfPaidPerItem = 0;
+    let sumOfItemTotalPrice = 0;
+    let sumOfItemTotalPaid = 0;
 
-    services.forEach(service => {
-      if (service.type === 'service') {
-        if (/^[0-9]+$/.test(service.price.trim())) sumOfPricePerItem += parseInt(service.price.trim());
-        if (/^[0-9]+$/.test(service.paid.trim())) sumOfPaidPerItem += parseInt(service.paid.trim());
-      }
-    });
-    
+    services.forEach(service => service.subServices.forEach(subService => {
+      if (/^[0-9]+$/.test(subService.price.trim())) sumOfItemTotalPrice += parseInt(subService.price.trim());
+      if (/^[0-9]+$/.test(subService.paid.trim())) sumOfItemTotalPaid += parseInt(subService.paid.trim());
+    }));
+
     if (!/^[0-9]+$/.test(totalPrice.trim())) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena mengandung karakter yang bukan angka.`);
-    else if (parseInt(totalPrice.trim()) < sumOfPricePerItem) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena kurang dari total ${tableLabels.col3} per item (${sumOfPricePerItem}).`);
+    else if (parseInt(totalPrice.trim()) < sumOfItemTotalPrice) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena kurang dari total ${tableLabels.col3} per item (${sumOfItemTotalPrice}).`);
     else setTotalPriceErr('');
 
     if (!/^[0-9]+$/.test(totalPaid.trim())) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena mengandung karakter yang bukan angka.`);
-    else if (parseInt(totalPaid.trim()) < sumOfPaidPerItem) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena kurang dari total ${tableLabels.paid} per item (${sumOfPaidPerItem}).`);
+    else if (parseInt(totalPaid.trim()) < sumOfItemTotalPaid) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena kurang dari total ${tableLabels.paid} per item (${sumOfItemTotalPaid}).`);
     else setTotalPaidErr('');
 
     if (/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated(parseInt(totalPrice) - parseInt(totalPaid));
@@ -138,16 +143,44 @@ export default function Table({
     newServices[index] = newValue;
 
     newServices = [
-      ...newServices.filter(service => service.no || service.name || service.price || service.paid || service.note), {
-      no: '',
-      type: 'service',
-      name: '',
-      price: '',
-      paid: '',
-      note: ''
-    }];
+      ...newServices.filter(service => service.no || (service.subServices.length > 1)),
+      {
+        no: '',
+        subServices: [{
+          type: newServices.slice(-1)[0].subServices.slice(-1)[0].type,
+          name: '',
+          price: '',
+          paid: '',
+          note: ''
+        }]
+      }
+    ];
 
     setServices(newServices);
+  }
+
+  function handleSubServiceOnChange(index, subIndex, newValue) {
+    let newSubServices = [...services[index].subServices];
+    
+    newSubServices[subIndex] = newValue;
+
+    newSubServices = [
+      ...newSubServices.filter(subService => subService.name || subService.price || subService.paid || subService.note),
+      {
+        type: newSubServices.slice(-1)[0].type,
+        name: '',
+        price: '',
+        paid: '',
+        note: ''
+      }
+    ];
+    
+    const newService = {
+      no: services[index].no,
+      subServices: newSubServices
+    };
+
+    handleServiceOnChange(index, newService);
   }
 
 
@@ -228,61 +261,67 @@ export default function Table({
 
 
         {services.map((service, index) => (
-          <div key={index} className={`grid grid-cols-12 grid-rows-${(paidShow === 'total' ? '1' : '2')} ${index ? 'border-t border-neutral-900 border-dashed' : ''}`}>
+          <div key={index} className={`grid grid-cols-12 ${index ? 'border-t border-neutral-900 border-dashed' : ''}`}>
             <TableInput
-              className='row-span-2 col-span-1 text-center'
+              className='col-span-1 text-center'
               value={service.no}
               onChange={value => handleServiceOnChange(index, {...service, no: value})}
               disabled={disabled}
             />
-            <TableSelect
-              className='row-span-1 col-span-2'
-              options={[['service', 'Pekerjaan'], ['note', 'Nota']]}
-              value={service.type}
-              onChange={value => handleServiceOnChange(index, {...service, type: value})}
-              disabled={disabled}
-            />
-            <TableInput
-              className='row-span-1 col-span-5'
-              value={service.name}
-              onChange={value => handleServiceOnChange(index, {...service, name: value})}
-              disabled={disabled}
-            />
-            <TableInput
-              className='row-span-1 col-span-2 text-center'
-              value={service.price}
-              onChange={value => handleServiceOnChange(index, {...service, price: value})}
-              disabled={disabled || (priceShow === 'total')}
-            />
-            <TableInput
-              className='row-span-1 col-span-2'
-              value={service.note}
-              onChange={value => handleServiceOnChange(index, {...service, note: value})}
-              disabled={disabled}
-            />
-            {(paidShow !== 'total') && (
-              <>
-                <TableInput
-                  className='col-start-7 row-span-1 col-span-2'
-                  value={tableLabels.paid}
-                  onChange={value => setTableLabels({...tableLabels, paid: value})}
-                  disabled={disabled}
-                />
-                <TableInput
-                  className='row-span-1 col-span-2 text-center'
-                  value={service.paid}
-                  onChange={value => handleServiceOnChange(index, {...service, paid: value})}
-                  disabled={disabled}
-                />
-              </>
-            )}
+            <div className='col-span-11'>
+              {service.subServices.map((subService, subIndex) => (
+                <div key={subIndex} className={`grid grid-cols-11 grid-rows-${(paidShow === 'total' ? '1' : '2')}`}>
+                  <TableSelect
+                    className='row-span-1 col-span-2'
+                    options={[['SERVICE', 'Pekerjaan'], ['NOTE', 'Nota']]}
+                    value={subService.type}
+                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, type: value})}
+                    disabled={disabled}
+                  />
+                  <TableInput
+                    className='row-span-1 col-span-5'
+                    value={subService.name}
+                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, name: value})}
+                    disabled={disabled}
+                  />
+                  <TableInput
+                    className='row-span-1 col-span-2 text-center'
+                    value={subService.price}
+                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, price: value})}
+                    disabled={disabled || (priceShow === 'total')}
+                  />
+                  <TableInput
+                    className='row-span-2 col-span-2'
+                    value={subService.note}
+                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, note: value})}
+                    disabled={disabled}
+                  />
+                  {(paidShow !== 'total') && (
+                    <>
+                      <TableInput
+                        className='col-start-6 row-span-1 col-span-2'
+                        value={tableLabels.paid}
+                        onChange={value => setTableLabels({...tableLabels, paid: value})}
+                        disabled={disabled}
+                      />
+                      <TableInput
+                        className='row-span-1 col-span-2 text-center'
+                        value={subService.paid}
+                        onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, paid: value})}
+                        disabled={disabled}
+                      />
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
 
 
 
         <div className='grid grid-cols-12 border-y border-neutral-900'>
-          <TableInput className='col-span-6 text-right' value={totalPriceErr} disabled />
+          <TableInput className='col-span-6 text-right text-red-500' value={totalPriceErr} disabled />
           <TableInput
             className='col-start-7 col-span-2'
             value={tableLabels.totalPrice}
@@ -296,7 +335,7 @@ export default function Table({
             disabled={disabled}
           />
 
-          <TableInput className='col-span-6 text-right' value={totalPaidErr} disabled />
+          <TableInput className='col-span-6 text-right text-red-500' value={totalPaidErr} disabled />
           <TableInput
             className='col-span-2'
             value={tableLabels.totalPaid}

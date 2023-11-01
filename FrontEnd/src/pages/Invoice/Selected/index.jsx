@@ -19,7 +19,8 @@ export default function InvoiceSelected() {
 
 
 
-  if (!_id) return <Navigate to='/invoice' />
+  // if (!_id) return <Navigate to='/invoice' />
+  if (_id) return <Navigate to={`/invoice/form/update/${invoice?._id}`} />
 
   return (
     <div className='fixed top-0 left-0 h-screen w-screen flex justify-center items-center backdrop-blur-sm backdrop-brightness-50'>

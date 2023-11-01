@@ -40,12 +40,6 @@ export default function InvoiceForm() {
     bot: 'No. HP: 081356071990'
   });
 
-  const [customerName, setCustomerName] = useState('');
-  const [vehicleType, setVehicleType] = useState('');
-  const [vehiclePlate, setVehiclePlate] = useState('');
-  const [entryDate, setEntryDate] = useState('--T00:00:00.000Z');
-  const [outDate, setOutDate] = useState('--T00:00:00.000Z');
-  const [kilometer, setKilometer] = useState('');
   const [info, setInfo] = useState([{
     label: 'Nama Pelanggan',
     value: '',
@@ -86,11 +80,13 @@ export default function InvoiceForm() {
   });
   const [services, setServices] = useState([{
     no: '',
-    type: 'service',
-    name: '',
-    price: '',
-    paid: '',
-    note: ''
+    subServices: [{
+      type: 'SERVICE',
+      name: '',
+      price: '',
+      paid: '',
+      note: ''
+    }]
   }]);
   const [totalPriceErr, setTotalPriceErr] = useState('');
   const [totalPrice, setTotalPrice] = useState('0');
@@ -127,24 +123,29 @@ export default function InvoiceForm() {
     else {
       setHeaderLabels(invoice.headerLabels);
 
-      setCustomerName(invoice.customerName);
-      setVehicleType(invoice.vehicleType);
-      setVehiclePlate(invoice.vehiclePlate);
-      setEntryDate(invoice.entryDate);
-      setOutDate(invoice.outDate);
-      setKilometer(invoice.kilometer);
       setInfo(invoice.info);
 
       setPriceShow(invoice.priceShow);
       setPaidShow(invoice.paidShow);
       setTableLabels(invoice.tableLabels);
-      setServices([...invoice.services, {
+      setServices([...invoice.services.map(service => ({
+        ...service,
+        subServices: [...service.subServices, {
+          type: 'SERVICE',
+          name: '',
+          price: '',
+          paid: '',
+          note: ''
+        }]
+      })), {
         no: '',
-        type: 'service',
-        name: '',
-        price: '',
-        paid: '',
-        note: ''
+        subServices: [{
+          type: 'SERVICE',
+          name: '',
+          price: '',
+          paid: '',
+          note: ''
+        }]
       }]);
       setTotalPriceErr(invoice.totalPriceErr);
       setTotalPrice(invoice.totalPrice);
@@ -168,12 +169,6 @@ export default function InvoiceForm() {
       bot: 'No. HP: 081356071990'
     });
 
-    setCustomerName('');
-    setVehicleType('');
-    setVehiclePlate('');
-    setEntryDate('--T00:00:00.000Z');
-    setOutDate('--T00:00:00.000Z');
-    setKilometer('');
     setInfo([{
       label: 'Nama Pelanggan',
       value: '',
@@ -214,11 +209,13 @@ export default function InvoiceForm() {
     });
     setServices([{
       no: '',
-      type: 'service',
-      name: '',
-      price: '',
-      paid: '',
-      note: ''
+      subServices: [{
+        type: 'SERVICE',
+        name: '',
+        price: '',
+        paid: '',
+        note: ''
+      }]
     }]);
     setTotalPriceErr('');
     setTotalPrice('0');
@@ -247,12 +244,6 @@ export default function InvoiceForm() {
 
       headerLabels,
 
-      customerName,
-      vehicleType,
-      vehiclePlate,
-      entryDate: toProperDateTime(entryDate),
-      outDate: toProperDateTime(outDate),
-      kilometer,
       info: info.map(item => {
         if (item.type === 'date') return {...item, value: toProperDateTime(item.value)}
         else return item;
@@ -273,7 +264,7 @@ export default function InvoiceForm() {
       paymentLabels,
 
       city,
-      createDate
+      createDate: toProperDateTime(createDate)
     };
 
     if (isFormCreate) payload = {
@@ -283,7 +274,7 @@ export default function InvoiceForm() {
     else if (isFormDelete) payload = {
       _id: payload._id
     };
-    // console.log('payload', payload);
+    console.log('payload', payload);
 
     const res = await Fetch(
       '/invoice',

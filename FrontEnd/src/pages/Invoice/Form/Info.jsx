@@ -71,7 +71,7 @@ export default function Info({ info, setInfo, disabled }) {
 
 
   return (
-    <section className='w-1/2 flex flex-col gap-1'>
+    <section className='w-full md:w-1/2 flex flex-col gap-1'>
       {info.map((item, index) => (
         <InfoItem
           key={index}
