@@ -1,8 +1,9 @@
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
-import { Button } from '../../../components';
+import { Button, ConfirmationDialog, InvoicePDF } from '../../../components';
 import {
   Fetch,
   createSocket,
@@ -21,15 +22,12 @@ export default function InvoiceForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isFormCreate = (location.pathname.split('/')[3] === 'create') ? true : false;
-  const isFormUpdate = (location.pathname.split('/')[3] === 'update') ? true : false;
-  const isFormDelete = (location.pathname.split('/')[3] === 'delete') ? true : false;
-
-  const { _id } = useParams();
+  const [params] = useSearchParams();
+  const _id = params.get('_id');
 
   const { _invoices } = useSelector(state => state._app);
 
-  const [isFormLoading, setIsFormLoading] = useState(isFormCreate ? false : true);
+  const [isFormLoading, setIsFormLoading] = useState(_id ? true : false);
   const [isDeleteConfirmationDialogOpen, setIsDeleteConfirmationDialogOpen] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
@@ -53,11 +51,7 @@ export default function InvoiceForm() {
     value: '',
     type: 'text'
   }, {
-    label: 'Tanggal Masuk',
-    value: '--T00:00:00.000Z',
-    type: 'date'
-  }, {
-    label: 'Tanggal Keluar',
+    label: 'Tgl Msk/Tgl Klr',
     value: '--T00:00:00.000Z',
     type: 'date'
   }, {
@@ -69,7 +63,7 @@ export default function InvoiceForm() {
   const [priceShow, setPriceShow] = useState('all');
   const [paidShow, setPaidShow] = useState('all');
   const [tableLabels, setTableLabels] = useState({
-    col1: 'No',
+    col1: 'No.',
     col2: 'Uraian Pekerjaan',
     col3: 'Harga',
     col4: 'Keterangan',
@@ -108,7 +102,7 @@ export default function InvoiceForm() {
 
 
   useEffect(() => {
-    if (_invoices && isFormLoading) {
+    if (_id && isFormLoading && _invoices) {
       setIsFormLoading(false);
       onLoad();
     }
@@ -182,11 +176,7 @@ export default function InvoiceForm() {
       value: '',
       type: 'text'
     }, {
-      label: 'Tanggal Masuk',
-      value: '--T00:00:00.000Z',
-      type: 'date'
-    }, {
-      label: 'Tanggal Keluar',
+      label: 'Tgl Msk/Tgl Klr',
       value: '--T00:00:00.000Z',
       type: 'date'
     }, {
@@ -198,7 +188,7 @@ export default function InvoiceForm() {
     setPriceShow('all');
     setPaidShow('all');
     setTableLabels({
-      col1: 'No',
+      col1: 'No.',
       col2: 'Uraian Pekerjaan',
       col3: 'Harga',
       col4: 'Keterangan',
@@ -235,13 +225,51 @@ export default function InvoiceForm() {
     setCreateDate(getCurrentDateTime());
   }
 
-  async function onSubmit(e) {
-    e?.preventDefault();
+  function handleShowPDFViewOnClick() {
+    sessionStorage.setItem('invoicePDFView', JSON.stringify(getPayload()));
+    window.open('/invoice/pdf-view');
+  }
+
+  async function onSubmit(method) {
     setIsFormSubmitting(true);
 
-    let payload = {
-      _id,
+    let payload = getPayload();
 
+    if (method === 'POST') payload = {
+      _id: undefined,
+      ...payload
+    };
+    else if (method === 'DELETE') payload = {
+      _id: payload._id
+    };
+    console.log('payload', payload);
+
+    const res = await Fetch(
+      '/invoice',
+      method,
+      payload, {title: `Sedang ${(method === 'POST') ? 'menambahkan' : (method === 'PUT') ? 'memperbarui' : (method === 'DELETE') ? 'menghapus' : ''} data faktur ...`},
+      true, true
+    );
+    
+    if (res) {
+      setIsFormSubmitting(false);
+
+      if (res.ok) {
+        const socket = createSocket();
+        if (method === 'POST') socket.emit('invoice-create');
+        else if (method === 'PUT') socket.emit('invoice-update', _id);
+        else if (method === 'DELETE') socket.emit('invoice-delete', _id);
+
+        if (method === 'DELETE') navigate('/invoice');
+        else setIsPrintDialogOpen(payload);
+      }
+    }
+  }
+
+  function getPayload() {
+    return {
+      _id,
+      
       headerLabels,
 
       info: info.map(item => {
@@ -266,36 +294,28 @@ export default function InvoiceForm() {
       city,
       createDate: toProperDateTime(createDate)
     };
+  }
 
-    if (isFormCreate) payload = {
-      _id: undefined,
-      ...payload
-    };
-    else if (isFormDelete) payload = {
-      _id: payload._id
-    };
-    console.log('payload', payload);
+  function getPDFFileName() {
+    const fileName = [];
 
-    const res = await Fetch(
-      '/invoice',
-      isFormCreate ? 'POST' : isFormUpdate ? 'PUT' : isFormDelete ? 'DELETE' : undefined,
-      payload, {title: `Sedang ${isFormCreate ? 'menambahkan' : isFormUpdate ? 'memperbarui' : isFormDelete ? 'menghapus' : ''} data faktur ...`},
-      true, true
-    );
-    
-    if (res) {
-      setIsFormSubmitting(false);
+    const customerName = info.filter(item => item.label.toLowerCase().trim() === 'nama pelanggan')[0];
+    if (customerName?.value) fileName.push(customerName.value);
 
-      if (res.ok) {
-        const socket = createSocket();
-        if (isFormCreate) socket.emit('invoice-create');
-        else if (isFormUpdate) socket.emit('invoice-update', _id);
-        else if (isFormDelete) socket.emit('invoice-delete', _id);
+    const vehicleType = info.filter(item => item.label.toLowerCase().trim() === 'jenis kendaraan')[0];
+    if (vehicleType?.value) fileName.push(vehicleType.value);
 
-        if (isFormDelete) navigate('/invoice');
-        else setIsPrintDialogOpen(payload);
-      }
-    }
+    const vehiclePlate = info.filter(item => item.label.toLowerCase().trim() === 'nomor polisi')[0];
+    if (vehiclePlate?.value) fileName.push(vehiclePlate.value);
+
+    const inDateOutDate = info.filter(item => item.label.toLowerCase().trim() === 'tgl msk/tgl klr')[0];
+    if (inDateOutDate?.value) fileName.push(toProperDateTime(inDateOutDate.value, true));
+
+    return fileName.map(value => {
+      return value.replaceAll(' ', '').replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
+        return index === 0 ? match.toLowerCase() : match.toUpperCase();
+      });
+    }).join('_');
   }
 
 
@@ -309,42 +329,68 @@ export default function InvoiceForm() {
           onClick={() => navigate(`/${location.pathname.split('/')[1]}`)}
           size='md'
         />
-        {!isFormCreate && (
-          <Button
-            className='whitespace-nowrap'
-            label='Muat Ulang'
-            onClick={onLoad}
-            size='md'
-          />
-        )}
-        {!isFormDelete && (
-          <Button
-            className='whitespace-nowrap'
-            label='Atur Ulang'
-            onClick={onReset}
-            size='md'
-          />
-        )}
         <Button
           className='whitespace-nowrap'
-          label={isFormCreate ? 'Tambah' : isFormUpdate ? 'Perbarui' : isFormDelete ? 'Hapus' : ''}
-          onClick={onSubmit}
+          label='Lihat Tampilan PDF'
+          // onClick={() => window.open(`/invoice/pdf-view/${_id}`, '_blank')}
+          onClick={handleShowPDFViewOnClick}
           size='md'
-          theme={isFormCreate ? 'blue' : isFormUpdate ? 'yellow' : isFormDelete ? 'red' : ''}
         />
+        <Button
+          className='whitespace-nowrap'
+          label='Atur Ulang'
+          onClick={onReset}
+          size='md'
+        />
+
+        {!_id ? (
+          <Button
+            className='whitespace-nowrap'
+            label='Tambah'
+            onClick={() => onSubmit('POST')}
+            size='md'
+            theme='blue'
+          />
+        ) : (
+          <>
+            <Button
+              className='whitespace-nowrap'
+              label='Muat Ulang'
+              onClick={onLoad}
+              size='md'
+            />
+            <Button
+              className='whitespace-nowrap'
+              label='Cetak'
+              onClick={() => setIsPrintDialogOpen(true)}
+              size='md'
+              theme='blue'
+            />
+            <Button
+              className='whitespace-nowrap'
+              label='Perbarui'
+              onClick={() => onSubmit('PUT')}
+              size='md'
+              theme='yellow'
+            />
+            <Button
+              className='whitespace-nowrap'
+              label='Hapus'
+              onClick={() => setIsDeleteConfirmationDialogOpen(true)}
+              size='md'
+              theme='red'
+            />
+          </>
+        )}
       </div>
 
 
 
-      <div className='text-2xl'>{isFormCreate ? 'Tambah' : isFormUpdate ? 'Perbarui' : isFormDelete ? 'Hapus' : ''} Faktur</div>
+      <div className='text-2xl'>{!_id ? 'Lihat' : 'Data'} Faktur</div>
 
 
 
-      {(
-        isFormCreate ||
-        (isFormUpdate && !isFormLoading) ||
-        (isFormDelete && !isFormLoading)
-      ) && (
+      {(!_id || (_id && !isFormLoading)) && (
         <div className='flex-1 overflow-auto border-2 border-neutral-700 p-8 flex flex-col gap-8'>
           <Header headerLabels={headerLabels} setHeaderLabels={setHeaderLabels} />
 
@@ -353,7 +399,7 @@ export default function InvoiceForm() {
           <Info
             info={info}
             setInfo={setInfo}
-            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+            disabled={isFormLoading || isFormSubmitting}
           />
           
           <Table
@@ -365,7 +411,7 @@ export default function InvoiceForm() {
             paidShow={paidShow}
             tableLabels={tableLabels}
             setTableLabels={setTableLabels}
-            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+            disabled={isFormLoading || isFormSubmitting}
             totalPriceErr={totalPriceErr}
             setTotalPriceErr={setTotalPriceErr}
             totalPrice={totalPrice}
@@ -381,7 +427,7 @@ export default function InvoiceForm() {
           <Notes
             noteLabel={noteLabel}
             setNoteLabel={setNoteLabel}
-            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+            disabled={isFormLoading || isFormSubmitting}
             notes={notes}
             setNotes={setNotes}
             paymentLabels={paymentLabels}
@@ -391,11 +437,47 @@ export default function InvoiceForm() {
           <Footer
             city={city}
             setCity={setCity}
-            disabled={isFormDelete || isFormLoading || isFormSubmitting}
+            disabled={isFormLoading || isFormSubmitting}
             createDate={createDate}
             setCreateDate={setCreateDate}
           />
         </div>
+      )}
+
+
+
+      {isPrintDialogOpen && (
+        <ConfirmationDialog
+          title='Konfirmasi pencetakan faktur'
+          description='Apakah anda ingin mencetak faktur?'
+        >
+          <>
+            <Button
+              className='flex-1 sm:flex-[0]'
+              label='Batal'
+              onClick={() => {setIsPrintDialogOpen(false); navigate('/invoice');}}
+              size='md'
+            />
+            <PDFDownloadLink
+              className='flex-1 sm:flex-[0] border-2 py-1 px-4 text-lg bg-blue-300 border-blue-700 rounded text-center hover:bg-blue-500 hover:cursor-pointer focus:outline focus:outline-1 focus:outline-offset-1 focus:outline-blue-700'
+              document={<InvoicePDF invoice={{...getPayload()}} />}
+              fileName={`${getPDFFileName()}`}
+              onClick={() => setTimeout(() => {setIsPrintDialogOpen(false); navigate('/invoice');}, 500)}
+            >
+              {({ blob, url, loading, error }) => loading ? '' : 'Konfirmasi'}
+            </PDFDownloadLink>
+          </>
+        </ConfirmationDialog>
+      )}
+
+      {isDeleteConfirmationDialogOpen && (
+        <ConfirmationDialog
+          title='Konfirmasi penghapusan faktur'
+          description='Apakah anda yakin ingin menghapus faktur ini?'
+          onCancel={() => setIsDeleteConfirmationDialogOpen(false)}
+          onConfirm={() => {setIsDeleteConfirmationDialogOpen(false); onSubmit('DELETE'); setIsDeleteConfirmationDialogOpen(false)}}
+          theme='red'
+        />
       )}
     </main>
   );
