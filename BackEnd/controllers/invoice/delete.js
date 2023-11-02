@@ -1,12 +1,13 @@
-import { Res, Json, stringValidator } from '../../functions/index.js';
+import { Res, Json } from '../../functions/index.js';
 
 
 
 export default function deleteDocument(req, res) {
   try {
     const payload = {
-      _id: stringValidator(req.body?._id)
+      _id: req.body?._id
     };
+
     if (!payload._id) return Res(res, 400, null, '_id tidak valid.');
     
     const data = Json('invoice');
