@@ -1,15 +1,11 @@
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
 import { Button, ConfirmationDialog, InvoicePDF } from '../../../components';
-import {
-  Fetch,
-  createSocket,
-  getCurrentDateTime,
-  toProperDateTime
-} from '../../../functions';
+import { Fetch, getCurrentDateTime, toProperDateTime } from '../../../functions';
+import { _app } from '../../../redux';
 import Header from './Header';
 import Info from './Info';
 import Table from './Table';
@@ -21,6 +17,7 @@ import Footer from './Footer';
 export default function InvoiceForm() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   const [params] = useSearchParams();
   const _id = params.get('_id');
@@ -259,15 +256,17 @@ export default function InvoiceForm() {
       setIsFormSubmitting(false);
 
       if (res.ok) {
-        const socket = createSocket();
-        if (method === 'POST') socket.emit('invoice-create');
-        else if (method === 'PUT') socket.emit('invoice-update', _id);
-        else if (method === 'DELETE') socket.emit('invoice-delete', _id);
+        getInvoice();
 
         if (method === 'DELETE') navigate('/invoice');
         else setIsPrintDialogOpen(payload);
       }
     }
+  }
+
+  async function getInvoice() {
+    const res = await Fetch('/invoice');
+    if (res.ok) dispatch(_app.setInvoices(res.payload));
   }
 
   function getPayload() {

@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 
 import { Nav } from './components';
-import { Fetch, createSocket } from './functions';
+import { Fetch } from './functions';
 import {
   Login,
   Invoice,
@@ -23,20 +23,9 @@ export default function App() {
 
 
   useEffect(() => {
-    if (_token) {
-      const socket = createSocket();
-
-      socket.on('invoice-create', getInvoice);
-      socket.on('invoice-update', getInvoice);
-      socket.on('invoice-delete', getInvoice);
-
-      getInvoice();
-
-      return () => socket.disconnect();
-    } 
+    if (_token) getInvoice();
     else dispatch(_app.clearInvoices());
   }, [_token]);
-
 
 
 
