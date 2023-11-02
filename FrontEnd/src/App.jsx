@@ -8,8 +8,8 @@ import { Fetch, createSocket } from './functions';
 import {
   Login,
   Invoice,
-  InvoiceSelected,
-  InvoiceForm
+  InvoiceForm,
+  InvoicePDFView
 } from './pages';
 import { _app } from './redux';
 
@@ -49,7 +49,7 @@ export default function App() {
 
   return (
     <>
-      {_token && <Nav />}
+      {/* {_token && <Nav />} */}
       {!_token ? (
         <Routes>
           <Route path='/login' element={<Login />} />
@@ -58,11 +58,8 @@ export default function App() {
       ) : (
         <Routes>
           <Route path='/invoice' element={<Invoice />} />
-          <Route path='/invoice/:_id' element={<InvoiceSelected />} />
-          <Route path='/invoice/form/create' element={<InvoiceForm />} />
-          <Route path='/invoice/form/update/:_id' element={<InvoiceForm />} />
-          <Route path='/invoice/form/delete/:_id' element={<InvoiceForm />} />
-          <Route path='/invoice/*' element={<Navigate to='/invoice' />} />
+          <Route path='/invoice/form' element={<InvoiceForm />} />
+          <Route path='/invoice/pdf-view' element={<InvoicePDFView />} />
           <Route path='*' element={<Navigate to='/invoice' />} />
         </Routes>
       )}
