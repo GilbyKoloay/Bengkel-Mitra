@@ -321,33 +321,41 @@ export default function Table({
 
 
         <div className='grid grid-cols-12 border-y border-neutral-900'>
-          <TableInput className='col-span-6 text-right text-red-500' value={totalPriceErr} disabled />
-          <TableInput
-            className='col-start-7 col-span-2'
-            value={tableLabels.totalPrice}
-            onChange={value => setTableLabels({...tableLabels, totalPrice: value})}
-            disabled={disabled}
-          />
-          <TableInput
-            className='col-span-2 text-center'
-            value={totalPrice}
-            onChange={setTotalPrice}
-            disabled={disabled}
-          />
+          {(priceShow !== 'item') && (
+            <>
+              <TableInput className='col-span-6 text-right text-red-500' value={totalPriceErr} disabled />
+              <TableInput
+                className='col-start-7 col-span-2'
+                value={tableLabels.totalPrice}
+                onChange={value => setTableLabels({...tableLabels, totalPrice: value})}
+                disabled={disabled}
+              />
+              <TableInput
+                className='col-span-2 text-center'
+                value={totalPrice}
+                onChange={setTotalPrice}
+                disabled={disabled}
+              />
+            </>
+          )}
 
-          <TableInput className='col-span-6 text-right text-red-500' value={totalPaidErr} disabled />
-          <TableInput
-            className='col-span-2'
-            value={tableLabels.totalPaid}
-            onChange={value => setTableLabels({...tableLabels, totalPaid: value})}
-            disabled={disabled}
-          />
-          <TableInput
-            className='col-span-2 text-center'
-            value={totalPaid}
-            onChange={setTotalPaid}
-            disabled={disabled}
-          />
+          {(paidShow !== 'item') && (
+            <>
+              <TableInput className='col-span-6 text-right text-red-500' value={totalPaidErr} disabled />
+              <TableInput
+                className='col-span-2'
+                value={tableLabels.totalPaid}
+                onChange={value => setTableLabels({...tableLabels, totalPaid: value})}
+                disabled={disabled}
+              />
+              <TableInput
+                className='col-span-2 text-center'
+                value={totalPaid}
+                onChange={setTotalPaid}
+                disabled={disabled}
+              />
+            </>
+          )}
         </div>
       </div>
 
