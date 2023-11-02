@@ -117,7 +117,10 @@ export default function InvoiceForm() {
     else {
       setHeaderLabels(invoice.headerLabels);
 
-      setInfo(invoice.info);
+      setInfo(invoice.info.map(info => ({
+        ...info,
+        value: (info.type !== 'date') ? info.value : (info.value.slice(0, 10) === '0000-00-00') ? '--T00:00:00.000Z' : info.value
+      })));
 
       setPriceShow(invoice.priceShow);
       setPaidShow(invoice.paidShow);
@@ -152,7 +155,8 @@ export default function InvoiceForm() {
       setPaymentLabels(invoice.paymentLabels);
 
       setCity(invoice.city);
-      setCreateDate(invoice.createDate);
+      // setCreateDate(invoice.createDate);
+      setCreateDate((invoice.createDate.slice(0, 10) === '0000-00-00') ? '--T00:00:00.000Z' : invoice.createDate);
     }
   }
 
@@ -309,7 +313,10 @@ export default function InvoiceForm() {
     if (vehiclePlate?.value) fileName.push(vehiclePlate.value);
 
     const inDateOutDate = info.filter(item => item.label.toLowerCase().trim() === 'tgl msk/tgl klr')[0];
-    if (inDateOutDate?.value) fileName.push(toProperDateTime(inDateOutDate.value, true));
+    if (
+      inDateOutDate?.value &&
+      (inDateOutDate?.value?.slice(0, 10) !== '0000-00-00')
+    ) fileName.push(toProperDateTime(inDateOutDate.value, true));
 
     return fileName.map(value => {
       return value.replaceAll(' ', '').replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
