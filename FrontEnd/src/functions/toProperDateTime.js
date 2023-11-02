@@ -4,6 +4,8 @@ export default function toProperDateTime(value, isForPDF=false) {
   let day = value.split('T')[0].split('-')[2];
   let hour = value.split('T')[1].split(':')[0];
   let minute = value.split('T')[1].split(':')[1];
+  let second = value.split('T')[1].split(':')[2].split('.')[0];
+  let milisecond = value.split('T')[1].split(':')[2].split('.')[1].split('Z')[0];
 
   if (month.length === 1) month = `0${month}`;
   if (day.length === 1) day = `0${day}`;
@@ -32,5 +34,5 @@ export default function toProperDateTime(value, isForPDF=false) {
     return `${day} ${month} ${year}`;
   }
 
-  return `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${milisecond}Z`;
 };
