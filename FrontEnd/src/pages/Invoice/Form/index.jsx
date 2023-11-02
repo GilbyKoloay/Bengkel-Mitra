@@ -242,7 +242,7 @@ export default function InvoiceForm() {
     else if (method === 'DELETE') payload = {
       _id: payload._id
     };
-    console.log('payload', payload);
+    // console.log('payload', payload);
 
     const res = await Fetch(
       '/invoice',
@@ -329,13 +329,14 @@ export default function InvoiceForm() {
           onClick={() => navigate(`/${location.pathname.split('/')[1]}`)}
           size='md'
         />
-        <Button
-          className='whitespace-nowrap'
-          label='Lihat Tampilan PDF'
-          // onClick={() => window.open(`/invoice/pdf-view/${_id}`, '_blank')}
-          onClick={handleShowPDFViewOnClick}
-          size='md'
-        />
+        {!isFormLoading && (
+          <Button
+            className='whitespace-nowrap'
+            label='Lihat Tampilan PDF'
+            onClick={handleShowPDFViewOnClick}
+            size='md'
+          />
+        )}
         <Button
           className='whitespace-nowrap'
           label='Atur Ulang'
@@ -351,7 +352,7 @@ export default function InvoiceForm() {
             size='md'
             theme='blue'
           />
-        ) : (
+        ) : !isFormLoading && (
           <>
             <Button
               className='whitespace-nowrap'
