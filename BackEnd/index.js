@@ -1,9 +1,7 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import { createServer } from 'http';
 import path from 'path';
-import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
 import { login as loginController } from './controllers/index.js';
@@ -18,11 +16,6 @@ dotenv.config();
 
 
 const app = express();
-const server = createServer(app);
-const io = new Server(
-  server,
-  {cors: {origin: '*'}}
-);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = parseInt(process.env.PORT);
 
@@ -59,23 +52,8 @@ app.use((req, res) => {
 
 
 
-// socket.io
-io.on('connection', socket => {
-  socket.on('invoice-create', () => io.emit('invoice-create'));
-  socket.on('invoice-update', _id => {
-    io.emit('invoice-create');
-    io.emit('invoice-update', _id);
-  });
-  socket.on('invoice-delete', _id => {
-    io.emit('invoice-create');
-    io.emit('invoice-delete', _id);
-  });
-});
-
-
-
 // run server
-server.listen(port, err => {
+app.listen(port, err => {
   if (err) console.log('Failed to run server.', err);
   console.log(`Server is running on port ${port}.`);
 });
