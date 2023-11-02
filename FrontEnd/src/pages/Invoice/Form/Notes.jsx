@@ -64,6 +64,7 @@ export default function Notes({
         <div className='border border-neutral-900 p-2 flex flex-col'>
           <div>
             <LabelInput
+              className='text-center'
               value={paymentLabels.top}
               onChange={value => setPaymentLabels({...paymentLabels, top: value})}
               disabled={disabled}
@@ -71,6 +72,7 @@ export default function Notes({
           </div>
           <div>
             <LabelInput
+              className='text-center'
               value={paymentLabels.mid}
               onChange={value => setPaymentLabels({...paymentLabels, mid: value})}
               disabled={disabled}
@@ -78,6 +80,7 @@ export default function Notes({
           </div>
           <div>
             <LabelInput
+              className='text-center'
               value={paymentLabels.bot}
               onChange={value => setPaymentLabels({...paymentLabels, bot: value})}
               disabled={disabled}
