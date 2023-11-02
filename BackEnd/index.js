@@ -1,9 +1,7 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import { createServer } from 'http';
 import path from 'path';
-import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
 import { login as loginController } from './controllers/index.js';
@@ -18,11 +16,6 @@ dotenv.config();
 
 
 const app = express();
-const server = createServer(app);
-const io = new Server(
-  server,
-  {cors: {origin: '*'}}
-);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = parseInt(process.env.PORT);
 
@@ -59,57 +52,8 @@ app.use((req, res) => {
 
 
 
-// socket.io
-io.on('connection', socket => {
-  // // service
-  // socket.on('service-create', () => io.emit('service-create'));
-  // socket.on('service-update', payload => {
-  //   io.emit('service-create');
-  //   io.emit('service-update', {_id: payload._id});
-  // });
-  // socket.on('service-delete', payload => {
-  //   io.emit('service-create');
-  //   io.emit('service-delete', {_id: payload._id});
-  // });
-
-  // // type
-  // socket.on('type-create', () => io.emit('type-create'));
-  // socket.on('type-update', _id => {
-  //   io.emit('type-create');
-  //   io.emit('type-update', _id);
-  // });
-  // socket.on('type-delete', _id => {
-  //   io.emit('type-create');
-  //   io.emit('type-delete', _id);
-  // });
-
-  // // transaction
-  // socket.on('transaction-create', () => io.emit('transaction-create'));
-  // socket.on('transaction-update', _id => {
-  //   io.emit('transaction-create');
-  //   io.emit('transaction-update', _id);
-  // });
-  // socket.on('transaction-delete', _id => {
-  //   io.emit('transaction-create');
-  //   io.emit('transaction-delete', _id);
-  // });
-
-  // invoice
-  socket.on('invoice-create', () => io.emit('invoice-create'));
-  socket.on('invoice-update', _id => {
-    io.emit('invoice-create');
-    io.emit('invoice-update', _id);
-  });
-  socket.on('invoice-delete', _id => {
-    io.emit('invoice-create');
-    io.emit('invoice-delete', _id);
-  });
-});
-
-
-
 // run server
-server.listen(port, err => {
+app.listen(port, err => {
   if (err) console.log('Failed to run server.', err);
   console.log(`Server is running on port ${port}.`);
 });
