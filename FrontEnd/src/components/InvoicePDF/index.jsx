@@ -103,19 +103,19 @@ export default function InvoicePDF({ invoice }) {
             {/* table - total */}
             {(invoice.priceShow !== 'item') && (
               <View style={{flexDirection: 'row'}}>
-                <Text style={styles.table.cell(1, (invoice.paidShow !== 'item') ? 0 : 2, 2, 0, {flex: 1})} />
-                <Text style={styles.table.cell(1, (invoice.paidShow !== 'item') ? 0 : 2, 0, 0, {width: 86})}>{invoice.tableLabels.totalPrice}</Text>
-                <Text style={styles.table.cell(1, (invoice.paidShow !== 'item') ? 0 : 2, 1, 1, {width: 60, fontSize: 7, textAlign: 'center'})}>{
+                <Text style={styles.table.cell(1, ((invoice.paidShow) !== 'item' && invoice.totalPaid) ? 0 : 2, 2, 0, {flex: 1})} />
+                <Text style={styles.table.cell(1, ((invoice.paidShow) !== 'item' && invoice.totalPaid) ? 0 : 2, 0, 0, {width: 86})}>{invoice.tableLabels.totalPrice}</Text>
+                <Text style={styles.table.cell(1, ((invoice.paidShow) !== 'item' && invoice.totalPaid) ? 0 : 2, 1, 1, {width: 60, fontSize: 7, textAlign: 'center'})}>{
                   (/^[0-9]+$/.test(invoice.totalPrice))
                     ? `Rp. ${splitString(invoice.totalPrice, 3, '.')}`
                     : invoice.totalPrice
                 }</Text>
-                <Text style={styles.table.cell(1, (invoice.paidShow !== 'item') ? 0 : 2, 0, 2, {width: 60})} />
+                <Text style={styles.table.cell(1, ((invoice.paidShow) !== 'item' && invoice.totalPaid) ? 0 : 2, 0, 2, {width: 60})} />
               </View>
             )}
 
             {/* table - total */}
-            {(invoice.paidShow !== 'item') && (
+            {((invoice.paidShow) !== 'item' && invoice.totalPaid) && (
               <View style={{flexDirection: 'row'}}>
                 <Text style={styles.table.cell((invoice.priceShow !== 'item') ? 0 : 1, 2, 2, 0, {flex: 1})} />
                 <Text style={styles.table.cell((invoice.priceShow !== 'item') ? 0 : 1, 2, 0, 0, {width: 86})}>{invoice.tableLabels.totalPaid}</Text>
