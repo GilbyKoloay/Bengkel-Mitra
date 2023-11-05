@@ -142,9 +142,9 @@ export default function InvoiceForm() {
         }]
       }]);
       setTotalPriceErr(invoice.totalPriceErr);
-      setTotalPrice(invoice.totalPrice);
+      setTimeout(() => setTotalPrice(invoice.totalPrice), 500);
       setTotalPaidErr(invoice.totalPaidErr);
-      setTotalPaid(invoice.totalPaid);
+      setTimeout(() => setTotalPaid(invoice.totalPaid), 500);
       setCalculated(invoice.calculated);
 
       setNoteLabel(invoice.noteLabel);
