@@ -303,23 +303,24 @@ export default function InvoiceForm() {
     const fileName = [];
 
     const customerName = info.filter(item => item.label.toLowerCase().trim() === 'nama pelanggan')[0];
-    if (customerName?.value) fileName.push(customerName.value);
+    if (customerName?.value) fileName.push(customerName);
 
     const vehicleType = info.filter(item => item.label.toLowerCase().trim() === 'jenis kendaraan')[0];
-    if (vehicleType?.value) fileName.push(vehicleType.value);
+    if (vehicleType?.value) fileName.push(vehicleType);
 
     const vehiclePlate = info.filter(item => item.label.toLowerCase().trim() === 'nomor polisi')[0];
-    if (vehiclePlate?.value) fileName.push(vehiclePlate.value);
+    if (vehiclePlate?.value) fileName.push(vehiclePlate);
 
     const inDateOutDate = info.filter(item => item.label.toLowerCase().trim() === 'tgl msk/tgl klr')[0];
     if (
       inDateOutDate.type === 'date' &&
       inDateOutDate?.value &&
       (inDateOutDate?.value?.slice(0, 10) !== '0000-00-00')
-    ) fileName.push(toProperDateTime(inDateOutDate.value, true));
+    ) fileName.push({...inDateOutDate, value: toProperDateTime(inDateOutDate.value, true)});
 
-    return fileName.map(value => {
-      return value.replaceAll(' ', '').replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
+    return fileName.map(item => {
+      if (item.label.toLowerCase().trim() === 'nomor polisi') return item.value.replaceAll(' ', '');
+      else return item.value.replaceAll(' ', '').replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
         return index === 0 ? match.toLowerCase() : match.toUpperCase();
       });
     }).join('_');
