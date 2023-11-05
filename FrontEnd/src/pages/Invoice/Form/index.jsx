@@ -313,6 +313,7 @@ export default function InvoiceForm() {
 
     const inDateOutDate = info.filter(item => item.label.toLowerCase().trim() === 'tgl msk/tgl klr')[0];
     if (
+      inDateOutDate.type === 'date' &&
       inDateOutDate?.value &&
       (inDateOutDate?.value?.slice(0, 10) !== '0000-00-00')
     ) fileName.push(toProperDateTime(inDateOutDate.value, true));
