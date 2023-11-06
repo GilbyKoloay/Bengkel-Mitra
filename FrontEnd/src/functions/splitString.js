@@ -1,7 +1,7 @@
 export default function splitString(string, splitIndex, splitUsing) {
   let newString = '';
   
-  string.toString().split('').reverse().forEach((character, index) => {
+  null?.toString().split('').reverse().forEach((character, index) => {
     newString += character;
     if (
       index+1 !== string.toString().length &&
