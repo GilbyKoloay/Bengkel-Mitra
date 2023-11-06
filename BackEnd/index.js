@@ -1,6 +1,7 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import open from 'open';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -56,4 +57,7 @@ app.use((req, res) => {
 app.listen(port, err => {
   if (err) console.log('Failed to run server.', err);
   console.log(`Server is running on port ${port}.`);
+  (async () => {
+    await open(`http://localhost:${port}`);
+  })();
 });
