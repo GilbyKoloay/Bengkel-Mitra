@@ -144,7 +144,7 @@ export default function Invoice() {
                   [invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'nama pelanggan')[0]?.value, ''],
                   [invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'jenis kendaraan')[0]?.value, ''],
                   [invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'nomor polisi')[0]?.value, 'whitespace-nowrap'],
-                  [(invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'tgl msk/tgl klr')[0]?.value?.slice(0, 10) === '0000-00-00') ? '' : invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'tgl msk/tgl klr')[0]?.value?.slice(0, 10)?.split('-')?.reverse()?.join('-'), 'whitespace-nowrap'],
+                  [(invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'tgl msk/tgl klr')[0]?.type !== 'date') ? invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'tgl msk/tgl klr')[0]?.value : (invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'tgl msk/tgl klr')[0]?.value?.slice(0, 10) === '0000-00-00') ? '' : invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'tgl msk/tgl klr')[0]?.value?.slice(0, 10)?.split('-')?.reverse()?.join('-'), 'whitespace-nowrap'],
                   [invoice?.info?.filter(info => info?.label?.toLowerCase()?.trim() === 'kilometer')[0]?.value, 'whitespace-nowrap'],
                   [`Rp. ${splitString(invoice?.calculated, 3, '.')}`, 'text-right whitespace-nowrap']
                 ].map(([value, className], index) => (
