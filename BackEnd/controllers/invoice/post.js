@@ -23,20 +23,25 @@ export default function post(req, res) {
         type: stringValidator(item?.type),
       })),
 
-      priceShow: stringValidator(req.body?.priceShow),
-      paidShow: stringValidator(req.body?.paidShow),
+      priceType: stringValidator(req.body?.priceType),
+      paidType: stringValidator(req.body?.paidType),
+      noteType: stringValidator(req.body?.noteType),
       tableLabels: {
         col1: stringValidator(req.body?.tableLabels?.col1),
         col2: stringValidator(req.body?.tableLabels?.col2),
         col3: stringValidator(req.body?.tableLabels?.col3),
         col4: stringValidator(req.body?.tableLabels?.col4),
         paid: stringValidator(req.body?.tableLabels?.paid),
-        totalPaid: stringValidator(req.body?.tableLabels?.totalPaid),
         totalPrice: stringValidator(req.body?.tableLabels?.totalPrice),
+        totalNote: stringValidator(req.body?.tableLabels?.totalNote),
+        totalPaid: stringValidator(req.body?.tableLabels?.totalPaid),
         calculated: stringValidator(req.body?.tableLabels?.calculated)
       },
       services: req.body?.services?.map(service => ({
         no: stringValidator(service?.no),
+        price: stringValidator(service?.price),
+        paid: stringValidator(service.paid),
+        note: stringValidator(service.note),
         subServices: service?.subServices?.map(subService => ({
             type: stringValidator(subService?.type),
             name: stringValidator(subService?.name),
@@ -45,8 +50,13 @@ export default function post(req, res) {
             note: stringValidator(subService?.note)
         }))
       })),
+      isTotalPriceShown: JSON.parse(req.body?.isTotalPriceShown),
       totalPriceErr: stringValidator(req.body?.totalPriceErr),
       totalPrice: stringValidator(req.body?.totalPrice),
+      isTotalNoteShown: JSON.parse(req.body?.isTotalNoteShown),
+      totalNoteErr: stringValidator(req.body?.totalNoteErr),
+      totalNote: stringValidator(req.body?.totalNote),
+      isTotalPaidShown: JSON.parse(req.body?.isTotalPaidShown),
       totalPaidErr: stringValidator(req.body?.totalPaidErr),
       totalPaid: stringValidator(req.body?.totalPaid),
       calculated: numberValidator(req.body?.calculated),
