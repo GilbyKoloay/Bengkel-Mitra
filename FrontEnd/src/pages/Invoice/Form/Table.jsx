@@ -59,49 +59,57 @@ const LabelInput = ({
 
 
 export default function Table({
-  services,
-  setServices,
-  setPriceShow,
-  setPaidShow,
-  priceShow,
-  paidShow,
-  tableLabels,
-  setTableLabels,
+  services, setServices,
+  priceType, setPriceType,
+  paidType, setPaidType,
+  noteType, setNoteType,
+  tableLabels, setTableLabels,
   disabled,
-  totalPriceErr,
-  setTotalPriceErr,
-  totalPrice,
-  setTotalPrice,
-  totalPaidErr,
-  setTotalPaidErr,
-  totalPaid,
-  setTotalPaid,
-  calculated,
-  setCalculated
+  isTotalPriceShown, setIsTotalPriceShown,
+  totalPriceErr, setTotalPriceErr,
+  totalPrice, setTotalPrice,
+  isTotalNoteShown, setIsTotalNoteShown,
+  totalNoteErr, setTotalNoteErr,
+  totalNote, setTotalNote,
+  isTotalPaidShown, setIsTotalPaidShown,
+  totalPaidErr, setTotalPaidErr,
+  totalPaid, setTotalPaid,
+  calculated, setCalculated
 }) {
   useEffect(() => {
-    const item = getServicesItemValue();
+    const newValue = getServicesValue();
 
-    setTotalPrice(item.servicePrice.toString());
-    setTotalPaid(item.paid.toString());
-    setCalculated(((item.servicePrice + item.notePrice) - item.paid));
+    setTotalPrice(newValue.price.toString());
+    setTotalNote(newValue.note.toString());
+    setTotalPaid(newValue.paid.toString());
+    setCalculated((newValue.price + newValue.note) - newValue.paid);
   }, [services]);
 
   useEffect(() => {
-    const item = getServicesItemValue();
+    const value = getServicesValue();
 
     if (!/^[0-9]+$/.test(totalPrice.trim())) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena mengandung karakter yang bukan angka.`);
-    else if (parseInt(totalPrice.trim()) < item.servicePrice) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena kurang dari total ${tableLabels.col3} pekerjaan per item (${item.servicePrice}).`);
+    else if (parseInt(totalPrice.trim()) < value.price) setTotalPriceErr(`${tableLabels.totalPrice} tidak valid karena kurang dari total ${tableLabels.col3} pekerjaan per item (${value.price}).`);
     else setTotalPriceErr('');
-
+    
+    if (!/^[0-9]+$/.test(totalNote.trim())) setTotalNoteErr(`${tableLabels.totalNote} tidak valid karena mengandung karakter yang bukan angka.`);
+    else if (parseInt(totalNote.trim()) < value.note) setTotalNoteErr(`${tableLabels.totalNote} tidak valid karena kurang dari total ${tableLabels.col3} nota per item (${value.note}).`);
+    else setTotalNoteErr('');
+    
     if (!/^[0-9]+$/.test(totalPaid.trim())) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena mengandung karakter yang bukan angka.`);
-    else if (parseInt(totalPaid.trim()) < item.paid) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena kurang dari total ${tableLabels.paid} per item (${item.paid}).`);
+    else if (parseInt(totalPaid.trim()) < value.paid) setTotalPaidErr(`${tableLabels.totalPaid} tidak valid karena kurang dari total ${tableLabels.paid} pekerjaan per item (${value.paid}).`);
     else setTotalPaidErr('');
 
-    if (/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated((parseInt(totalPrice) + item.notePrice) - parseInt(totalPaid));
-    if (/^[0-9]+$/.test(totalPrice.trim()) && !/^[0-9]+$/.test(totalPaid.trim())) setCalculated((parseInt(totalPrice) + item.notePrice) - 0);
-    if (!/^[0-9]+$/.test(totalPrice.trim()) && /^[0-9]+$/.test(totalPaid.trim())) setCalculated(item.notePrice - parseInt(totalPaid));
-  }, [totalPrice, totalPaid, tableLabels]);
+    let newTotalPrice = 0;
+    let newTotalNote = 0;
+    let newTotalPaid = 0;
+
+    if (/^[0-9]+$/.test(totalPrice.trim())) newTotalPrice = parseInt(totalPrice.trim());
+    if (/^[0-9]+$/.test(totalNote.trim())) newTotalNote = parseInt(totalNote.trim());
+    if (/^[0-9]+$/.test(totalPaid.trim())) newTotalPaid = parseInt(totalPaid.trim());
+
+    setCalculated((newTotalPrice + newTotalNote) - newTotalPaid);
+  }, [totalPrice, totalNote, totalPaid, tableLabels]);
 
 
 
@@ -117,15 +125,62 @@ export default function Table({
     document.body.removeChild(textArea);
   }
 
+  function handlePriceTypeOnChange(value) {
+    const newServices = services.map(service => ({
+      ...service,
+      price: '',
+      subServices: service.subServices.map(subService => ({
+        ...subService,
+        price: ''
+      }))
+    }));
+
+    if (value === 'NUMBER') setPaidType('NUMBER');
+    
+    setServices(newServices);
+    setPriceType(value);
+  }
+
+  function handlePaidTypeOnChange(value) {
+    const newServices = services.map(service => ({
+      ...service,
+      paid: '',
+      subServices: service.subServices.map(subService => ({
+        ...subService,
+        paid: ''
+      }))
+    }));
+
+    setServices(newServices);
+    setPaidType(value);
+  }
+
+  function handleNoteTypeOnChange(value) {
+    const newServices = services.map(service => ({
+      ...service,
+      note: '',
+      subServices: service.subServices.map(subService => ({
+        ...subService,
+        note: ''
+      }))
+    }));
+
+    setServices(newServices);
+    setNoteType(value);
+  }
+
   function handleServiceOnChange(index, newValue) {
     let newServices = [...services];
 
     newServices[index] = newValue;
 
     newServices = [
-      ...newServices.filter(service => service.no || (service.subServices.length > 1)),
+      ...newServices.filter(service => service.no || service.price || service.paid || service.note || (service.subServices.length > 1)),
       {
         no: '',
+        price: '',
+        paid: '',
+        note: '',
         subServices: [{
           type: newServices.slice(-1)[0].subServices.slice(-1)[0].type,
           name: '',
@@ -156,31 +211,30 @@ export default function Table({
     ];
     
     const newService = {
-      no: services[index].no,
+      ...services[index],
       subServices: newSubServices
     };
 
     handleServiceOnChange(index, newService);
   }
 
-  function getServicesItemValue() {
-    let servicePrice = 0;
-    let notePrice = 0;
+  function getServicesValue() {
+    let price = 0;
+    let note = 0;
     let paid = 0;
 
-    services.forEach(service => service.subServices.forEach(subService => {
-      if (
-        /^[0-9]+$/.test(subService.price.trim()) &&
-        (subService.type === 'SERVICE')
-      ) servicePrice += parseInt(subService.price.trim());
-      if (
-        /^[0-9]+$/.test(subService.price.trim()) &&
-        (subService.type === 'NOTE')
-      ) notePrice += parseInt(subService.price.trim());
-      if (/^[0-9]+$/.test(subService.paid.trim())) paid += parseInt(subService.paid.trim());
-    }));
+    services.forEach(service => {
+      if ((priceType === 'NUMBER') && /^[0-9]+$/.test(service.price.trim())) price += parseInt(service.price.trim());
+      if ((paidType === 'NUMBER') && /^[0-9]+$/.test(service.paid.trim())) paid += parseInt(service.paid.trim());
 
-    return {servicePrice, notePrice, paid};
+      service.subServices.forEach(subService => {
+        if ((priceType === 'ITEM') && (subService.type === 'SERVICE') && (/^[0-9]+$/.test(subService.price.trim()))) price += parseInt(subService.price.trim());
+        if ((priceType === 'ITEM') && (subService.type === 'NOTE') && (/^[0-9]+$/.test(subService.price.trim()))) note += parseInt(subService.price.trim());
+        if ((paidType === 'ITEM') && (/^[0-9]+$/.test(subService.paid.trim()))) paid += parseInt(subService.paid.trim());
+      });
+    });
+
+    return {price, note, paid};
   }
 
 
@@ -206,24 +260,60 @@ export default function Table({
           />
         </div>
 
-        <div className='col-start-7 col-span-4 row-span-2 flex flex-col gap-1 justify-center'>
+        <div className='col-start-7 col-span-3 row-span-2 flex flex-col gap-1 justify-center'>
           <Select
             options={[
-              ['all', `Gunakan ${tableLabels.col3} per item dan ${tableLabels.totalPrice}`],
-              ['item', `Gunakan ${tableLabels.col3} per item`],
-              ['total', `Gunakan ${tableLabels.totalPrice}`]
+              ['ITEM', `Gunakan ${tableLabels.col3} per item`],
+              ['NUMBER', `Gunakan ${tableLabels.col3} per nomor`],
+              ['NULL', `Jangan gunakan ${tableLabels.col3}`]
             ]}
-            value={priceShow}
-            onChange={setPriceShow}
+            value={priceType}
+            onChange={handlePriceTypeOnChange}
           />
           <Select
             options={[
-              ['all', `Gunakan ${tableLabels.paid} per item dan ${tableLabels.totalPaid}`],
-              ['item', `Gunakan ${tableLabels.paid} per item`],
-              ['total', `Gunakan ${tableLabels.totalPaid}`]
+              ...(priceType !== 'NUMBER') ? [['ITEM', `Gunakan ${tableLabels.paid} per item`]] : [],
+              ['NUMBER', `Gunakan ${tableLabels.paid} per nomor`],
+              ['NULL', `Jangan gunakan ${tableLabels.paid}`]
             ]}
-            value={paidShow}
-            onChange={setPaidShow}
+            value={paidType}
+            onChange={handlePaidTypeOnChange}
+          />
+          <Select
+            options={[
+              ['ITEM', `Gunakan ${tableLabels.col4} per item`],
+              ['NUMBER', `Gunakan ${tableLabels.col4} per nomor`],
+              ['NULL', `Jangan gunakan ${tableLabels.col4}`]
+            ]}
+            value={noteType}
+            onChange={handleNoteTypeOnChange}
+          />
+        </div>
+
+        <div className='col-start-10 col-span-3 row-span-2 flex flex-col gap-1 justify-center'>
+          <Select
+            options={[
+              [true, `Gunakan ${tableLabels.totalPrice}`],
+              [false, `Jangan gunakan ${tableLabels.totalPrice}`]
+            ]}
+            value={isTotalPriceShown}
+            onChange={value => setIsTotalPriceShown(JSON.parse(value))}
+          />
+          <Select
+            options={[
+              [true, `Gunakan ${tableLabels.totalNote}`],
+              [false, `Jangan gunakan ${tableLabels.totalNote}`]
+            ]}
+            value={isTotalNoteShown}
+            onChange={value => setIsTotalNoteShown(JSON.parse(value))}
+          />
+          <Select
+            options={[
+              [true, `Gunakan ${tableLabels.totalPaid}`],
+              [false, `Jangan gunakan ${tableLabels.totalPaid}`]
+            ]}
+            value={isTotalPaidShown}
+            onChange={value => setIsTotalPaidShown(JSON.parse(value))}
           />
         </div>
       </div>
@@ -268,52 +358,110 @@ export default function Table({
               onChange={value => handleServiceOnChange(index, {...service, no: value})}
               disabled={disabled}
             />
-            <div className='col-span-11'>
+
+            <div className='col-span-7'>
               {service.subServices.map((subService, subIndex) => (
-                <div key={subIndex} className={`grid grid-cols-11 grid-rows-${(paidShow === 'total' ? '1' : '2')}`}>
+                <div key={subIndex} className={`grid grid-cols-7 grid-rows-${(paidType === 'ITEM') ? '2' : '1'}`}>
                   <TableSelect
-                    className='row-span-1 col-span-2'
+                    className='col-span-2 row-span-full'
                     options={[['SERVICE', 'Pekerjaan'], ['NOTE', 'Nota']]}
                     value={subService.type}
                     onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, type: value})}
                     disabled={disabled}
                   />
                   <TableInput
-                    className='row-span-1 col-span-5'
+                    className='col-span-5'
                     value={subService.name}
                     onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, name: value})}
                     disabled={disabled}
                   />
+                  {(paidType === 'ITEM') && (
+                    <TableInput
+                      className='col-start-6 col-span-2'
+                      value={tableLabels.paid}
+                      onChange={value => setTableLabels({...tableLabels, paid: value})}
+                      disabled={disabled}
+                    />
+                  )}
+                </div>
+              ))}
+              {(paidType === 'NUMBER') && (
+                <div className='grid grid-cols-7'>
                   <TableInput
-                    className='row-span-1 col-span-2 text-center'
-                    value={subService.price}
-                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, price: value})}
-                    disabled={disabled || (priceShow === 'total')}
-                  />
-                  <TableInput
-                    className='row-span-2 col-span-2'
-                    value={subService.note}
-                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, note: value})}
+                    className='col-start-6 col-span-2'
+                    value={tableLabels.paid}
+                    onChange={value => setTableLabels({...tableLabels, paid: value})}
                     disabled={disabled}
                   />
-                  {(paidShow !== 'total') && (
-                    <>
+                </div>
+              )}
+            </div>
+
+            <div className='col-span-2 flex flex-col'>
+              <div className='flex-1'>
+                {(priceType === 'NUMBER') ? (
+                  <TableInput
+                    className='text-center'
+                    value={service.price}
+                    onChange={value => handleServiceOnChange(index, {...service, price: value})}
+                    disabled={disabled}
+                  />
+                ) : service.subServices.map((subService, subIndex) => (
+                    <div key={subIndex}>
                       <TableInput
-                        className='col-start-6 row-span-1 col-span-2'
-                        value={tableLabels.paid}
-                        onChange={value => setTableLabels({...tableLabels, paid: value})}
-                        disabled={disabled}
+                        className='text-center'
+                        value={subService.price}
+                        onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, price: value})}
+                        disabled={disabled || (priceType !== 'ITEM')}
                       />
-                      <TableInput
-                        className='row-span-1 col-span-2 text-center'
+                      {(paidType === 'ITEM') && (
+                        <TableInput
+                        className='text-center'
                         value={subService.paid}
                         onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, paid: value})}
                         disabled={disabled}
                       />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {(paidType === 'NUMBER') && (
+                <div>
+                  <TableInput
+                    className='text-center'
+                    value={service.paid}
+                    onChange={value => handleServiceOnChange(index, {...service, paid: value})}
+                    disabled={disabled}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className='col-span-2'>
+              {(noteType === 'ITEM') && service.subServices.map((subService, subIndex) => (
+                <div key={subIndex} className='grid grid-cols-12 grid-rows-2'>
+                  <TableInput
+                    className={`row-span-full border-r-transparent ${(paidType === 'ITEM') ? 'col-span-11' : 'col-span-12'}`}
+                    value={subService.note}
+                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, note: value})}
+                    disabled={disabled}
+                  />
+                  {(paidType === 'ITEM') && (
+                    <>
+                      <TableInput className='col-start-12 row-start-1 border-l-transparent border-b-transparent' onChange={() => {}} disabled />
+                      <TableInput className='col-start-12 row-start-2 border-l-transparent border-t-transparent' onChange={() => {}} disabled />
                     </>
                   )}
                 </div>
               ))}
+              {(noteType === 'NUMBER') && (
+                <TableInput
+                  value={service.note}
+                  onChange={value => handleServiceOnChange(index, {...service, note: value})}
+                  disabled={disabled}
+                />
+              )}
             </div>
           </div>
         ))}
@@ -321,7 +469,7 @@ export default function Table({
 
 
         <div className='grid grid-cols-12 border-y border-neutral-900'>
-          {(priceShow !== 'item') && (
+          {isTotalPriceShown && (
             <>
               <TableInput className='col-span-6 text-right text-red-500' value={totalPriceErr} disabled />
               <TableInput
@@ -339,7 +487,25 @@ export default function Table({
             </>
           )}
 
-          {(paidShow !== 'item') && (
+          {isTotalNoteShown && (
+            <>
+              <TableInput className='col-span-6 text-right text-red-500' value={totalNoteErr} disabled />
+              <TableInput
+                className='col-start-7 col-span-2'
+                value={tableLabels.totalNote}
+                onChange={value => setTableLabels({...tableLabels, totalNote: value})}
+                disabled={disabled}
+              />
+              <TableInput
+                className='col-span-2 text-center'
+                value={totalNote}
+                onChange={setTotalNote}
+                disabled={disabled}
+              />
+            </>
+          )}
+
+          {isTotalPaidShown && (
             <>
               <TableInput className='col-span-6 text-right text-red-500' value={totalPaidErr} disabled />
               <TableInput

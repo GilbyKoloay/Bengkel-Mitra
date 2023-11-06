@@ -57,8 +57,9 @@ export default function InvoiceForm() {
     type: 'text'
   }]);
 
-  const [priceShow, setPriceShow] = useState('all');
-  const [paidShow, setPaidShow] = useState('all');
+  const [priceType, setPriceType] = useState('ITEM');
+  const [paidType, setPaidType] = useState('ITEM');
+  const [noteType, setNoteType] = useState('ITEM');
   const [tableLabels, setTableLabels] = useState({
     col1: 'No.',
     col2: 'Uraian Pekerjaan',
@@ -66,11 +67,15 @@ export default function InvoiceForm() {
     col4: 'Keterangan',
     paid: 'Panjar',
     totalPaid: 'Biaya Panjar',
+    totalNote: 'Biaya Nota',
     totalPrice: 'Biaya Service',
     calculated: 'Jumlah :'
   });
   const [services, setServices] = useState([{
     no: '',
+    price: '',
+    paid: '',
+    note: '',
     subServices: [{
       type: 'SERVICE',
       name: '',
@@ -79,8 +84,13 @@ export default function InvoiceForm() {
       note: ''
     }]
   }]);
+  const [isTotalPriceShown, setIsTotalPriceShown] = useState(true);
   const [totalPriceErr, setTotalPriceErr] = useState('');
   const [totalPrice, setTotalPrice] = useState('0');
+  const [isTotalNoteShown, setIsTotalNoteShown] = useState(true);
+  const [totalNoteErr, setTotalNoteErr] = useState('');
+  const [totalNote, setTotalNote] = useState('0');
+  const [isTotalPaidShown, setIsTotalPaidShown] = useState(true);
   const [totalPaidErr, setTotalPaidErr] = useState('');
   const [totalPaid, setTotalPaid] = useState('0');
   const [calculated, setCalculated] = useState(0);
@@ -119,8 +129,9 @@ export default function InvoiceForm() {
         value: (info.type !== 'date') ? info.value : (info.value.slice(0, 10) === '0000-00-00') ? '--T00:00:00.000Z' : info.value
       })));
 
-      setPriceShow(invoice.priceShow);
-      setPaidShow(invoice.paidShow);
+      setPriceType(invoice.priceType);
+      setPaidType(invoice.paidType);
+      setNoteType(invoice.noteType);
       setTableLabels(invoice.tableLabels);
       setServices([...invoice.services.map(service => ({
         ...service,
@@ -133,6 +144,9 @@ export default function InvoiceForm() {
         }]
       })), {
         no: '',
+        price: '',
+        paid: '',
+        note: '',
         subServices: [{
           type: 'SERVICE',
           name: '',
@@ -141,8 +155,13 @@ export default function InvoiceForm() {
           note: ''
         }]
       }]);
+      setIsTotalPriceShown(invoice.isTotalPriceShown);
       setTotalPriceErr(invoice.totalPriceErr);
       setTimeout(() => setTotalPrice(invoice.totalPrice), 500);
+      setIsTotalNoteShown(invoice.isTotalNoteShown);
+      setTotalNoteErr(invoice.totalNoteErr);
+      setTimeout(() => setTotalNote(invoice.totalNote), 500);
+      setIsTotalPaidShown(invoice.isTotalPaidShown);
       setTotalPaidErr(invoice.totalPaidErr);
       setTimeout(() => setTotalPaid(invoice.totalPaid), 500);
       setCalculated(invoice.calculated);
@@ -152,7 +171,6 @@ export default function InvoiceForm() {
       setPaymentLabels(invoice.paymentLabels);
 
       setCity(invoice.city);
-      // setCreateDate(invoice.createDate);
       setCreateDate((invoice.createDate.slice(0, 10) === '0000-00-00') ? '--T00:00:00.000Z' : invoice.createDate);
     }
   }
@@ -186,8 +204,9 @@ export default function InvoiceForm() {
       type: 'text'
     }]);
 
-    setPriceShow('all');
-    setPaidShow('all');
+    setPriceType('ITEM');
+    setPaidType('ITEM');
+    setNoteType('ITEM');
     setTableLabels({
       col1: 'No.',
       col2: 'Uraian Pekerjaan',
@@ -195,11 +214,15 @@ export default function InvoiceForm() {
       col4: 'Keterangan',
       paid: 'Panjar',
       totalPaid: 'Biaya Panjar',
+      totalNote: 'Biaya Nota',
       totalPrice: 'Biaya Service',
       calculated: 'Jumlah :'
     });
     setServices([{
       no: '',
+      price: '',
+      paid: '',
+      note: '',
       subServices: [{
         type: 'SERVICE',
         name: '',
@@ -208,8 +231,13 @@ export default function InvoiceForm() {
         note: ''
       }]
     }]);
+    setIsTotalPriceShown(true);
     setTotalPriceErr('');
     setTotalPrice('0');
+    setIsTotalNoteShown(true);
+    setTotalNoteErr('');
+    setTotalNote('0');
+    setIsTotalPaidShown(true);
     setTotalPaidErr('');
     setTotalPaid('0');
     setCalculated(0);
@@ -280,12 +308,18 @@ export default function InvoiceForm() {
         else return item;
       }),
 
-      priceShow,
-      paidShow,
+      priceType,
+      paidType,
+      noteType,
       tableLabels,
       services: services.map(service => ({...service, subServices: service.subServices.slice(0, -1)})).slice(0, -1),
+      isTotalPriceShown,
       totalPriceErr,
       totalPrice,
+      isTotalNoteShown,
+      totalNoteErr,
+      totalNote,
+      isTotalPaidShown,
       totalPaidErr,
       totalPaid,
       calculated,
@@ -391,11 +425,54 @@ export default function InvoiceForm() {
             />
           </>
         )}
+        {/* this button is to generate random values for services */}
+        {/* <Button
+          className='whitespace-nowrap'
+          label='random'
+          onClick={() => {
+            function rndStr(len) {return [...Array(len)].map(() => (~~(Math.random() * 36)).toString(36)).join('');}
+            function rndInt(len) {return Math.round(Math.random(0, 1)*10000000000).toString().slice(0, len);}
+            setServices([...[...new Array(parseInt(rndInt(1)))].map((_, index) => ({
+            // setServices([...new Array(3)].map((_, index) => ({
+              no: (index+1).toString(),
+              price: (rndInt()%2===0) ? rndInt(2).toString() : '',
+              paid: (rndInt()%2===0) ? rndInt(1).toString() : '',
+              note: rndStr(50),
+              subServices: [...[...new Array(parseInt(rndInt(1)))].map((_, subIndex) => ({
+              // subServices: [...new Array(3)].map((_, subIndex) => ({
+                type: (rndInt()%2 === 0) ? 'SERVICE' : 'NOTE',
+                name: `${index+1}${subIndex+1} - ${rndStr(25)}`,
+                price: (rndInt()%2===0) ? rndInt(2).toString() : '',
+                paid: (rndInt()%2===0) ? rndInt(1).toString() : '',
+                note: (rndInt()%2 === 0) ? `${index+1}${subIndex+1} - ${rndStr(10)}` : ''
+              })), {
+                type: 'SERVICE',
+                name: '',
+                price: '',
+                paid: '',
+                note: ''
+              }]
+            })), {
+              no: '',
+              price: '',
+              paid: '',
+              note: '',
+              subServices: [{
+                type: 'SERIVICE',
+                name: '',
+                price: '',
+                paid: '',
+                note: ''
+              }]
+            }]);
+          }}
+          size='md'
+        /> */}
       </div>
 
 
 
-      <div className='text-2xl'>{!_id ? 'Lihat' : 'Data'} Faktur</div>
+      <div className='text-2xl'>{!_id ? 'Tambah' : 'Data'} Faktur</div>
 
 
 
@@ -412,25 +489,22 @@ export default function InvoiceForm() {
           />
           
           <Table
-            services={services}
-            setServices={setServices}
-            setPriceShow={setPriceShow}
-            setPaidShow={setPaidShow}
-            priceShow={priceShow}
-            paidShow={paidShow}
-            tableLabels={tableLabels}
-            setTableLabels={setTableLabels}
+            services={services} setServices={setServices}
+            priceType={priceType} setPriceType={setPriceType}
+            paidType={paidType} setPaidType={setPaidType}
+            noteType={noteType} setNoteType={setNoteType}
+            tableLabels={tableLabels} setTableLabels={setTableLabels}
             disabled={isFormLoading || isFormSubmitting}
-            totalPriceErr={totalPriceErr}
-            setTotalPriceErr={setTotalPriceErr}
-            totalPrice={totalPrice}
-            setTotalPrice={setTotalPrice}
-            totalPaidErr={totalPaidErr}
-            setTotalPaidErr={setTotalPaidErr}
-            totalPaid={totalPaid}
-            setTotalPaid={setTotalPaid}
-            calculated={calculated}
-            setCalculated={setCalculated}
+            isTotalPriceShown={isTotalPriceShown} setIsTotalPriceShown={setIsTotalPriceShown}
+            totalPriceErr={totalPriceErr} setTotalPriceErr={setTotalPriceErr}
+            totalPrice={totalPrice} setTotalPrice={setTotalPrice}
+            isTotalNoteShown={isTotalNoteShown} setIsTotalNoteShown={setIsTotalNoteShown}
+            totalNoteErr={totalNoteErr} setTotalNoteErr={setTotalNoteErr}
+            totalNote={totalNote} setTotalNote={setTotalNote}
+            isTotalPaidShown={isTotalPaidShown} setIsTotalPaidShown={setIsTotalPaidShown}
+            totalPaidErr={totalPaidErr} setTotalPaidErr={setTotalPaidErr}
+            totalPaid={totalPaid} setTotalPaid={setTotalPaid}
+            calculated={calculated} setCalculated={setCalculated}
           />
 
           <Notes
