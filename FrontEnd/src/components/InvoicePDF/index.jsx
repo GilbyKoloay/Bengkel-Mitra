@@ -77,7 +77,7 @@ export default function InvoicePDF({ invoice }) {
         {/* header */}
         <View>
           <Text style={{fontSize: 16}}>{invoice.headerLabels.top}</Text>
-          <Text style={{fontSize: 8, marginTop: 12}}>{invoice.headerLabels.mid}</Text>
+          <Text style={{fontSize: 9, marginTop: 12}}>{invoice.headerLabels.mid}</Text>
           <Text style={{fontSize: 8, marginTop: 4}}>{invoice.headerLabels.bot}</Text>
         </View>
         
