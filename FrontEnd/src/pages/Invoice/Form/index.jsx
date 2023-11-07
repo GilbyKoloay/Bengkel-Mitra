@@ -57,9 +57,9 @@ export default function InvoiceForm() {
     type: 'text'
   }]);
 
-  const [priceType, setPriceType] = useState('NUMBER');
+  const [priceType, setPriceType] = useState('ITEM');
   const [paidType, setPaidType] = useState('NULL');
-  const [noteType, setNoteType] = useState('NULL');
+  const [noteType, setNoteType] = useState('ITEM');
   const [tableLabels, setTableLabels] = useState({
     col1: 'No.',
     col2: 'Uraian Pekerjaan',
@@ -71,19 +71,7 @@ export default function InvoiceForm() {
     totalPrice: 'Biaya Service',
     calculated: 'Jumlah :'
   });
-  const [services, setServices] = useState([{
-    no: '',
-    price: '',
-    paid: '',
-    note: '',
-    subServices: [{
-      type: 'SERVICE',
-      name: '',
-      price: '',
-      paid: '',
-      note: ''
-    }]
-  }]);
+  const [services, setServices] = useState([]);
   const [isTotalPriceShown, setIsTotalPriceShown] = useState(true);
   const [totalPriceErr, setTotalPriceErr] = useState('');
   const [totalPrice, setTotalPrice] = useState('0');
@@ -133,28 +121,7 @@ export default function InvoiceForm() {
       setPaidType(invoice.paidType);
       setNoteType(invoice.noteType);
       setTableLabels(invoice.tableLabels);
-      setServices([...invoice.services.map(service => ({
-        ...service,
-        subServices: [...service.subServices, {
-          type: 'SERVICE',
-          name: '',
-          price: '',
-          paid: '',
-          note: ''
-        }]
-      })), {
-        no: '',
-        price: '',
-        paid: '',
-        note: '',
-        subServices: [{
-          type: 'SERVICE',
-          name: '',
-          price: '',
-          paid: '',
-          note: ''
-        }]
-      }]);
+      setServices(invoice.services);
       setIsTotalPriceShown(invoice.isTotalPriceShown);
       setTotalPriceErr(invoice.totalPriceErr);
       setTimeout(() => setTotalPrice(invoice.totalPrice), 500);
@@ -204,9 +171,9 @@ export default function InvoiceForm() {
       type: 'text'
     }]);
 
-    setPriceType('NUMBER');
+    setPriceType('ITEM');
     setPaidType('NULL');
-    setNoteType('NULL');
+    setNoteType('ITEM');
     setTableLabels({
       col1: 'No.',
       col2: 'Uraian Pekerjaan',
@@ -218,19 +185,7 @@ export default function InvoiceForm() {
       totalPrice: 'Biaya Service',
       calculated: 'Jumlah :'
     });
-    setServices([{
-      no: '',
-      price: '',
-      paid: '',
-      note: '',
-      subServices: [{
-        type: 'SERVICE',
-        name: '',
-        price: '',
-        paid: '',
-        note: ''
-      }]
-    }]);
+    setServices([]);
     setIsTotalPriceShown(true);
     setTotalPriceErr('');
     setTotalPrice('0');
@@ -312,7 +267,7 @@ export default function InvoiceForm() {
       paidType,
       noteType,
       tableLabels,
-      services: services.map(service => ({...service, subServices: service.subServices.slice(0, -1)})).slice(0, -1),
+      services,
       isTotalPriceShown,
       totalPriceErr,
       totalPrice,
@@ -425,39 +380,21 @@ export default function InvoiceForm() {
           onClick={() => {
             function rndStr(len) {return [...Array(len)].map(() => (~~(Math.random() * 36)).toString(36)).join('');}
             function rndInt(len) {return Math.round(Math.random(0, 1)*10000000000).toString().slice(0, len);}
-            setServices([...[...new Array(parseInt(rndInt(1)))].map((_, index) => ({
+            setServices([...new Array(parseInt(rndInt(1)))].map((_, index) => ({
             // setServices([...new Array(3)].map((_, index) => ({
               no: (index+1).toString(),
               price: (rndInt()%2===0) ? rndInt(2).toString() : '',
               paid: (rndInt()%2===0) ? rndInt(1).toString() : '',
               note: rndStr(50),
-              subServices: [...[...new Array(parseInt(rndInt(1)))].map((_, subIndex) => ({
+              subServices: [...new Array(parseInt(rndInt(1)))].map((_, subIndex) => ({
               // subServices: [...new Array(3)].map((_, subIndex) => ({
                 type: (rndInt()%2 === 0) ? 'SERVICE' : 'NOTE',
                 name: `${index+1}${subIndex+1} - ${rndStr(25)}`,
                 price: (rndInt()%2===0) ? rndInt(2).toString() : '',
                 paid: (rndInt()%2===0) ? rndInt(1).toString() : '',
                 note: (rndInt()%2 === 0) ? `${index+1}${subIndex+1} - ${rndStr(10)}` : ''
-              })), {
-                type: 'SERVICE',
-                name: '',
-                price: '',
-                paid: '',
-                note: ''
-              }]
-            })), {
-              no: '',
-              price: '',
-              paid: '',
-              note: '',
-              subServices: [{
-                type: 'SERIVICE',
-                name: '',
-                price: '',
-                paid: '',
-                note: ''
-              }]
-            }]);
+              }))
+            })));
           }}
           size='md'
         />
