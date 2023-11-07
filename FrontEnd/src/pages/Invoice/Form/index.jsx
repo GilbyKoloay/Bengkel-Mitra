@@ -404,13 +404,6 @@ export default function InvoiceForm() {
             />
             <Button
               className='whitespace-nowrap'
-              label='Cetak'
-              onClick={() => setIsPrintDialogOpen(true)}
-              size='md'
-              theme='blue'
-            />
-            <Button
-              className='whitespace-nowrap'
               label='Perbarui'
               onClick={() => onSubmit('PUT')}
               size='md'
