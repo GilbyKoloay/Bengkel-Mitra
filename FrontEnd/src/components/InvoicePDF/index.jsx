@@ -77,7 +77,7 @@ export default function InvoicePDF({ invoice }) {
         {/* header */}
         <View>
           <Text style={{fontSize: 16}}>{invoice.headerLabels.top}</Text>
-          <Text style={{fontSize: 8, marginTop: 12}}>{invoice.headerLabels.mid}</Text>
+          <Text style={{fontSize: 9, marginTop: 12}}>{invoice.headerLabels.mid}</Text>
           <Text style={{fontSize: 8, marginTop: 4}}>{invoice.headerLabels.bot}</Text>
         </View>
         
@@ -270,8 +270,9 @@ export default function InvoicePDF({ invoice }) {
           )}
           <View style={{flexDirection: 'row'}}>
             <Text style={styles.table.row(1, 2, 0, 0, 0)}> </Text>
-            <Text style={styles.table.row(7, 2, 0, 0, 0, {paddingVertical: 2, textAlign: 'center', fontFamily: 'Helvetica-Bold'})}>{invoice.tableLabels.calculated}</Text>
-            <Text style={styles.table.row(2, 2, 0, 0, 0, {paddingVertical: 2, textAlign: 'center', fontFamily: 'Helvetica-Bold', textDecoration: 'underline'})}>Rp. {splitString(invoice.calculated, 3, '.')}</Text>
+            <Text style={styles.table.row(5, 2, 0, 0, 0)}> </Text>
+            <Text style={styles.table.row(2, 2, 0, 0, 0, {paddingVertical: 2, fontFamily: 'Helvetica-Bold'})}>{invoice.tableLabels.calculated}</Text>
+            <Text style={styles.table.row(2, 2, 0, 0, 0, {paddingVertical: 2, fontFamily: 'Helvetica-Bold', textDecoration: 'underline', textAlign: 'center'})}>Rp. {splitString(invoice.calculated, 3, '.')}</Text>
             <Text style={styles.table.row(2, 2, 0, 0, 0)}> </Text>
           </View>
         </View>
