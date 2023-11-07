@@ -57,9 +57,9 @@ export default function InvoiceForm() {
     type: 'text'
   }]);
 
-  const [priceType, setPriceType] = useState('ITEM');
-  const [paidType, setPaidType] = useState('ITEM');
-  const [noteType, setNoteType] = useState('ITEM');
+  const [priceType, setPriceType] = useState('NUMBER');
+  const [paidType, setPaidType] = useState('NULL');
+  const [noteType, setNoteType] = useState('NULL');
   const [tableLabels, setTableLabels] = useState({
     col1: 'No.',
     col2: 'Uraian Pekerjaan',
@@ -204,9 +204,9 @@ export default function InvoiceForm() {
       type: 'text'
     }]);
 
-    setPriceType('ITEM');
-    setPaidType('ITEM');
-    setNoteType('ITEM');
+    setPriceType('NUMBER');
+    setPaidType('NULL');
+    setNoteType('NULL');
     setTableLabels({
       col1: 'No.',
       col2: 'Uraian Pekerjaan',
@@ -426,7 +426,7 @@ export default function InvoiceForm() {
           </>
         )}
         {/* this button is to generate random values for services */}
-        {/* <Button
+        <Button
           className='whitespace-nowrap'
           label='random'
           onClick={() => {
@@ -467,7 +467,7 @@ export default function InvoiceForm() {
             }]);
           }}
           size='md'
-        /> */}
+        />
       </div>
 
 
@@ -538,14 +538,14 @@ export default function InvoiceForm() {
             <Button
               className='flex-1 sm:flex-[0]'
               label='Batal'
-              onClick={() => {setIsPrintDialogOpen(false); navigate('/invoice');}}
+              onClick={() => setIsPrintDialogOpen(false)}
               size='md'
             />
             <PDFDownloadLink
               className='flex-1 sm:flex-[0] border-2 py-1 px-4 text-lg bg-blue-300 border-blue-700 rounded text-center hover:bg-blue-500 hover:cursor-pointer focus:outline focus:outline-1 focus:outline-offset-1 focus:outline-blue-700'
               document={<InvoicePDF invoice={{...getPayload()}} />}
               fileName={`${getPDFFileName()}`}
-              onClick={() => setTimeout(() => {setIsPrintDialogOpen(false); navigate('/invoice');}, 500)}
+              onClick={() => setTimeout(() => {setIsPrintDialogOpen(false)}, 500)}
             >
               {({ blob, url, loading, error }) => loading ? '' : 'Konfirmasi'}
             </PDFDownloadLink>
