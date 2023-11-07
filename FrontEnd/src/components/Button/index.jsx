@@ -11,7 +11,7 @@ export default function Button({
     <button
       className={`border-2 focus:outline focus:outline-1 focus:outline-offset-1
         ${className}
-        ${(size === 'sm') ? 'py-1 px-2 text-base' :
+        ${(size === 'sm') ? 'text-base' :
           (size === 'md') ? 'py-1 px-4 text-lg' :
           (size === 'lg') ? 'py-2 px-4 text-xl' : ''
         }
