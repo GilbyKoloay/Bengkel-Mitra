@@ -78,6 +78,7 @@ export default function Table({
 }) {
   useEffect(() => {
     const newValue = getServicesValue();
+    console.log(services, newValue);
 
     setTotalPrice(newValue.price.toString());
     setTotalNote(newValue.note.toString());
@@ -174,42 +175,14 @@ export default function Table({
 
     newServices[index] = newValue;
 
-    newServices = [
-      ...newServices.filter(service => service.no || service.price || service.paid || service.note || (service.subServices.length > 1)),
-      {
-        no: '',
-        price: '',
-        paid: '',
-        note: '',
-        subServices: [{
-          type: newServices.slice(-1)[0].subServices.slice(-1)[0].type,
-          name: '',
-          price: '',
-          paid: '',
-          note: ''
-        }]
-      }
-    ];
-
     setServices(newServices);
   }
 
   function handleSubServiceOnChange(index, subIndex, newValue) {
     let newSubServices = [...services[index].subServices];
-    
+
     newSubServices[subIndex] = newValue;
 
-    newSubServices = [
-      ...newSubServices.filter(subService => subService.name || subService.price || subService.paid || subService.note),
-      {
-        type: newSubServices.slice(-1)[0].type,
-        name: '',
-        price: '',
-        paid: '',
-        note: ''
-      }
-    ];
-    
     const newService = {
       ...services[index],
       subServices: newSubServices
@@ -264,7 +237,7 @@ export default function Table({
           <Select
             options={[
               ['ITEM', `Gunakan ${tableLabels.col3} per item`],
-              ['NUMBER', `Gunakan ${tableLabels.col3} per nomor`],
+              // ['NUMBER', `Gunakan ${tableLabels.col3} per nomor`],
               ['NULL', `Jangan gunakan ${tableLabels.col3}`]
             ]}
             value={priceType}
@@ -352,23 +325,39 @@ export default function Table({
 
         {services.map((service, index) => (
           <div key={index} className={`grid grid-cols-12 ${index ? 'border-t border-neutral-900 border-dashed' : ''}`}>
-            <TableInput
-              className='col-span-1 text-center'
-              value={service.no}
-              onChange={value => handleServiceOnChange(index, {...service, no: value})}
-              disabled={disabled}
-            />
+            <div className='col-span-1 grid grid-cols-3'>
+              <Button
+                className='col-span-1'
+                label='-'
+                onClick={() => setServices(services.filter((_, thisIndex) => thisIndex !== index))}
+                theme='red'
+              />
+              <TableInput
+                className='col-span-2 text-center'
+                value={service.no}
+                onChange={value => handleServiceOnChange(index, {...service, no: value})}
+                disabled={disabled}
+              />
+            </div>
 
             <div className='col-span-7'>
               {service.subServices.map((subService, subIndex) => (
                 <div key={subIndex} className={`grid grid-cols-7 grid-rows-${(paidType === 'ITEM') ? '2' : '1'}`}>
-                  <TableSelect
-                    className='col-span-2 row-span-full'
-                    options={[['SERVICE', 'Pekerjaan'], ['NOTE', 'Nota']]}
-                    value={subService.type}
-                    onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, type: value})}
-                    disabled={disabled}
-                  />
+                  <div className='col-span-2 row-span-full grid grid-cols-5'>
+                    <Button
+                      className='col-span-1'
+                      label='-'
+                      onClick={() => setServices(services.map((thisService, thisIndex) => (thisIndex !== index) ? thisService : ({...thisService, subServices: thisService.subServices.filter((_, thisSubIndex) => thisSubIndex !== subIndex)})))}
+                      theme='red'
+                    />
+                    <TableSelect
+                      className='col-span-4'
+                      options={[['SERVICE', 'Pekerjaan'], ['NOTE', 'Nota']]}
+                      value={subService.type}
+                      onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, type: value})}
+                      disabled={disabled}
+                    />
+                  </div>
                   <TableInput
                     className='col-span-5'
                     value={subService.name}
@@ -385,6 +374,22 @@ export default function Table({
                   )}
                 </div>
               ))}
+              <div className='grid grid-cols-7'>
+                <div className='col-span-2 grid grid-cols-5'>
+                  <Button
+                    className='col-span-1'
+                    label='+'
+                    onClick={() => setServices(services.map((thisService, thisIndex) => (thisIndex !== index) ? thisService : ({...thisService, subServices: [...thisService.subServices, {
+                      type: 'SERVICE',
+                      name: '',
+                      price: '',
+                      paid: '',
+                      note: ''
+                    }]})))}
+                    theme='blue'
+                  />
+                </div>
+              </div>
               {(paidType === 'NUMBER') && (
                 <div className='grid grid-cols-7'>
                   <TableInput
@@ -465,6 +470,20 @@ export default function Table({
             </div>
           </div>
         ))}
+        <div className='grid grid-cols-12 border-t border-dashed border-neutral-900'>
+          <Button
+            className='col-span-1'
+            label='+'
+            onClick={() => setServices([...services, {
+              no: '',
+              price: '',
+              paid: '',
+              note: '',
+              subServices: []
+            }])}
+            theme='blue'
+          />
+        </div>
 
 
 

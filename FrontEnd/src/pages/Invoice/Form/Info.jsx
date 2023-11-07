@@ -12,7 +12,7 @@ const InfoItem = ({
   return (
     <div className='flex gap-2 items-center'>
       <Button
-        className='w-8'
+        className='w-8 py-1 px-2'
         label='-'
         onClick={() => onChange(null)}
         theme='red'
@@ -44,11 +44,13 @@ const InfoItem = ({
 
       <div className='flex gap-1'>
         <Button
+          className='py-1 px-2'
           label='Teks'
           onClick={() => onChange({label, value: '', type: 'text'})}
           theme={(type === 'text') ? 'blue' : 'neutral'}
         />
         <Button
+          className='py-1 px-2'
           label='Tanggal'
           onClick={() => onChange({label, value: '--T00:00:00.000Z', type: 'date'})}
           theme={(type === 'date') ? 'blue' : 'neutral'}
@@ -83,7 +85,7 @@ export default function Info({ info, setInfo, disabled }) {
         />
       ))}
       <Button
-        className='w-8'
+        className='w-8 py-1 px-2'
         label='+'
         onClick={() => handleInfoOnChange(info.length, {
           label: '',
