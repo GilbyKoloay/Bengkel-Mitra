@@ -381,7 +381,7 @@ export default function InvoiceForm() {
         )}
         <Button
           className='whitespace-nowrap'
-          label='Atur Ulang'
+          label='Reset'
           onClick={onReset}
           size='md'
         />
