@@ -479,7 +479,13 @@ export default function Table({
               price: '',
               paid: '',
               note: '',
-              subServices: []
+              subServices: [{
+                type: 'SERVICE',
+                name: '',
+                price: '',
+                paid: '',
+                note: ''
+              }]
             }])}
             theme='blue'
           />
