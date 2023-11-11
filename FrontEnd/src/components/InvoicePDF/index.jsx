@@ -110,7 +110,7 @@ export default function InvoicePDF({ invoice }) {
           {invoice.services.map((service, index) => (
             <View key={index} style={{flexDirection: 'row'}}>
               {/* table - data - col 1 */}
-              <View style={styles.table.row(1, index ? 3 : 0, (index === invoice.services.length-1) ? 2 : 0, 2, 1, {justifyContent: 'center', alignItems: 'center'})}>
+              <View style={styles.table.row(1, index ? 3 : 0, (index === invoice.services.length-1) ? 2 : 0, 2, 1, {alignItems: 'center'})}>
                 <Text style={{padding: 2}}>{service.no}</Text>
               </View>
 
