@@ -374,7 +374,7 @@ export default function InvoiceForm() {
           </>
         )}
         {/* this button is to generate random values for services */}
-        {/* <Button
+        <Button
           className='whitespace-nowrap'
           label='random'
           onClick={() => {
@@ -397,7 +397,7 @@ export default function InvoiceForm() {
             })));
           }}
           size='md'
-        /> */}
+        />
       </div>
 
 
