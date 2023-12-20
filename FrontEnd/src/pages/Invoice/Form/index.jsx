@@ -75,7 +75,7 @@ export default function InvoiceForm() {
   const [isTotalPriceShown, setIsTotalPriceShown] = useState(true);
   const [totalPriceErr, setTotalPriceErr] = useState('');
   const [totalPrice, setTotalPrice] = useState('0');
-  const [isTotalNoteShown, setIsTotalNoteShown] = useState(true);
+  const [isTotalNoteShown, setIsTotalNoteShown] = useState(false);
   const [totalNoteErr, setTotalNoteErr] = useState('');
   const [totalNote, setTotalNote] = useState('0');
   const [isTotalPaidShown, setIsTotalPaidShown] = useState(true);
@@ -374,7 +374,7 @@ export default function InvoiceForm() {
           </>
         )}
         {/* this button is to generate random values for services */}
-        {/* <Button
+        <Button
           className='whitespace-nowrap'
           label='random'
           onClick={() => {
@@ -397,7 +397,7 @@ export default function InvoiceForm() {
             })));
           }}
           size='md'
-        /> */}
+        />
       </div>
 
 

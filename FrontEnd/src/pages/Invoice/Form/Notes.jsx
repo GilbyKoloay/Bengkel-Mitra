@@ -60,7 +60,7 @@ export default function Notes({
         ))}
       </div>
 
-      <div>
+      {/* <div>
         <div className='border border-neutral-900 p-2 flex flex-col'>
           <div>
             <LabelInput
@@ -87,7 +87,7 @@ export default function Notes({
             />
           </div>
         </div>
-      </div>
+      </div> */}
     </section>
   );
 };
