@@ -13,6 +13,23 @@ const TableInput = ({
 }) => {
   return (
     <input
+      className={`h-8 w-full bg-transparent p-1 border border-neutral-300 focus:bg-neutral-300 focus:outline-none ${className}`}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+    />
+  );
+};
+
+// this input is for note only, so the input takes the full height of the parent's container. bcs the TableInput component have fixed height.
+const TableNoteInput = ({
+  className,
+  value,
+  onChange,
+  disabled
+}) => {
+  return (
+    <input
       className={`h-full w-full bg-transparent p-1 border border-neutral-300 focus:bg-neutral-300 focus:outline-none ${className}`}
       value={value}
       onChange={e => onChange(e.target.value)}
@@ -30,7 +47,7 @@ const TableSelect = ({
 }) => {
   return (
     <select
-    className={`h-full w-full bg-transparent p-1 border border-neutral-300 hover:cursor-pointer focus:bg-neutral-300 focus:outline-none ${className}`}
+    className={`h-8 w-full bg-transparent p-1 border border-neutral-300 hover:cursor-pointer focus:bg-neutral-300 focus:outline-none ${className}`}
       value={value}
       onChange={e => onChange(e.target.value)}
       disabled={disabled}
@@ -412,15 +429,15 @@ export default function Table({
                     disabled={disabled}
                   />
                 ) : service.subServices.map((subService, subIndex) => (
-                    <div key={subIndex}>
+                  <div key={subIndex}>
+                    <TableInput
+                      className='text-center'
+                      value={subService.price}
+                      onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, price: value})}
+                      disabled={disabled || (priceType !== 'ITEM')}
+                    />
+                    {(paidType === 'ITEM') && (
                       <TableInput
-                        className='text-center'
-                        value={subService.price}
-                        onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, price: value})}
-                        disabled={disabled || (priceType !== 'ITEM')}
-                      />
-                      {(paidType === 'ITEM') && (
-                        <TableInput
                         className='text-center'
                         value={subService.paid}
                         onChange={value => handleSubServiceOnChange(index, subIndex, {...subService, paid: value})}
@@ -461,7 +478,7 @@ export default function Table({
                 </div>
               ))}
               {(noteType === 'NUMBER') && (
-                <TableInput
+                <TableNoteInput
                   value={service.note}
                   onChange={value => handleServiceOnChange(index, {...service, note: value})}
                   disabled={disabled}
