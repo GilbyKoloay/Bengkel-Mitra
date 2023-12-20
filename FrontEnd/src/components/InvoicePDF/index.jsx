@@ -294,7 +294,7 @@ export default function InvoicePDF({ invoice }) {
           </View>
 
           {/* notes - payment */}
-          <View style={{flex: 1, alignItems: 'flex-end'}}>
+          {/* <View style={{flex: 1, alignItems: 'flex-end'}}>
             <View style={{border: '1px solid black', padding: 2}}>
               <View style={{alignItems: 'center'}}>
                 <Text>{invoice.paymentLabels.top}</Text>
@@ -306,7 +306,7 @@ export default function InvoicePDF({ invoice }) {
               <Text>{invoice.paymentLabels.bot}</Text>
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
 
 
